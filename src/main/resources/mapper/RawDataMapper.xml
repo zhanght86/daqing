@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.RawDataMapper">
+
+	<select id="list" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		dq_raw_data
+		<where>
+			state != -1
+			<if test="volume_label != null and volume_label != ''">
+				and volume_label = #{volume_label}
+			</if>
+			<if test="work_area != null and work_area != ''">
+				AND work_area LIKE CONCAT(CONCAT('%', #{work_area}), '%')
+			</if>
+			<if test="construction_year != null and construction_year != ''">
+				AND construction_year LIKE  CONCAT(CONCAT('%', #{construction_year}), '%')
+			</if>
+		</where>
+		order by sid 
+	</select>
+	
+	<select id="get" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		dq_raw_data
+		<where>
+			state != -1
+			<if test="work_area != null and work_area != ''">
+				AND work_area = #{work_area}
+			</if>
+			<if test="construction_year != null and construction_year != ''">
+				AND construction_year = #{construction_year}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="Map">
+	INSERT INTO 
+		dq_raw_data 
+			(volume_label, work_area, test_line_number, se_number, record_length, use_interval, tape_number, tape_size, data_quantity, construction_year, construction_unit, remarks, state, create_date) 
+	VALUES 
+		(#{volume_label}, #{work_area}, #{test_line_number}, #{se_number}, #{record_length}, #{use_interval}, #{tape_number}, #{tape_size}, #{data_quantity}, #{construction_year}, #{construction_unit}, #{remarks}, #{state}, #{create_date})
+	</insert>
+
+	<delete id="delete" parameterType="Map">
+		DELETE FROM dq_raw_data where sid = #{sid}
+	</delete>
+	
+	<delete id="deleteByVolLabel">
+		DELETE FROM dq_raw_data where volume_label = #{volume_label}
+	</delete>
+	
+	<select id="findByVolLabel" parameterType="String" resultType="Map">
+		select * from dq_raw_data where volume_label = #{volLabel}
+	</select>
+	
+	<update id="update" parameterType="Map">
+		update dq_raw_data 
+		set
+		work_area = #{work_area} , 
+		test_line_number = #{test_line_number} , 
+		se_number = #{se_number} , 
+		record_length = #{record_length} , 
+		use_interval = #{use_interval} , 
+		tape_number = #{tape_number} , 
+		tape_size = #{tape_size} , 
+		data_quantity = #{data_quantity} , 
+		construction_year = #{construction_year} , 
+		construction_unit = #{construction_unit} , 
+		remarks = #{remarks}
+		
+		where
+		sid = #{sid}
+		
+	</update>
+	
+	<select id="findById" parameterType="String" resultType="Map">
+		select * from dq_raw_data where sid = #{id}
+	</select>
+
+</mapper>

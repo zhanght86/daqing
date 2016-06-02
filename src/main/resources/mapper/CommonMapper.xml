@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.CommonMapper">
+
+	<select id="seqUniqueNextVal" parameterType="String" resultType="Integer">
+		SELECT unique_nextval(#{cdate}, #{ctype})
+	</select>
+
+	<select id="listSystemParameters" parameterType="Map"
+		resultType="Map">
+		select * from SystemParameters
+		<where>
+			1 = 1
+			<if test="spid != null and spid != ''">
+				and spid = #{spid}
+			</if>
+			<if test="sp_code != null and sp_code != ''">
+				and sp_code = #{sp_code}
+			</if>
+			<if test="sp_state != null and sp_state != ''">
+				and sp_state = #{sp_state}
+			</if>
+			<if test="sp_value1 != null and sp_value1 != ''">
+				and sp_value1 = #{sp_value1}
+			</if>
+			<if test="sp_value2 != null and sp_value2 != ''">
+				and sp_value2 = #{sp_value2}
+			</if>
+			<if test="sp_value3 != null and sp_value3 != ''">
+				and sp_value3 = #{sp_value3}
+			</if>
+			<if test="sp_value4 != null and sp_value4 != ''">
+				and sp_value4 = #{sp_value4}
+			</if>
+			<if test="sp_value5 != null and sp_value5 != ''">
+				and sp_value5 = #{sp_value5}
+			</if>
+		</where>
+	</select>
+</mapper>

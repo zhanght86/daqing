@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.BurnMapper">
+
+	<insert id="insert" parameterType="Map">
+		INSERT INTO
+		m_burn
+		(volume_label, task_name, disc_type, data_source, data_type,
+		burning_machine, burning_state, disc_number,
+		burn_desc, burn_time,
+		update_time,local_path)
+		VALUES
+		(#{volume_label}, #{task_name},
+		#{disc_type}, #{data_source}, #{data_type},
+		#{burning_machine}, #{burning_state}, #{disc_number}, #{burn_desc},
+		#{burn_time}, #{update_time},#{local_path})
+	</insert>
+
+	<update id="update" parameterType="Map">
+		UPDATE
+		m_burn
+		SET
+
+		mid = #{mid},
+		volume_label = #{volume_label},
+		task_name = #{task_name},
+		disc_type = #{disc_type},
+		data_source = #{data_source},
+		data_type = #{data_type},
+		burning_machine = #{burning_machine},
+		burning_state = #{burning_state},
+		disc_number = #{disc_number},
+		burn_desc = #{burn_desc},
+		burn_time = #{burn_time},
+		update_time = #{update_time}
+
+		WHERE
+		mid = #{mid}
+	</update>
+	
+	<update id="updateState" parameterType="Map">
+		UPDATE
+			m_burn
+		SET
+			<if test="burning_state != null and burning_state != ''">
+				burning_state = #{burning_state},
+			</if>
+			<if test="disc_number != null and disc_number != '' and disc_number != 0">
+				disc_number = #{disc_number},
+			</if>
+			<if test="burn_desc != null and burn_desc != ''">
+				burn_desc = #{burn_desc},
+			</if>
+				<if test="burn_progress != null and burn_progress != ''">
+				burn_progress = #{burn_progress},
+			</if>
+			
+			update_time = #{update_time}
+		where 
+			volume_label = #{volume_label}
+	</update>
+	
+	<select id="list" parameterType="Map" resultType="Map">
+		SELECT b.*, s.sp_name FROM m_burn b left join systemparameters s on b.burning_machine = s.sp_code 
+		<where>
+			1 = 1
+			<if test="burning_state != null and burning_state != ''">
+				and b.burning_state in (${burning_state})
+			</if>
+			<if test="burning_machine != null and burning_machine != ''">
+				and b.burning_machine = #{burning_machine}
+			</if>
+			<if test="volume_label != null and volume_label != ''">
+				and b.volume_label = #{volume_label}
+			</if>
+				<if test="task_name != null and task_name != ''">
+				and b.task_name like CONCAT('%','${task_name}','%' )
+			</if>
+		</where>
+		order by b.mid desc
+	</select>
+
+	<select id="getLast" parameterType="Map" resultType="Map">
+		select * from m_burn 
+		<where>
+			1 = 1
+			<if test="burning_state != null and burning_state != ''">
+				burning_state = #{burning_state}
+			</if>
+				<if test="task_name != null and task_name != ''">
+				and task_name like CONCAT('%','${task_name}','%' )
+			</if>
+			order by mid desc limit 1
+		</where>
+	</select>
+	
+	<select id="getBurnByVolLabel" parameterType="String" resultType="Map">
+		select * from m_burn where volume_label = #{volume_label}
+	</select>
+	
+	<select id="listPosition" parameterType="String" resultType="Map">
+		SELECT * FROM m_burn_detail where volume_label = #{volLabel}
+	</select>
+	
+	<select id="getBurnDetailByCondition" parameterType="String" resultType="Map">
+		SELECT * FROM m_burn_detail 
+		<where>
+			1 = 1
+		</where>
+		<if test="volLabel != null and volLabel != ''">
+		 	and volume_label = #{volLabel} 
+		 </if>
+		<if test="elTag != null and elTag != ''">
+			and electronic_tag = #{elTag} 
+		 </if>
+		 <if test="discPos != null and discPos != ''">
+			and disc_position = #{discPos}
+		</if>
+	</select>
+
+
+	<select id="listExportRecord" parameterType="String" resultType="Map">
+		SELECT e.eid, e.volume_label, e.export_state, e.export_path, b.disc_position, b.electronic_tag, b.iso_file FROM export_data_record e left join m_burn_detail b on e.volume_label = b.volume_label
+		<where>
+			1 = 1
+			<if test="volLabel != null and volLabel != ''">
+				and e.volume_label = #{volLabel}
+			</if>
+			<if test="state != null and state != ''">
+				and e.export_state = #{state}
+			</if>
+			<if test="task_name != null and task_name != ''">
+				and 1=1
+			</if>
+			order by eid desc
+		</where>
+	</select>
+
+	<select id="listExportRecordByVol" parameterType="String"
+		resultType="Map">
+	SELECT t1.*,t2.task_name from export_data_record t1,m_burn t2 
+		<where>
+		   t1.volume_label=t2.volume_label
+		  
+			<if test="volLabel != null and volLabel != ''">
+			 and	t1.volume_label = #{volLabel}
+		 	</if> 
+		 		<if test="task_name != null and task_name != ''">
+		 and t2.task_name like CONCAT('%','${task_name}','%' )
+		 	</if> 
+		</where>
+		order by t1.eid desc
+	</select>
+	
+	<insert id="insertExportRecord" parameterType="Map" useGeneratedKeys="true" keyProperty="eid">
+		insert 
+			into 
+		export_data_record
+			(volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user) 
+		values 
+			(#{volume_label}, #{number_success}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
+	</insert>
+
+	<update id="updateExportRecord" parameterType="Map">
+		UPDATE
+		export_data_record
+		SET
+		eid = #{eid}
+		<if test="number_success != null and number_success != ''">
+			, number_success = #{number_success}
+		</if>
+		<if test="export_state!= null and export_state != ''">
+			, export_state = #{export_state}
+		</if>
+		<if test="export_desc != null and export_desc != ''">
+			, export_desc = #{export_desc}
+		</if>
+		, update_time = #{update_time}
+		WHERE
+		eid = #{eid}
+	</update>
+	
+	<update id="updateExportRecordNew" parameterType="Map">
+		UPDATE
+		export_data_record
+		SET
+		<if test="number_success != null and number_success != ''">
+			, number_success = #{number_success}
+		</if>
+		<if test="export_state!= null and export_state != ''">
+			, export_state = #{export_state}
+		</if>
+		<if test="export_desc != null and export_desc != ''">
+			, export_desc = #{export_desc}
+		</if>
+		, update_time = #{update_time}
+		WHERE
+		volume = #{volume_label}
+	</update>
+	
+	<insert id="insertDetail" parameterType="Map">
+		INSERT INTO
+		    m_burn_detail
+		    (
+		        volume_label,
+		        electronic_tag,
+		        disc_position,
+		        iso_file,
+		        disc_number,
+		        create_time
+		    )
+		    VALUES
+		    (
+				#{volume_label},
+				#{electronic_tag},
+				#{disc_position},
+				#{iso_file},
+				#{disc_number},
+				#{create_time}
+		    )
+	</insert>
+	
+	<update id="updateSize" parameterType="Map">
+		update m_burn set burn_size = burn_size + #{size} where volume_label = #{volLabel}
+	</update>
+	
+	<delete id="delete">
+		delete from m_burn where volume_label = #{volLabel}
+	</delete>
+	
+	<delete id="deleteDetail">
+		delete from m_burn_detail where volume_label = #{volLabel}
+	</delete>
+	
+	
+		<delete id="deleteExport">
+		delete from export_data_record where eid = #{eid}
+	</delete>
+	
+
+</mapper>

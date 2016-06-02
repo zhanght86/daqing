@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.StandingbookMapper">
+
+	<select id="rawStandingbook" parameterType="Map" resultType="Map">
+		SELECT r.work_area, sum(b.d) as d, sum(b.s) as s from (
+			SELECT volume_label, sum(disc_number) as d, sum(burn_size) as s from m_burn where data_type='R' and burning_state = '8'
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				and burn_time BETWEEN #{startDate} and #{endDate} 
+			</if>
+			group by volume_label) b 
+			left join (
+				SELECT volume_label, work_area from dq_raw_data  group by volume_label, work_area
+			) r 
+			on b.volume_label = r.volume_label group by r.work_area
+	</select>
+	
+	<select id="queryStandingbookListByPage" parameterType="Map" resultType="Map">
+		select * from standing_book 
+		<where>
+			1 = 1 
+			<if test="data_type != null and data_type != ''">
+				and data_type = #{data_type}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="states != null and states != ''">
+				and states = #{states}
+			</if>
+			<if test="work_area != null and work_area != ''">
+				and work_area like  CONCAT(CONCAT('%', #{work_area}), '%')
+			</if>
+		<!-- 	<if test="">  </if> -->
+			<if test="construction_unit != null and construction_unit != ''">
+				and construction_unit = #{construction_unit}
+			</if>
+			<if test="construction_year != null and construction_year != ''">
+				and construction_year like CONCAT(CONCAT('%', #{construction_year}), '%')   
+			</if>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				and create_time between #{startDate} and #{endDate}
+			</if>
+			order by sid desc
+		</where>
+	</select>
+	
+	<select id="getStandingbook" parameterType="Map" resultType="Map">
+		select * from standing_book
+		<where>
+			 1 = 1
+			<if test="volume_label != null and volume_label != ''">
+				and volume_label = #{volume_label}
+			</if>
+				<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="work_area != null and work_area != ''">
+				and work_area = #{work_area}
+			</if>
+			<if test="construction_year != null and construction_year != ''">
+				and construction_year = #{construction_year}
+			</if>
+			<if test="eid != null and eid != ''">
+				and eid = #{eid}
+			</if>
+		</where> 
+	</select>
+	
+	<insert id="insert" parameterType="Map">
+		insert into standing_book 
+			(
+			volume_label, 
+			data_type, 
+			work_area, 
+			construction_unit, 
+			construction_year, 
+			data_quantity, 
+			burn_count, 
+			create_time,
+			type,
+			eid
+			)
+		values
+			(
+			#{volume_label}, 
+			#{data_type}, 
+			#{work_area}, 
+			#{construction_unit}, 
+			#{construction_year}, 
+			#{data_quantity}, 
+			#{burn_count}, 
+			#{create_time},
+			#{type},
+			#{eid}
+			)
+	</insert>
+	
+	<insert id="insertBatch" parameterType="Map">
+		insert into standing_book 
+			(
+			volume_label, 
+			data_type, 
+			work_area, 
+			construction_unit, 
+			construction_year, 
+			create_time,
+			states,
+			burn_count,
+			data_quantity,
+			update_time,
+			type,
+			eid
+			)
+		values
+			(
+			#{volume_label}, 
+			#{data_type}, 
+			#{work_area}, 
+			#{construction_unit}, 
+			#{construction_year}, 
+			#{create_time},
+			#{states},
+			#{burn_count},
+			#{data_quantity},
+			#{update_time},
+			#{type},
+			#{eid}
+			)
+	</insert>
+	
+	<update id="update" parameterType="Map">
+		update standing_book 
+		set
+			volume_label = #{volume_label}
+			<if test="update_time != null and update_time != ''">
+				, update_time = #{update_time}
+			</if>
+			<if test="states != null and states != ''">
+				, states = #{states}
+			</if>
+			<if test="data_quantity != null and data_quantity != ''">
+				, data_quantity = data_quantity + #{data_quantity}
+			</if>
+			<if test="burn_count != null and burn_count != ''">
+				, burn_count = #{burn_count}
+			</if>
+		where
+			volume_label = #{volume_label}
+			<if test="work_area != null and work_area != ''">
+				and work_area = #{work_area}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+				<if test="eid != null and eid != ''">
+				and eid = #{eid}
+			</if>
+	</update>
+	<delete id="delete" parameterType="Map">
+		DELETE FROM standing_book where sid = #{sid}
+	</delete>
+</mapper>

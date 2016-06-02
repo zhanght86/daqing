@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.TDataMapper">
+	<!-- 二维 -->
+	<select id="list" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		dq_t_data
+		<where>
+			state != -1
+			<if test="volume_label != null and volume_label != ''">
+				and volume_label = #{volume_label}
+			</if>
+		</where>
+		order by sid 
+	</select>
+	
+	<select id="get" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		dq_t_data
+		<where>
+			state != -1
+			<if test="project_name != null and project_name != ''">
+				AND project_name = #{work_area}
+			</if>
+			<if test="filing_unit != null and filing_unit != ''">
+				AND filing_unit = #{filing_unit}
+			</if>
+			<if test="filing_date != null and filing_date != ''">
+				AND filing_date = #{filing_date}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		INSERT 
+	INTO 
+		dq_t_data 
+		(volume_label, project_name, test_line_number, record_content, tape_number, data_quantity, record_length, use_interval, filing_unit, filing_date, remarks, state, create_date) 
+	VALUES 
+	(#{volume_label}, #{project_name}, #{test_line_number}, #{record_content}, #{tape_number}, #{data_quantity}, #{record_length}, #{use_interval}, #{filing_unit}, #{filing_date}, #{remarks}, #{state}, #{create_date})	
+	</insert>
+
+	<delete id="delete" parameterType="Map">
+		DELETE FROM dq_t_data where sid = #{sid}
+	</delete>
+	
+	<delete id="deleteByVolLabel">
+		DELETE FROM dq_t_data where volume_label = #{volume_label}
+	</delete>
+	
+	<select id="findByVolLabel" parameterType="String" resultType="Map">
+		select * from dq_t_data where volume_label = #{volLabel}
+	</select>
+	
+	<update id="update" parameterType="Map">
+		update dq_t_data 
+		set
+		project_name = #{project_name}, 
+		test_line_number = #{test_line_number},
+		record_content = #{record_content},
+		tape_number = #{tape_number} ,
+		data_quantity = #{data_quantity}, 
+		record_length = #{record_length} ,
+		use_interval = #{use_interval} ,
+		filing_unit = #{filing_unit} ,
+		filing_date = #{filing_date} ,
+		remarks = #{remarks}
+		
+		where
+		sid = #{sid}
+		
+	</update>
+	
+	<select id="findById" parameterType="String" resultType="Map">
+		select * from dq_t_data where sid = #{id}
+	</select>
+
+</mapper>

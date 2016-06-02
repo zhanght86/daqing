@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.DownloadDataInfoMapper">
+
+	<select id="list" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		download_data_info
+		<where>
+			1 = 1
+			<if test="state != null and state != ''">
+				and state = #{state}
+			</if>
+		</where>
+		order by id
+	</select>
+
+	<select id="get" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		download_data_info
+		where id = #{id}
+	</select>
+	
+	<select id="getCountByCondition" parameterType="Map" resultType="java.lang.Integer">
+		select count(id) from download_data_info 
+		<where>
+			<if test="state != null and state != ''">
+				state = #{state}
+			</if>
+		 </where>
+	</select>
+	
+	<select id="getByCondtion" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		download_data_info
+		<where>
+			<if test="state != null and state != ''">
+				state = #{state}
+			</if>
+		</where>
+		order by order_num desc limit 1
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		
+		INSERT INTO download_data_info 
+			(sid, file_name, file_path, dname, file_size, disc_type, state, order_num, data_source, cdate, udate, remarks) 
+		VALUES 
+			(#{sid}, #{file_name}, #{file_path}, #{dname}, #{file_size}, #{disc_type}, #{state}, #{order_num}, #{data_source}, #{cdate}, #{udate}, #{remarks})
+	</insert>
+
+	<update id="update" parameterType="Map">
+
+		UPDATE
+		download_data_info
+		SET
+			id = #{id}
+		<if test="sid != null and sid != ''">
+			, sid = #{sid}
+		</if>
+		<if test="file_name != null and file_name != ''">
+			, file_name = #{file_name}
+		</if>
+		<if test="file_path != null and file_path != ''">
+			, file_path = #{file_path}
+		</if>
+		<if test="dname != null and dname != ''">
+			, dname = #{dname}
+		</if>
+		<if test="file_size != null and file_size != ''">
+			, file_size = #{file_size}
+		</if>
+		<if test="disc_type != null and disc_type != ''">
+			, disc_type = #{disc_type}
+		</if>
+		<if test="state != null and state != ''">
+			, state = #{state}
+		</if>
+		<if test="order_num != null and order_num != ''">
+			, order_num = #{order_num}
+		</if>
+		<if test="data_source != null and data_source != ''">
+			, data_source = #{data_source}
+		</if>
+		<if test="cdate != null and cdate != ''">
+			, cdate = #{cdate}
+		</if>
+		<if test="udate != null and udate != ''">
+			, udate = #{udate}
+		</if>
+		<if test="remarks != null and remarks != ''">
+			, remarks = #{remarks}
+		</if>
+		WHERE
+		id = #{id}
+
+	</update>
+
+</mapper>

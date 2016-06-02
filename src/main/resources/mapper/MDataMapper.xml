@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.MDataMapper">
+
+	<!-- 中间数据 -->
+	<select id="list" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		dq_intermediate_data
+		<where>
+			state != -1
+			<if test="volume_label != null and volume_label != ''">
+				and volume_label = #{volume_label}
+			</if>
+			<if test="project_name != null and project_name != ''">
+				and project_name = #{project_name}
+			</if>
+			<if test="project_leader != null and project_leader != ''">
+				and project_leader = #{project_leader}
+			</if>
+			
+		</where>
+		order by sid 
+	</select>
+	
+	<select id="get" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		dq_intermediate_data
+		<where>
+			state != -1
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		    INSERT
+INTO
+    dq_intermediate_data
+    (
+        volume_label,
+        project_name,
+        department_name,
+        project_leader,
+        area_block_name,
+        software,
+        processing_step,
+        data_quantity,
+        data_type,
+        application_type,
+        save_time,
+        remarks,
+        tape_number,
+        state,
+        back_date,
+        create_date
+    )
+    VALUES
+    (
+    	#{volume_label},
+        #{project_name},
+		#{department_name},
+		#{project_leader},
+		#{area_block_name},
+		#{software},
+		#{processing_step},
+		#{data_quantity},
+		#{data_type},
+		#{application_type},
+		#{save_time},
+		#{remarks},
+		#{tape_number},
+		#{state},
+		#{back_date},
+		#{create_date}
+    )
+	</insert>
+	<delete id="delete" parameterType="Map">
+		DELETE FROM dq_intermediate_data where sid = #{sid}
+	</delete>
+	
+	<delete id="deleteByVolLabel">
+		DELETE FROM dq_intermediate_data where volume_label = #{volume_label}
+	</delete>
+	
+	<select id="findByVolLabel" parameterType="String" resultType="Map">
+		select * from dq_intermediate_data where volume_label = #{volLabel}
+	</select>
+	
+	
+	<update id="update" parameterType="Map">
+		update dq_intermediate_data 
+		set
+		project_name = #{project_name} ,
+		department_name = #{department_name}, 
+		project_leader = #{project_leader} ,
+		area_block_name = #{area_block_name}, 
+		software = #{software} ,
+		processing_step = #{processing_step}, 
+		data_quantity = #{data_quantity} ,
+		data_type = #{data_type} ,
+		application_type = #{application_type}, 
+		save_time = #{save_time} ,
+		remarks = #{remarks} ,
+		tape_number = #{tape_number} ,
+		back_date = #{back_date}
+		where
+		sid = #{sid}
+	</update>
+	
+	<select id="findById" parameterType="String" resultType="Map">
+		select * from dq_intermediate_data where sid = #{id}
+	</select>
+	
+</mapper>

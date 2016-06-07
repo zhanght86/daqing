@@ -1,8 +1,10 @@
 package com.midas.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
@@ -31,6 +35,7 @@ import com.midas.service.CommonService;
 import com.midas.service.DataService;
 import com.midas.uitls.date.DateStyle;
 import com.midas.uitls.date.DateUtil;
+import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
@@ -284,6 +289,14 @@ public class BurnServiceImpl implements BurnService {
         return burnDao.insertExportRecord(map);
     }
 
+    public int insertExportFileRecord(Map<String, Object> map) {
+        return burnDao.insertExportFileRecord(map);
+    }
+    @Override
+    public List<Map<String, Object>> listExportTask(String param) {
+        return burnDao.listExportTask(param);
+    }
+
     @Override
     public synchronized int updateExportRecord(Map<String, Object> map) {
         return burnDao.updateExportRecord(map);
@@ -292,6 +305,11 @@ public class BurnServiceImpl implements BurnService {
     @Override
     public List<Map<String, Object>> listExportRecord(String volLabel, String state,String task_name) {
         return burnDao.listExportRecord(volLabel, state,task_name);
+    }
+    
+    @Override
+    public List<Map<String, Object>> listExportRecordCheck(String volLabel, String state,String task_name) {
+        return burnDao.listExportRecordCheck(volLabel, state,task_name);
     }
 
     @Override
@@ -343,6 +361,196 @@ public class BurnServiceImpl implements BurnService {
         // TODO Auto-generated method stub
         burnDao.deleteExport(eid);
     }
+
+	@Override
+	/**
+	 * 
+	 */
+	public List<Map<String, Object>> listExportFileList( String keyWord) {
+		 List<Map<String, Object>>  rsList=new ArrayList<>();
+	
+	     String searchResult=null;
+		 List<Map<String, Object>> serverList=commonService.getAllMachine();
+		 
+		 
+		for (Map<String, Object> macheInfo : serverList) {
+//			Map<String, Object> macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
+			 String ip=macheInfo.get("sp_value1")+"";
+			 String server=macheInfo.get("sp_code")+"";
+			 searchResult=commonService.executeFindFile(server, keyWord);
+			 if(StringUtils.isNotEmpty(searchResult))
+			 {
+			 String[] matchInfo = searchResult.split("\n");	
+				for (int i = 0; i < matchInfo.length; i++) {
+					Map<String, Object> rowMap = new HashMap<>();
+					rowMap.put("filePath", matchInfo[i]);
+					rowMap.put("ip",ip );
+					rowMap.put("server",server );
+					rsList.add(rowMap);
+				
+
+				}
+			 }
+			
+		}
+
+		
+		
+		
+		
+		return  rsList;
+	}
+	
+
+	
+//update by sullivan 
+	
+//	public List<Map<String, Object>> matchVolLabel( String keyWord) {
+//		
+//		List<Map<String, Object>>  rsList=new ArrayList<>();
+//		rsList=listPosition(keyWord);
+//		String queryRs=commonService.getAllMachine();
+//		String result="";
+//		Gson g=new Gson();
+//		Machine machine =g.fromJson(result, Machine.class);
+//		List<Mag> maglist=machine.getMag();
+//		for (Mag mag : maglist) {
+//		 List <Slot> slotlist=	mag.getSlot();
+//		   for (Slot slot : slotlist) {
+//			   HashMap<String , Object> rowMap=new HashMap<>();
+//			   String volabel=slot.getLabel();
+//			   if(volabel.indexOf(keyWord)>0)
+//			   {
+//				   rowMap.put("MagNo", mag.getMagNo());   
+//				   rowMap.put("Rfid", mag.getRfid());   
+//				   rowMap.put("label", slot.getLabel());   
+//				   rowMap.put("slot_status", slot.getSlot_status());   
+//			
+//			   }
+//			   rsList.add(rowMap);
+//		   }
+//		}
+//		
+//		return rsList;
+//		
+//	}
+
+	
+	
+
+	
+	@Override
+
+	public boolean CheckTaskAndRun(String soucePath) throws Exception{
+	
+
+
+		List<Map<String, Object>> rslist = listExportTask("");		
+		if (null != rslist && rslist.size() > 0) {	
+			
+			for (Map<String, Object> taskinfo : rslist) {
+				if(ExportState.EXPORTTING.getKey().equals(taskinfo.get("export_state")))
+				return false;
+			}
+			Map<String, Object> paramMap=rslist.get(0);
+			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
+			paramMap.put("update_time", new Date());			
+			burnDao.updateExportFile(paramMap);
+			RunTask(paramMap);
+		}
+       
+		return true;
+	}
+	
+	public boolean RunTask( Map<String, Object> paramMap)
+	{
+		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
+		 List<Map<String, Object>> serverList=commonService.getAllMachine();
+		 String servers="";
+		 for (Map<String, Object> machine : serverList) {
+			 servers+=machine.get("sp_value1")+",";
+			
+		}
+		 servers= servers.substring(0,servers.length()-1);
+		String cmd=exportInfo.get("sp_value3")+"";
+		String username=exportInfo.get("sp_value1")+"";
+		String soucePath=paramMap.get("filelist")+"";
+		String targetPath=paramMap.get("export_path")+"";
+		String passwd=exportInfo.get("sp_value2")+"";
+
+		try {
+			
+			
+		
+		int rsInt=RunCommand.execute(cmd,username,servers,soucePath,targetPath.trim(),passwd);
+		if(-1!=rsInt)
+		{
+			paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+			
+		}
+		else {
+			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+		}
+		burnDao.updateExportFile(paramMap);
+		
+		} catch (Exception e) {
+			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+			burnDao.updateExportFile(paramMap);
+		}
+		return true;
+		
+	}
+	
+	
+	
+	
+    @Override
+	public boolean savefileExportTask(String soucePath, String exportpath) throws ServiceException {
+		boolean isSucc = true;
+		Map<String, Object> exportMap = new HashMap<String, Object>();
+
+//		File exportFile = new File(exportpath);
+//		if (!exportFile.isDirectory()) {
+//			throw new ServiceException(ErrorConstant.CODE3000, "合并文件失败， 请输入一个可以访问的目录！");
+//		}
+		
+		exportMap.put("fileList", soucePath);
+		exportMap.put("number_success", 0);
+		exportMap.put("export_state", "0");
+		exportMap.put("export_desc", "准备下载");
+		exportMap.put("export_path", exportpath);
+		// exportMap.put("c_user", null);
+		insertExportFileRecord(exportMap);
+
+		return true;
+
+	}
+  //update by sullivan 
+	
     
+	public static void main(String[] args) {
+//		String aa = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC /n"
+//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC /n"
+//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC /n";
+//		String[] row = aa.split("/n");
+//		List<Map<String, Object>> rslist = new ArrayList<>();
+//		for (int i = 0; i < row.length; i++) {
+//			Map<String, Object> rowMap = new HashMap<>();
+//			rowMap.put("row", row[i]);
+//			rslist.add(rowMap);
+//			// String[] column =row[i].split("/");
+//			// for (int j = 0; j < column.length; j++) {
+//			// rowMap.put("content", arg1)
+//			//
+//			// }
+//
+//		}
+	
+	       
+
+	}
+	
+	
+	 
 
 }

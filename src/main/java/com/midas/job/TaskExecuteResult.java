@@ -9,6 +9,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import com.midas.enums.BurnState;
 import com.midas.enums.ExportState;
@@ -21,6 +23,8 @@ import com.midas.service.BurnService;
  * @author arron
  *
  */
+
+//@Component
 public class TaskExecuteResult {
 
     private Logger logger = LoggerFactory.getLogger(TaskExecuteResult.class);
@@ -31,11 +35,13 @@ public class TaskExecuteResult {
     @Autowired
     private BurnService burnService;
 
+    
+    //@Scheduled(cron="0/5 * *  * * ? ") 
     public void execute() {
 
         long st = System.currentTimeMillis();
         try {
-            System.out.println("aaaaaa");
+          
             Map<String, Object> paramMap = new HashMap<String, Object>();
             paramMap.put("burning_state", BurnState.BURNNING.getKey() + ", " + BurnState.BURN_WAIT.getKey());
             List<Map<String, Object>> list = burnService.list(paramMap);
@@ -47,17 +53,33 @@ public class TaskExecuteResult {
         }
 
         try {
-            List<Map<String, Object>> list = burnService.listExportRecord(null, ExportState.EXPORTTING.getKey(),null);
+            List<Map<String, Object>> checklist = burnService.listExportRecordCheck(null, "",null);//查询状态为1的任务
+            if(null!=checklist&&checklist.size()>0)//发现有状态为1的正在导出的任务则,退出
+            	return ;
+//            for (Map<String, Object> map : checklist) {
+//            	String export_state=map.get("export_state")+"";
+//            	if(ExportState.EXPORTTING.getKey().equals(export_state)) 
+//            		return ;
+//			}
+            List<Map<String, Object>> list = burnService.listExportRecord(null, ExportState.EXPORTTING.getKey(),null);//查询状态为0和1的任务
+            
             Set<String> set = new HashSet<String>();
             for(Map<String, Object> map : list ) {
+            	            	
                 set.add(map.get("volume_label").toString());
             }
             for (String volLabel : set) {
                 try {
+                	
+                
+                	business.masterMerge(volLabel, ""); //执行下载dump
+                	
                     logger.info("检查合并的唯一号： {}", volLabel);
-                    business.masterMergeNotify(volLabel);
+                    business.masterMergeNotify(volLabel);//检查下载完成后进行合并处理
+                    break;
                 } catch (Exception e) {
                     logger.error("执行定时任务失败--masterMergeNotify", e);
+                  
                 }
             }
         } catch (Exception e) {

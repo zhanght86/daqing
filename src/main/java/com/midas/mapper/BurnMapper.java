@@ -156,5 +156,26 @@ public interface BurnMapper {
     
     public void deleteExport(@Param("eid")String eid);
     
+    /**
+     * 导出文件
+     * 
+     * @param map
+     * @return
+     */
+    public int insertExportFileRecord(Map<String, Object> map);
+    /**
+     * 文件导出任务
+     * @param param
+     * @return
+     */
+	public List<Map<String, Object>> listExportTask(String param);
+	
+	/**
+	 * 修改任务状态
+	 * @param map
+	 * @return
+	 */
+	public int updateExportFile(Map<String, Object> map);
     
+	
 }

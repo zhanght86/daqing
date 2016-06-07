@@ -179,5 +179,55 @@ public interface BurnService {
     public void delete(String volLabel, String dataType);
     
     public void  deleteExport(String eid);
+    
+    
+    /**
+     * 根据卷标号,文件名搜索结果
+     * 
+     * @param keyWordl
+     *            查询关键字
+     * @return List<Map>
+     */
+    public List<Map<String, Object>> listExportFileList(String keyWord);
+    
+
+
+	
+    /**
+     * 列出导出任务
+     * @param param
+     * @return
+     */
+	List<Map<String, Object>> listExportTask(String param);
+
+
+
+    /**
+     * 可导出文件任务检查
+     * @param soucePath
+     * @return
+     * @throws Exception
+     */
+	boolean CheckTaskAndRun(String soucePath) throws Exception;
+    /**
+     * 导出文件任务保存
+     * @param soucePath
+     * @param exportpath
+     * @return
+     * @throws ServiceException
+     */
+	boolean savefileExportTask(String soucePath, String exportpath) throws ServiceException;
+    
+	/**
+	 * 检查可导出的任务
+	 * @param volLabel
+	 * @param state
+	 * @param task_name
+	 * @return
+	 */
+	List<Map<String, Object>> listExportRecordCheck(String volLabel, String state, String task_name);
+    
+
+	
 
 }

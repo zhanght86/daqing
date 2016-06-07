@@ -48,7 +48,7 @@
 			window.location.href = '<%=basePath%>/burn/mergeList.do?volLabel=' + $("#volLabel").val();
 		});
 		$(".exportClick").click(function() {
-			$(".tip").fadeIn(200);
+			
 		
 			$.ajax({url:"<%=basePath%>/burn/mergeCheck.do",
 				type : 'GET',
@@ -74,33 +74,7 @@
 			});
 		});
 		
-		$(".test").click(function() {
-			var aa=getallcheckedvalue('box');
-			alert(aa);
-			
-			$.ajax({url:"<%=basePath%>/asyn/test.do",
-				type : 'GET',
-				data : {
-					'volLabel' : $("#volLabel").val()
-				},
-				async : false,
-				dataType : 'json',
-				success : function(data) {
-					if(data.result) {
-						//$("#desc").html("已发起导出指令, 操作需要一定时间, 请等待");
-						$(".tip").fadeIn(200);
-					} else {
-						//$("#desc").html("导出失败: 错误原因如下: ["+data.desc+"]");
-						alert("合并失败: 错误原因如下: ["+data.desc+"]");
-					}
-					//$(".tip").fadeIn(200);
-				},
-				error : function() {
-					//$("#desc").html("发起导出指令失败, 请稍后再试");
-					alert("发起导出指令失败, 请稍后再试");
-				}
-			});
-		});
+		
 		
 		$(document).on('click','.button',function(){ 
 /* 		$(".aaa").click(function(){ */
@@ -235,11 +209,11 @@
 							<td>${map.iso_file }</td>
 							<td><fmt:formatDate value="${map.create_time }"
 									pattern="yyyy-MM-dd HH:mm:ss" /></td>
-								<td>	<input id="box" name="box" type="checkbox" value="${(map.disc_position - 1) % 50 + 1}|${map.iso_file }" onclick="checkonebox('checkall','box')"/></td>
+								<td>	</td>
 						</tr>
 					</c:forEach>
 				</tbody>
-				<input id="checkall"     type="checkbox" value="" onclick="checkboxall('checkall','box')"/> 全选/全不选  
+				
 			
 			</table>
 		</div>

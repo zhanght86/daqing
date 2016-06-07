@@ -63,5 +63,7 @@ public interface BurnBusiness {
     public void masterNotify(Map<String, Object> map);
     
     public String getLocalPath(String volLabel);
+    
+    public boolean masterMergeTaskSave(String volLabel, String exportpath) throws ServiceException;
 
 }

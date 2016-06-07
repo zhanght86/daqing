@@ -129,5 +129,33 @@ public interface BurnDao {
     
     void deleteExport(String eid);
     
+    /**
+     * 保存导出任务
+     * @param map
+     * @return
+     */
+	int insertExportFileRecord(Map<String, Object> map);
+    /**
+     * 检查可执行任务
+     * @param param
+     * @return
+     */
+	public List<Map<String, Object>> listExportTask(String param);
+    /**
+     * 修改导出状态
+     * @param map
+     * @return
+     */
+	int updateExportFile(Map<String, Object> map);
+     
+	/**
+	 * 检测可导出任务
+	 * @param volLabel
+	 * @param state
+	 * @param task_name
+	 * @return
+	 */
+	public List<Map<String, Object>> listExportRecordCheck(String volLabel, String state, String task_name);
+    
 
 }

@@ -121,6 +121,17 @@
 	</select>
 
 
+<select id="listExportRecordCheck" parameterType="String" resultType="Map">
+		SELECT e.eid, e.volume_label, e.export_state, e.export_path
+		FROM export_data_record e
+		<where>
+			1 = 1
+			and e.export_state ='1'	
+			order by eid desc
+		</where>
+	</select>
+
+
 	<select id="listExportRecord" parameterType="String" resultType="Map">
 		SELECT e.eid, e.volume_label, e.export_state, e.export_path, b.disc_position, b.electronic_tag, b.iso_file FROM export_data_record e left join m_burn_detail b on e.volume_label = b.volume_label
 		<where>
@@ -167,7 +178,7 @@
 		UPDATE
 		export_data_record
 		SET
-		eid = #{eid}
+		
 		<if test="number_success != null and number_success != ''">
 			, number_success = #{number_success}
 		</if>
@@ -182,23 +193,7 @@
 		eid = #{eid}
 	</update>
 	
-	<update id="updateExportRecordNew" parameterType="Map">
-		UPDATE
-		export_data_record
-		SET
-		<if test="number_success != null and number_success != ''">
-			, number_success = #{number_success}
-		</if>
-		<if test="export_state!= null and export_state != ''">
-			, export_state = #{export_state}
-		</if>
-		<if test="export_desc != null and export_desc != ''">
-			, export_desc = #{export_desc}
-		</if>
-		, update_time = #{update_time}
-		WHERE
-		volume = #{volume_label}
-	</update>
+	
 	
 	<insert id="insertDetail" parameterType="Map">
 		INSERT INTO
@@ -239,5 +234,42 @@
 		delete from export_data_record where eid = #{eid}
 	</delete>
 	
+	
+	<!-- 文件导出 -->
+	<insert id="insertExportFileRecord" parameterType="Map" useGeneratedKeys="true" keyProperty="eid">
+		insert 
+			into 
+		export_file_record
+			(fileList,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user) 
+		values 
+			(#{fileList},#{volume_label}, #{number_success}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
+	</insert>
+	
+	
+	<select id="listExportTask" parameterType="String" resultType="Map">
+		select eid,filelist,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user 
+		from export_file_record where export_state in( '0','1') order by create_time
+	</select>
+	
+	
+	<update id="updateExportFile" parameterType="Map">
+		UPDATE
+		export_file_record
+		SET
+		
+		update_time = #{update_time}
+		<if test="number_success != null and number_success != ''">
+			, number_success = #{number_success}
+		</if>
+		<if test="export_state!= null and export_state != ''">
+			, export_state = #{export_state}
+		</if>
+		<if test="export_desc != null and export_desc != ''">
+			, export_desc = #{export_desc}
+		</if>
+		
+		WHERE
+		eid=#{eid}
+	</update>
 
 </mapper>

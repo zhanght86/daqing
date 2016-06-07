@@ -40,6 +40,7 @@ $(function(){
     	<ul class="menuson">
     	<li class="active"><cite></cite><a href="burn/list.do" target="rightFrame">刻录状态</a><i></i></li>
     	<li><cite></cite><a href="burn/mergeList.do" target="rightFrame">导出列表</a></li>
+    	<li><cite></cite><a href="burn/exportFileList.do" target="rightFrame">文件导出列表</a></li>
     	<!-- 
         <li class="active"><cite></cite><a href="to.do?file=index" target="rightFrame">首页模版</a><i></i></li> -->
         <li><cite></cite><a href="rawData/list.do" target="rightFrame">原始数据清单</a><i></i></li>

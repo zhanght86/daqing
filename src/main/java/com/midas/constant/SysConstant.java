@@ -66,5 +66,12 @@ public class SysConstant {
      * 本地文件路径
      */
     public static final String HARDDISCK              = "/jukebox/harddisk";
+    
+    /**
+     * 导出环境
+     */
+    public static final String EXPORT_ENV              = "EXPORT_ENV";
+    
 
+    
 }

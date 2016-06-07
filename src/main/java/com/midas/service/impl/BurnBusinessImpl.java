@@ -313,10 +313,10 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             if (!exportFile.isDirectory()) {
                 throw new ServiceException(ErrorConstant.CODE3000, "合并文件失败， 请输入一个可以访问的目录！");
             }
-            burnService.checkMerge(volLabel);
+            //burnService.checkMerge(volLabel);
             exportMap.put("volume_label", volLabel);
             exportMap.put("number_success", 0);
-            exportMap.put("export_state", ExportState.EXPORTTING.getKey());
+            exportMap.put("export_state", "0");
             exportMap.put("export_desc", "下载数据");
             exportMap.put("export_path", exportpath);
             // exportMap.put("c_user", null);
@@ -359,10 +359,6 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         Map<String, Object> exportMap = new HashMap<String, Object>();
         try {
 
-            
-            
-            
-            
             List<Map<String, Object>> list = burnService.listPosition(volLabel);
             List<FutureTask<Boolean>> futureTaskList = new ArrayList<FutureTask<Boolean>>();
             for (Map<String, Object> map : list) {
@@ -402,12 +398,18 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         return isSucc;
 
     }
+   
+    
+    
+    
 
     @Override
     public void masterMergeNotify(String volLabel) {
         boolean isSucc = false;
         String eid = null;
         String export_path = null;
+        
+      
 
         List<Map<String, Object>> list = burnService.listExportRecord(volLabel, ExportState.EXPORTTING.getKey(),null);
 

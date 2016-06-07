@@ -280,7 +280,7 @@ public class BurnController extends BaseDataController {
         boolean bool = false;
         String desc = null;
         try {
-            bool = business.masterMerge(volLabel, exportPath);
+            bool = business.masterMergeTaskSave(volLabel, exportPath);// changed by sullivan
         } catch (ServiceException e) {
             logger.error("合并异常", e);
             desc = e.getMsg();
@@ -358,6 +358,44 @@ public class BurnController extends BaseDataController {
      
        
     }
+    
+    //changstart*******************
+
+    @RequestMapping(value = "/burn/exportFileList")
+    public String exportFileList(HttpServletRequest request, String fileName) {
+    	
+    	try {
+			
+	
+    	if(StringTools.isEmpty(fileName))
+    		return "kepan/exportByFiles";
+        List<Map<String, Object>> list =burnService.listExportFileList(fileName);// burnService.listExportRecord("W20160314000003","");        
+        request.setAttribute("list", list);
+        List<String> dirLists= getDir(null);
+        request.setAttribute("dirLists", dirLists);
+        
+        
+    	} catch (Exception e) {
+			e.printStackTrace();
+		}
+      
+        return "kepan/exportByFiles";
+    }
+    
+   
+    
+    @RequestMapping(value = "/burn/exportFile")
+    public String exportFile(HttpServletRequest request, String sourcePath, String exportPath) {
+  
+        String desc = null;
+
+        burnService.savefileExportTask(sourcePath.replaceAll(" ", ""), exportPath.replaceAll(" ", ""));
+       
+        request.setAttribute("desc", desc);
+       
+        return "kepan/exportByFiles";
+    }
+  //changend by sullivan *******************
     
     public List<String> getDir(String folderPath){
         

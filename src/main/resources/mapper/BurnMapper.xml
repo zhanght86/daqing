@@ -126,8 +126,8 @@
 		FROM export_data_record e
 		<where>
 			1 = 1
-			and e.export_state ='1'	
-			order by eid desc
+			and e.export_state in ('0','1')	
+			order by eid 
 		</where>
 	</select>
 
@@ -178,7 +178,7 @@
 		UPDATE
 		export_data_record
 		SET
-		
+		update_time = #{update_time}
 		<if test="number_success != null and number_success != ''">
 			, number_success = #{number_success}
 		</if>
@@ -188,7 +188,7 @@
 		<if test="export_desc != null and export_desc != ''">
 			, export_desc = #{export_desc}
 		</if>
-		, update_time = #{update_time}
+		
 		WHERE
 		eid = #{eid}
 	</update>
@@ -248,7 +248,7 @@
 	
 	<select id="listExportTask" parameterType="String" resultType="Map">
 		select eid,filelist,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user 
-		from export_file_record where export_state in( '0','1') order by create_time
+		from export_file_record where export_state in( '0','1') order by eid
 	</select>
 	
 	

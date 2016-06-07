@@ -176,6 +176,13 @@ public interface BurnMapper {
 	 * @return
 	 */
 	public int updateExportFile(Map<String, Object> map);
+	
+	/**
+	 * 检查可用任务
+	 * @param map
+	 * @return
+	 */
+	List<Map<String, Object>>  listExportRecordCheck();
     
 	
 }

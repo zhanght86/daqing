@@ -55,7 +55,7 @@ public class TaskExecuteResult {
 		}
 
 		try {
-			List<Map<String, Object>> checklist = burnService.listExportRecordCheck(null, "0,1", null);// 查询状态为1的任务
+			List<Map<String, Object>> checklist = burnService.listExportRecordCheck(null, "0,1", null);// 查询状态为0,1的任务
 			String runVoLabel = "";
 
 			if (null != checklist && checklist.size() > 0)// 发现有状态为1的正在导出的任务则,退出
@@ -99,10 +99,11 @@ public class TaskExecuteResult {
 				}
 			}
 		} catch (Exception e) {
+			logger.error("执行定时任务失败--masterMergeNotify", e);
 			taskMap.put("update_time", new Date());
 			taskMap.put("export_state", ExportState.EXPORT_FAILD.getKey());
 			burnService.updateExportRecord(taskMap);// 更新任务失败
-			logger.error("执行定时任务失败--masterMergeNotify", e);
+			
 		}
 
         logger.info("start business master notify, times ： {} 毫秒", System.currentTimeMillis() - st);

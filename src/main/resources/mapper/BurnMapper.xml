@@ -124,11 +124,10 @@
 <select id="listExportRecordCheck" parameterType="String" resultType="Map">
 		SELECT e.eid, e.volume_label, e.export_state, e.export_path
 		FROM export_data_record e
-		<where>
-			1 = 1
-			and e.export_state in ('0','1')	
+		where
+		 e.export_state in('0,1')
 			order by eid 
-		</where>
+		
 	</select>
 
 
@@ -271,5 +270,13 @@
 		WHERE
 		eid=#{eid}
 	</update>
+	
+	
+	<select id="listExportFileRecord" parameterType="String" resultType="Map">
+	select eid,filelist,volume_label,`server`,number_success,export_path,export_state,export_desc,create_time,update_time from export_file_record
+		
+			order by eid 
+		
+	</select>
 
 </mapper>

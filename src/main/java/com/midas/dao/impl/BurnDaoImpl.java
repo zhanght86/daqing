@@ -137,7 +137,13 @@ public class BurnDaoImpl implements BurnDao {
 
 	@Override
 	public List<Map<String, Object>> listExportRecordCheck(String volLabel, String state, String task_name) {
-		return mapper.listExportRecordCheck();
+		return mapper.listExportRecordCheck( state);
+	}
+
+	@Override
+	public List<Map<String, Object>> listExportFileRecord(String volLabel, String state, String task_name) {
+		
+		return mapper.listExportFileRecord();
 	}
 
 }

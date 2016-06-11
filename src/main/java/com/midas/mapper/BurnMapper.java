@@ -183,6 +183,14 @@ public interface BurnMapper {
 	 * @return
 	 */
 	List<Map<String, Object>>  listExportRecordCheck();
+
+	/**
+	 * 文件任务列表
+	 * @return
+	 */
+	public List<Map<String, Object>> listExportFileRecord();
+
+	public List<Map<String, Object>> listExportRecordCheck(String state);
     
 	
 }

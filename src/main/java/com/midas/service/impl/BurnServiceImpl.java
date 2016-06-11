@@ -51,6 +51,8 @@ public class BurnServiceImpl implements BurnService {
     private BurnDao       burnDao;
     private DataService   dataService;
 
+	
+
     @Override
     public Map<String, Object> getFreeBurn() throws ServiceException {
         List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
@@ -362,6 +364,10 @@ public class BurnServiceImpl implements BurnService {
         burnDao.deleteExport(eid);
     }
 
+    
+    
+    
+    //TODO sullivan
 	@Override
 	/**
 	 * 
@@ -402,7 +408,10 @@ public class BurnServiceImpl implements BurnService {
 	}
 	
 
-	
+	  @Override
+	    public List<Map<String, Object>> listExportFileRecord(String volLabel, String state,String task_name) {
+	        return burnDao.listExportFileRecord(volLabel, state,task_name);
+	    }	
 //update by sullivan 
 	
 //	public List<Map<String, Object>> matchVolLabel( String keyWord) {
@@ -480,7 +489,7 @@ public class BurnServiceImpl implements BurnService {
 
 		try {
 			
-			
+		
 		
 		int rsInt=RunCommand.execute(cmd,username,servers,soucePath,targetPath.trim(),passwd);
 		if(-1!=rsInt)
@@ -525,7 +534,25 @@ public class BurnServiceImpl implements BurnService {
 		return true;
 
 	}
-  //update by sullivan 
+    
+    /**
+     * 检查文件占用空间大小
+     * @param fileSpace
+     * @param exportPath
+     * @return
+     */
+	public boolean checkDiskSpace(String fileSpace, String exportPath) {
+
+		String diskSpace = RunCommand.executeResult("du -k ", exportPath);
+		double fileSize = Double.parseDouble(fileSpace);
+		double dirSize = Double.parseDouble(diskSpace) + 50000.0;// 富余50M
+		if (fileSize < dirSize) {
+			return true;
+		}
+
+		return false;
+	}
+  //TODO sullivan
 	
     
 	public static void main(String[] args) {
@@ -546,7 +573,8 @@ public class BurnServiceImpl implements BurnService {
 //
 //		}
 	
-	       
+	   String executeResult = RunCommand.executeResult("adfas");
+	  RunCommand.execute("aa");
 
 	}
 	

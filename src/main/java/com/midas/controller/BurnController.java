@@ -32,6 +32,7 @@ import com.midas.service.BurnService;
 import com.midas.service.CommonService;
 import com.midas.service.StandingbookService;
 import com.midas.uitls.FtpUtil;
+import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.ServletUtils;
 import com.midas.uitls.tools.StringTools;
@@ -359,8 +360,22 @@ public class BurnController extends BaseDataController {
        
     }
     
-    //changstart*******************
-
+    //TODO changstart*******************
+    @RequestMapping(value = "/burn/exportFileTask")
+    public String exportFileTask(HttpServletRequest request) {
+    	
+    
+        List<Map<String, Object>> list =burnService.listExportFileRecord("", "", "");// burnService.listExportRecord("W20160314000003","");        
+        request.setAttribute("list", list);
+        List<String> dirLists= getDir(null);
+        request.setAttribute("dirLists", dirLists);
+        
+        
+    
+      
+        return "kepan/exportFilesTask";
+    }
+    
     @RequestMapping(value = "/burn/exportFileList")
     public String exportFileList(HttpServletRequest request, String fileName) {
     	

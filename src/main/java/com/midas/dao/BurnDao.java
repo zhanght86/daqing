@@ -156,6 +156,15 @@ public interface BurnDao {
 	 * @return
 	 */
 	public List<Map<String, Object>> listExportRecordCheck(String volLabel, String state, String task_name);
+
+	/**
+	 * 导出文件任务列表
+	 * @param volLabel
+	 * @param state
+	 * @param task_name
+	 * @return
+	 */
+	public List<Map<String, Object>> listExportFileRecord(String volLabel, String state, String task_name);
     
 
 }

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.midas.constant.ErrorConstant;
 import com.midas.dao.BurnDao;
+import com.midas.exception.ServiceException;
 import com.midas.mapper.BurnMapper;
 
 @Repository
@@ -141,9 +143,16 @@ public class BurnDaoImpl implements BurnDao {
 	}
 
 	@Override
-	public List<Map<String, Object>> listExportFileRecord(String volLabel, String state, String task_name) {
-		
-		return mapper.listExportFileRecord();
+	public PageInfo<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap,Page page) {
+		  try {
+	            PageHelper.startPage(page.getPageNum(), page.getPageSize());
+	            List<Map<String, Object>> list = mapper.listExportFileRecord(paramMap);
+	            PageInfo<Map<String, Object>> pageInfo = new PageInfo<Map<String, Object>>(list);
+	            return pageInfo;
+	        } catch (Exception e) {
+	            throw new ServiceException(ErrorConstant.CODE2000, "查询数据列表失败", e);
+	        }
+		//return mapper.listExportFileRecord(paramMap,page);
 	}
 
 }

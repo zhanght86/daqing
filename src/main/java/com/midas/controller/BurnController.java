@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class BurnController extends BaseDataController {
 
     private Logger      logger = LoggerFactory.getLogger(BurnController.class);
     @Autowired
-    private BurnService burnService;
+    private BurnService  burnService;
     @Autowired
     private CommonService commonService;
     @Autowired
@@ -363,12 +364,14 @@ public class BurnController extends BaseDataController {
     //TODO changstart*******************
     @RequestMapping(value = "/burn/exportFileTask")
     public String exportFileTask(HttpServletRequest request) {
-    	
-    
-        List<Map<String, Object>> list =burnService.listExportFileRecord("", "", "");// burnService.listExportRecord("W20160314000003","");        
-        request.setAttribute("list", list);
-        List<String> dirLists= getDir(null);
-        request.setAttribute("dirLists", dirLists);
+    	 Map<String, Object> map = ServletUtils.getParameters(request);
+        Page<?> page = new Page<Object>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
+        Map<String, Object> paramMap = new HashMap<String, Object>();        
+        
+        PageInfo<Map<String, Object>>  pageInfo=burnService.listExportFileRecord(paramMap, page);// burnService.listExportRecord("W20160314000003","");        
+       // request.setAttribute("list", list);
+        request.setAttribute("pageInfo", pageInfo);
+       
         
         
     

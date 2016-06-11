@@ -234,7 +234,8 @@ public interface BurnService {
 	 * @param task_name
 	 * @return
 	 */
-	List<Map<String, Object>> listExportFileRecord(String volLabel, String state, String task_name);
+
+	PageInfo<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap, Page page);
     
 
 	

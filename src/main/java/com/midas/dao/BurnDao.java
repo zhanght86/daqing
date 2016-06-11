@@ -164,7 +164,7 @@ public interface BurnDao {
 	 * @param task_name
 	 * @return
 	 */
-	public List<Map<String, Object>> listExportFileRecord(String volLabel, String state, String task_name);
+	public PageInfo<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap, Page page);
     
 
 }

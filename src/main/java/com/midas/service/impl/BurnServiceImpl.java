@@ -409,8 +409,8 @@ public class BurnServiceImpl implements BurnService {
 	
 
 	  @Override
-	    public List<Map<String, Object>> listExportFileRecord(String volLabel, String state,String task_name) {
-	        return burnDao.listExportFileRecord(volLabel, state,task_name);
+	    public   PageInfo<Map<String, Object>>  listExportFileRecord( Map<String, Object> paramMap,Page page) {
+	        return burnDao.listExportFileRecord(paramMap, page);
 	    }	
 //update by sullivan 
 	

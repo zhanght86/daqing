@@ -188,7 +188,7 @@ public interface BurnMapper {
 	 * 文件任务列表
 	 * @return
 	 */
-	public List<Map<String, Object>> listExportFileRecord();
+	public List<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap);
 
 	public List<Map<String, Object>> listExportRecordCheck(String state);
     

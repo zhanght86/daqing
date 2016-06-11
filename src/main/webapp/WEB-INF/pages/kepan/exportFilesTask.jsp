@@ -84,12 +84,12 @@ $(document).ready(function() {
 
 			<form action="<%=basePath%>/burn/exportFileList.do">
 				<ul class="seachform">
-					<li><label>&nbsp;&nbsp;&nbsp;&nbsp;文件名</label> <input
+				<!-- 	<li><label>&nbsp;&nbsp;&nbsp;&nbsp;文件名</label> <input
 						id="fileName" name="fileName" type="text" class="scinput"
 						style="width: 100px" /></li>
 
 					<li><label>&nbsp;</label> <input name="" type="submit"
-						class="scbtn" value="文件查询" /></li>
+						class="scbtn" value="文件查询" /></li> -->
 					<%-- 	<li><label>&nbsp;</label> <input name="" type="submit"
 						class="scbtn" value="卷标查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportVolList.do';"/></li> --%>
 				</ul>
@@ -110,7 +110,7 @@ $(document).ready(function() {
 					</tr>
 				</thead>
 				<tbody>
-					<c:forEach items="${list }" var="map" varStatus="status">
+					<c:forEach items="${pageInfo.list }" var="map" varStatus="status">
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							
 							<td >${map.filelist}</td>						
@@ -133,6 +133,29 @@ $(document).ready(function() {
 				</tbody>
 
 			</table class="tablelist">
+			
+			<div class="pagin">
+		    	<div class="message">共<i class="blue">${pageInfo.total }</i>条记录，当前显示第&nbsp;<i class="blue">${pageInfo.pageNum }&nbsp;</i>页</div>
+		        <ul class="paginList">
+			        <c:if test="${pageInfo.pageNum == 1 }">
+			        	<li class="paginItem"><a href="javascript:alert('没有上一页');"><span class="pagepre"></span></a></li>
+			        </c:if>
+			        <c:if test="${pageInfo.pageNum != 1 }">
+			        	<li class="paginItem"><a href="<%=basePath%>/burn/exportFileTask.do?pageNum=${pageInfo.pageNum - 1}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }"><span class="pagepre"></span></a></li>
+			        </c:if>
+			        <c:forEach items="${pageInfo.navigatepageNums }" var="num" varStatus="status">
+			        	<c:if test="${status.count < 5 }">
+			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/burn/exportFileTask.do?pageNum=${num}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }">${num }</a></li>
+			        	</c:if>
+			        </c:forEach>
+			        <c:if test="${pageInfo.pages == pageInfo.pageNum}">
+			       	 	<li class="paginItem"><a href="javascript:alert('没有下一页');"><span class="pagenxt"></span></a></li>
+			        </c:if>
+			        <c:if test="${pageInfo.pages > pageInfo.pageNum}">
+			       	 	<li class="paginItem"><a href="<%=basePath%>/burn/exportFileTask.do?pageNum=${pageInfo.pageNum + 1}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }"><span class="pagenxt"></span></a></li>
+			        </c:if>
+		        </ul>
+		    </div>
 		
 			</td>
 

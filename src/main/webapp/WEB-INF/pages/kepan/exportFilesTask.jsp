@@ -98,15 +98,15 @@ $(document).ready(function() {
 			<table class="tablelist">
 				<thead>
 					<tr>
-						<th>导出文件</th>
-						<th >导出路径</th>
-						<th >创建时间</th>
+						<th width="65%">导出文件</th>
+						<th width="10%">导出路径</th>
+						<th width="10%">创建时间</th>
 	
-						<th >修改时间</th>
+						<th width="10%">修改时间</th>
 						<!-- 
 						<th>操作用户</th>
 						 -->
-						<th>状态</th>
+						<th width="5%">状态</th>
 					</tr>
 				</thead>
 				<tbody>

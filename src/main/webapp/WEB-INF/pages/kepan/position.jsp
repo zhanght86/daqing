@@ -174,8 +174,7 @@
 				<li class="history"><span><img src="<%=basePath%>/static/images/left.png" /></span>返回</li>
 				<li class="exportClick"><span><img
 						src="<%=basePath%>/static/images/t01.png" /></span>导出</li>
-				<li class="test"><span><img
-						src="<%=basePath%>/static/images/t01.png" /></span>test</li>
+				
 				<li class="exportHistoryClick"><span><img
 						src="<%=basePath%>/static/images/t01.png" /></span>导出管理</li>
 			</ul>

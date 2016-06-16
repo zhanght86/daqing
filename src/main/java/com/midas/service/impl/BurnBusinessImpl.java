@@ -301,11 +301,42 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         String srcpath = ObjectUtils.toString(machineInfos.get(0).get("sp_value4"));
         fileOper.createFile(srcpath, volLabel, "infomation.txt", JSONUtils.toJSONString(listMap));
     }
+    
+ 
+    public boolean diskSpacecheck(String volLabel,String exportpath)
+    {
+    	String burnsizeStr="";
+    	Map<String, Object> map = burnService.getBurnByVolLabel(volLabel);    	
+    	burnsizeStr=map.get("burn_size")+"";   
+
+    	String dirsizeStr=RunCommand.executeResult("df","-k",exportpath,"|sed '1d'|awk '{print $4}'");
+    	double fileSize = Double.parseDouble(burnsizeStr);
+		double dirSize = Double.parseDouble(dirsizeStr) + 50000.0;// 富余50M
+    	logger.info("导出目录空间大小k["+dirSize+"] 导出文件大小k:["+fileSize+"]");
+    	
+    	if(dirSize>fileSize)
+    	{
+    		return true;
+    	}    	
+    	
+    	return false;
+    	
+    }
+    
+ 
+    
     /**
      * 插入刻录任务数据
      */
     public boolean masterMergeTaskSave(String volLabel, String exportpath) throws ServiceException {
         boolean isSucc = true;
+        
+//        boolean hasDisiSpace=diskSpacecheck(volLabel,exportpath);
+//        {
+//        	if(!hasDisiSpace)
+//        		throw new ServiceException("空间不足,抱歉不能导出,请选择其它目录导出!");
+//        }
+        
         Map<String, Object> exportMap = new HashMap<String, Object>();
         try {
 

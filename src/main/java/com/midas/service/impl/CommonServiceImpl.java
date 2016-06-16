@@ -465,30 +465,26 @@ public class CommonServiceImpl implements CommonService {
     
     
     public String executeFindFile(String server,String name){
-//    	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
-//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC \n"
-//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC \n"
-//				+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
-//    	return testdata;
-        Map<String, Object> machineInfo = this.getSystemParameters(server);
-        String result = null;
-        String command = "FINDFILE,"+name+",";
-        
-        if (null == machineInfo || machineInfo.isEmpty()) {
-            throw new ServiceException(ErrorConstant.CODE2000, "未找到机器信息");
-        }
-        String ip = ObjectUtils.toString(machineInfo.get("sp_value1"));
-        int port = Integer.parseInt(ObjectUtils.toString(machineInfo.get("sp_value5")));
-//        String   ip="192.168.0.227";
-//        int port=2021; 
-        try {
-            result = TelnetOperator.commandBurnMachine(ip, port, command);
-        } catch (Exception e) {
-            throw new ServiceException(ErrorConstant.CODE3000,
-                    "执行查询指令失败, 不能判断机器是否正常, ip: " + ip + ", port:" + port + ", command:" + command);
-        }
-        logger.debug("对机器: {}, 执行指令: {}, 返回结果为: {}", server, command,result);
-        return result;
+    	
+		Map<String, Object> machineInfo = this.getSystemParameters(server);
+		String result = null;
+		String command = "FINDFILE," + name + ",";
+
+		if (null == machineInfo || machineInfo.isEmpty()) {
+			throw new ServiceException(ErrorConstant.CODE2000, "未找到机器信息");
+		}
+		String ip = ObjectUtils.toString(machineInfo.get("sp_value1"));
+		int port = Integer.parseInt(ObjectUtils.toString(machineInfo.get("sp_value5")));
+		// String ip="192.168.0.227";
+		// int port=2021;
+		try {
+			result = TelnetOperator.commandFileSearch(ip, port, command);
+		} catch (Exception e) {
+			throw new ServiceException(ErrorConstant.CODE3000,
+					"执行查询指令失败, 不能判断机器是否正常, ip: " + ip + ", port:" + port + ", command:" + command);
+		}
+		logger.debug("对机器: {}, 执行指令: {}, 返回结果为: {}", server, command, result);
+		return result;
     }
     
     public List<FileVo> executeFindFileBySocket(String server,String name){

@@ -28,7 +28,7 @@ public class TaskExecuteJob {
 
     
     
-    @Scheduled(cron="0/5 * *  * * ? ") 
+    @Scheduled(cron="0/30 * *  * * ? ") 
     public void execute() {
 
         long st = System.currentTimeMillis();

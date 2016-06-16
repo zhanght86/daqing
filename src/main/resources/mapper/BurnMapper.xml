@@ -125,7 +125,7 @@
 		SELECT e.eid, e.volume_label, e.export_state, e.export_path
 		FROM export_data_record e
 		where
-		 e.export_state in('0,1')
+		 e.export_state in('0','1')
 			order by eid 
 		
 	</select>
@@ -247,7 +247,7 @@
 	
 	<select id="listExportTask" parameterType="String" resultType="Map">
 		select eid,filelist,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user 
-		from export_file_record where export_state in( '0','1') order by eid
+		from export_file_record where export_state in( '0','1') order by eid 
 	</select>
 	
 	
@@ -275,7 +275,7 @@
 	<select id="listExportFileRecord" parameterType="String" resultType="Map">
 	select eid,filelist,volume_label,`server`,number_success,export_path,export_state,export_desc,create_time,update_time from export_file_record
 		
-			order by eid 
+			order by eid desc
 		
 	</select>
 

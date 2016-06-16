@@ -37,7 +37,7 @@ public class TaskExecuteResult {
     private BurnService burnService;
 
     
-    @Scheduled(cron="0/10 * *  * * ? ") 
+    @Scheduled(cron="0/30 * *  * * ? ") 
     public void execute() {
 
         long st = System.currentTimeMillis();
@@ -55,21 +55,32 @@ public class TaskExecuteResult {
 		}
 
 		try {
+			boolean isRunDump = true;
 			List<Map<String, Object>> checklist = burnService.listExportRecordCheck(null, "0,1", null);// 查询状态为0,1的任务
 			String runVoLabel = "";
+			String exportPath = "";
 
-			if (null != checklist && checklist.size() > 0)// 发现有状态为1的正在导出的任务则,退出
-			{
+			if (null != checklist && checklist.size() > 0) {
 				for (Map<String, Object> map : checklist) {
 					String export_state = map.get("export_state") + "";
-					if (ExportState.EXPORTTING.getKey().equals(export_state))
-						return;
+					if (ExportState.EXPORTTING.getKey().equals(export_state))// 发现有状态为1的正在导出的任务则不执行导出
+					{
+						isRunDump = false;
+					}
 				}
 				taskMap = checklist.get(0);
 				taskMap.put("update_time", new Date());
 				taskMap.put("export_state", ExportState.EXPORTTING.getKey());
 				runVoLabel = taskMap.get("volume_label") + "";
-				burnService.updateExportRecord(taskMap);// 更新任务状态
+				exportPath = taskMap.get("export_path") + "";
+
+				if (isRunDump)// 如果有全部为0 没有1正在导出的任务则执行下载
+				{
+					burnService.updateExportRecord(taskMap);// 更新任务状态
+					Thread td = new Thread(new Burn(runVoLabel, exportPath, taskMap));
+					td.start();
+				}
+
 			} else {
 				return;
 			}
@@ -83,30 +94,47 @@ public class TaskExecuteResult {
 				set.add(map.get("volume_label").toString());
 			}
 			for (String volLabel : set) {
-				try {
-
-					business.masterMerge(volLabel, ""); // 执行下载dump
-
-					logger.info("检查合并的唯一号： {}", volLabel);
-					business.masterMergeNotify(volLabel);// 检查下载完成后进行合并处理
-
+				try {		               
+                logger.info("检查合并的唯一号： {}", volLabel);
+            	business.masterMergeNotify(volLabel);// 检查下载完成后进行合并处理
 				} catch (Exception e) {
-					taskMap.put("update_time", new Date());
-					taskMap.put("export_state", ExportState.EXPORT_FAILD.getKey());
-					burnService.updateExportRecord(taskMap);// 更新任务失败
 					logger.error("执行定时任务失败--masterMergeNotify", e);
-
 				}
 			}
 		} catch (Exception e) {
 			logger.error("执行定时任务失败--masterMergeNotify", e);
-			taskMap.put("update_time", new Date());
-			taskMap.put("export_state", ExportState.EXPORT_FAILD.getKey());
-			burnService.updateExportRecord(taskMap);// 更新任务失败
-			
 		}
 
         logger.info("start business master notify, times ： {} 毫秒", System.currentTimeMillis() - st);
+    }
+    
+    
+    class Burn implements Runnable {
+        private String volLabel;
+        private String exportPath;
+        private  Map<String, Object> taskMap;
+
+        public Burn(String volLabel,String exportPath,Map<String, Object> taskMap) {
+            this.volLabel = volLabel;
+            this.exportPath = exportPath;
+            this.taskMap = taskMap;
+        }
+
+        @Override
+        public void run() {
+            try {
+                // 线程等待5秒， 等上一个任务的事务提交
+                Thread.sleep(5 * 1000L);
+            	boolean masterMerge = business.masterMerge(volLabel, exportPath); // 执行下载dump		
+			
+            } catch (InterruptedException e) {            	
+            	taskMap.put("update_time", new Date());
+				taskMap.put("export_state", ExportState.EXPORT_FAILD.getKey());
+				burnService.updateExportRecord(taskMap);// 更新任务失败
+				logger.error("执行定时任务失败--masterMergeNotify", e);
+            }
+          
+        }
     }
 
 }

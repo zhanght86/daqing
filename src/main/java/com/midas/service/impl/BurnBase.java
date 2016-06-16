@@ -47,6 +47,15 @@ public class BurnBase {
     public static int getActiveCount() {
         return threadPools.getActiveCount();
     }
+    
+    /**
+     * 执行
+     * 
+     * @return
+     */    
+    public static void execute(Runnable command) {
+        threadPools.execute(command);
+    }
 
 
     /**

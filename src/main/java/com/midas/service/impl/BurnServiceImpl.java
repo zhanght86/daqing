@@ -372,7 +372,7 @@ public class BurnServiceImpl implements BurnService {
 	/**
 	 * 
 	 */
-	public List<Map<String, Object>> listExportFileList( String keyWord) {
+	public List<Map<String, Object>> listExportFileList( String fileName) {
 		 List<Map<String, Object>>  rsList=new ArrayList<>();
 	
 	     String searchResult=null;
@@ -383,7 +383,7 @@ public class BurnServiceImpl implements BurnService {
 //			Map<String, Object> macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
 			 String ip=macheInfo.get("sp_value1")+"";
 			 String server=macheInfo.get("sp_code")+"";
-			 searchResult=commonService.executeFindFile(server, keyWord);
+			 searchResult=commonService.executeFindFile(server, fileName);
 			 if(StringUtils.isNotEmpty(searchResult))
 			 {
 			 String[] matchInfo = searchResult.split("\n");	
@@ -451,63 +451,56 @@ public class BurnServiceImpl implements BurnService {
 	@Override
 
 	public boolean CheckTaskAndRun(String soucePath) throws Exception{
-	
 
+		List<Map<String, Object>> rslist = listExportTask("");
+		if (null != rslist && rslist.size() > 0) {
 
-		List<Map<String, Object>> rslist = listExportTask("");		
-		if (null != rslist && rslist.size() > 0) {	
-			
 			for (Map<String, Object> taskinfo : rslist) {
-				if(ExportState.EXPORTTING.getKey().equals(taskinfo.get("export_state")))
-				return false;
+				if (ExportState.EXPORTTING.getKey().equals(taskinfo.get("export_state")))
+					return false;
 			}
-			Map<String, Object> paramMap=rslist.get(0);
+			Map<String, Object> paramMap = rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
-			paramMap.put("update_time", new Date());			
+			paramMap.put("update_time", new Date());
 			burnDao.updateExportFile(paramMap);
 			RunTask(paramMap);
 		}
-       
+
 		return true;
 	}
 	
 	public boolean RunTask( Map<String, Object> paramMap)
 	{
 		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
-		 List<Map<String, Object>> serverList=commonService.getAllMachine();
-		 String servers="";
-		 for (Map<String, Object> machine : serverList) {
-			 servers+=machine.get("sp_value1")+",";
-			
+		List<Map<String, Object>> serverList = commonService.getAllMachine();
+		String servers = "";
+		for (Map<String, Object> machine : serverList) {
+			servers += machine.get("sp_value1") + ",";
 		}
-		 servers= servers.substring(0,servers.length()-1);
-		String cmd=exportInfo.get("sp_value3")+"";
-		String username=exportInfo.get("sp_value1")+"";
-		String soucePath=paramMap.get("filelist")+"";
-		String targetPath=paramMap.get("export_path")+"";
-		String passwd=exportInfo.get("sp_value2")+"";
+		servers = servers.substring(0, servers.length() - 1);
+		String cmd = exportInfo.get("sp_value3") + "";
+		String username = exportInfo.get("sp_value1") + "";
+		String soucePath = paramMap.get("filelist") + "";
+		String targetPath = paramMap.get("export_path") + "";
+		String passwd = exportInfo.get("sp_value2") + "";
 
 		try {
-			
-		
-		
-		int rsInt=RunCommand.execute(cmd,username,servers,soucePath,targetPath.trim(),passwd);
-		if(-1!=rsInt)
-		{
-			paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
-			
-		}
-		else {
-			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
-		}
-		burnDao.updateExportFile(paramMap);
-		
+
+			int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
+			if (-1 != rsInt) {
+				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+
+			} else {
+				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+			}
+			burnDao.updateExportFile(paramMap);
+
 		} catch (Exception e) {
 			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
 			burnDao.updateExportFile(paramMap);
 		}
 		return true;
-		
+
 	}
 	
 	
@@ -518,11 +511,6 @@ public class BurnServiceImpl implements BurnService {
 		boolean isSucc = true;
 		Map<String, Object> exportMap = new HashMap<String, Object>();
 
-//		File exportFile = new File(exportpath);
-//		if (!exportFile.isDirectory()) {
-//			throw new ServiceException(ErrorConstant.CODE3000, "合并文件失败， 请输入一个可以访问的目录！");
-//		}
-		
 		exportMap.put("fileList", soucePath);
 		exportMap.put("number_success", 0);
 		exportMap.put("export_state", "0");
@@ -535,48 +523,31 @@ public class BurnServiceImpl implements BurnService {
 
 	}
     
-    /**
-     * 检查文件占用空间大小
-     * @param fileSpace
-     * @param exportPath
-     * @return
-     */
-	public boolean checkDiskSpace(String fileSpace, String exportPath) {
+   
 
-		String diskSpace = RunCommand.executeResult("du -k ", exportPath);
-		double fileSize = Double.parseDouble(fileSpace);
-		double dirSize = Double.parseDouble(diskSpace) + 50000.0;// 富余50M
-		if (fileSize < dirSize) {
-			return true;
-		}
-
-		return false;
-	}
-  //TODO sullivan
-	
     
-	public static void main(String[] args) {
-//		String aa = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC /n"
-//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC /n"
-//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC /n";
-//		String[] row = aa.split("/n");
-//		List<Map<String, Object>> rslist = new ArrayList<>();
-//		for (int i = 0; i < row.length; i++) {
-//			Map<String, Object> rowMap = new HashMap<>();
-//			rowMap.put("row", row[i]);
-//			rslist.add(rowMap);
-//			// String[] column =row[i].split("/");
-//			// for (int j = 0; j < column.length; j++) {
-//			// rowMap.put("content", arg1)
-//			//
-//			// }
+//	public static void main(String[] args) {
+////		String aa = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC /n"
+////				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC /n"
+////				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC /n";
+////		String[] row = aa.split("/n");
+////		List<Map<String, Object>> rslist = new ArrayList<>();
+////		for (int i = 0; i < row.length; i++) {
+////			Map<String, Object> rowMap = new HashMap<>();
+////			rowMap.put("row", row[i]);
+////			rslist.add(rowMap);
+////			// String[] column =row[i].split("/");
+////			// for (int j = 0; j < column.length; j++) {
+////			// rowMap.put("content", arg1)
+////			//
+////			// }
+////
+////		}
+//	
+//	   String executeResult = RunCommand.executeResult("adfas");
+//	  RunCommand.execute("aa");
 //
-//		}
-	
-	   String executeResult = RunCommand.executeResult("adfas");
-	  RunCommand.execute("aa");
-
-	}
+//	}
 	
 	
 	 

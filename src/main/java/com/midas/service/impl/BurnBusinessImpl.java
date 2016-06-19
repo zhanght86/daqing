@@ -90,6 +90,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         if (burnMapParam == null || burnMapParam.isEmpty()) {
             throw new ServiceException(ErrorConstant.CODE4000, "没有盘库可以使用!");
         }
+     
 
         // 读取Excel索引文件
         List<Map<String, Object>> list = FileToList(indexFile, dataType);
@@ -302,24 +303,37 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         fileOper.createFile(srcpath, volLabel, "infomation.txt", JSONUtils.toJSONString(listMap));
     }
     
- 
-    public boolean diskSpacecheck(String volLabel,String exportpath)
+ //TODO sullivan
+    public boolean diskSpacecheck(String volLabel,String exportpath)throws ServiceException
     {
     	String burnsizeStr="";
     	Map<String, Object> map = burnService.getBurnByVolLabel(volLabel);    	
     	burnsizeStr=map.get("burn_size")+"";   
-
-    	String dirsizeStr=RunCommand.executeResult("df","-k",exportpath,"|sed '1d'|awk '{print $4}'");
-    	double fileSize = Double.parseDouble(burnsizeStr);
-		double dirSize = Double.parseDouble(dirsizeStr) + 50000.0;// 富余50M
-    	logger.info("导出目录空间大小k["+dirSize+"] 导出文件大小k:["+fileSize+"]");
     	
-    	if(dirSize>fileSize)
-    	{
-    		return true;
+     	File win = new File(exportpath);  
+     	if(!win.exists())
+     	{
+     		throw new ServiceException(ErrorConstant.CODE4000,"导出目录["+exportpath+"] 不存在,请输入正确路径");
+     	    
+     	}
+     	Long freeSpace=win.getFreeSpace();
+        //System.out.println(win.getPath());  
+       // System.out.println(win.getName());  
+//        System.out.println("Free space = " + win.getFreeSpace());  
+//        System.out.println("Usable space = " + win.getUsableSpace());  
+//        System.out.println("Total space = " + win.getTotalSpace());  
+
+    	//String dirsizeStr=RunCommand.executeResult("df","-k",exportpath,"|sed '1d'|awk '{print $4}'");
+    	Long fileSize =Long.parseLong( burnsizeStr);
+    	Long dirSize =freeSpace+ 50000;
+    	
+    	if(dirSize<fileSize)
+    	{    		
+    		logger.info("导出目录["+exportpath+"]  空间大小k["+dirSize+"]  导出文件大小k:["+fileSize+"] 导出空间不足无法导出!");
+    		throw new ServiceException(ErrorConstant.CODE4000,"导出目录["+exportpath+"] 空间大小k["+dirSize/1024+"]M  导出文件大小:["+fileSize/1024+"] M导出空间不足无法导出!");
     	}    	
     	
-    	return false;
+    	return true;
     	
     }
     
@@ -331,7 +345,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
     public boolean masterMergeTaskSave(String volLabel, String exportpath) throws ServiceException {
         boolean isSucc = true;
         
-//        boolean hasDisiSpace=diskSpacecheck(volLabel,exportpath);
+      diskSpacecheck(volLabel,exportpath);
 //        {
 //        	if(!hasDisiSpace)
 //        		throw new ServiceException("空间不足,抱歉不能导出,请选择其它目录导出!");

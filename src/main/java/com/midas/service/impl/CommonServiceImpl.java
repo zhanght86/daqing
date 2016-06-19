@@ -465,6 +465,13 @@ public class CommonServiceImpl implements CommonService {
     
     
     public String executeFindFile(String server,String name){
+    	    	
+//    	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
+//		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC \n"
+//		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC \n"
+//		+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
+//return testdata;
+//    	
     	
 		Map<String, Object> machineInfo = this.getSystemParameters(server);
 		String result = null;
@@ -558,7 +565,8 @@ public class CommonServiceImpl implements CommonService {
         ip="192.168.0.227";
         port=2021;
         try {
-            result = TelnetOperator.commandOffline(ip, port, command);
+            result = TelnetOperator.commandFileSearch(ip, port, command);
+            
         } catch (Exception e) {
             logger.error("对盘库机器执行查询指令失败", e);
             throw new ServiceException(ErrorConstant.CODE3000, "对机器： {" + map + "} 执行查询指令失败, 不能判断机器是否正常");

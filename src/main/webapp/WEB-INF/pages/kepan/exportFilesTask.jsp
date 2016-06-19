@@ -95,18 +95,18 @@ $(document).ready(function() {
 				</ul>
 			</form>
 
-			<table class="tablelist">
+			<table class="tablelist" >
 				<thead>
 					<tr>
-						<th width="65%">导出文件</th>
-						<th width="10%">导出路径</th>
-						<th width="10%">创建时间</th>
+						<th width="400">导出文件</th>
+						<th width="150">导出路径</th>
+						<th width="100">创建时间</th>
 	
-						<th width="10%">修改时间</th>
+						<th width="100">修改时间</th>
 						<!-- 
 						<th>操作用户</th>
 						 -->
-						<th width="5%">状态</th>
+						<th width="50">状态</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -126,6 +126,7 @@ $(document).ready(function() {
 								<c:if test="${map.export_state == 5}">导出失败</c:if>
 								<c:if test="${map.export_state == 6}">关闭</c:if>
 							</td> 
+							
 							<!-- <td>${map.c_user}</td>  -->
 							
 						</tr>

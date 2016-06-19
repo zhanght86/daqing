@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.ftp.FTPClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,14 @@ import com.midas.exception.ServiceException;
 import com.midas.service.BurnService;
 import com.midas.service.CommonService;
 import com.midas.service.DataService;
+import com.midas.uitls.FtpUtil;
 import com.midas.uitls.date.DateStyle;
 import com.midas.uitls.date.DateUtil;
 import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
+import com.midas.vo.FileVo;
 
 @Service
 public class BurnServiceImpl implements BurnService {
@@ -368,43 +371,71 @@ public class BurnServiceImpl implements BurnService {
     
     
     //TODO sullivan
-	@Override
-	/**
-	 * 
-	 */
-	public List<Map<String, Object>> listExportFileList( String fileName) {
-		 List<Map<String, Object>>  rsList=new ArrayList<>();
 	
-	     String searchResult=null;
-		 List<Map<String, Object>> serverList=commonService.getAllMachine();
-		 
-		 
+	/**
+	 * 在线文件导出列表
+	 */
+    @Override
+	public List<Map<String, Object>> listExportFileList(String fileName) {
+		List<Map<String, Object>> rsList = new ArrayList<>();
+
+		String searchResult = null;
+		List<Map<String, Object>> serverList = commonService.getAllMachine();
+
 		for (Map<String, Object> macheInfo : serverList) {
-//			Map<String, Object> macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
-			 String ip=macheInfo.get("sp_value1")+"";
-			 String server=macheInfo.get("sp_code")+"";
-			 searchResult=commonService.executeFindFile(server, fileName);
-			 if(StringUtils.isNotEmpty(searchResult))
-			 {
-			 String[] matchInfo = searchResult.split("\n");	
+			// Map<String, Object>
+			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
+			String ip = macheInfo.get("sp_value1") + "";
+			String server = macheInfo.get("sp_code") + "";
+			searchResult = commonService.executeFindFile(server, fileName);
+			if (StringUtils.isNotEmpty(searchResult)) {
+				String[] matchInfo = searchResult.split("\n");
 				for (int i = 0; i < matchInfo.length; i++) {
 					Map<String, Object> rowMap = new HashMap<>();
 					rowMap.put("filePath", matchInfo[i]);
-					rowMap.put("ip",ip );
-					rowMap.put("server",server );
+					rowMap.put("ip", ip);
+					rowMap.put("server", server);
 					rsList.add(rowMap);
-				
 
 				}
-			 }
-			
+			}
+
 		}
 
-		
-		
-		
-		
-		return  rsList;
+		return rsList;
+	}
+	
+	/**
+	 * 离线文件导出列表
+	 */
+    @Override
+	public List<Map<String, Object>> listExportFileListOffline(String fileName) {
+		List<Map<String, Object>> rsList = new ArrayList<>();
+
+		String searchResult = null;
+		List<Map<String, Object>> serverList = commonService.getAllMachine();
+
+		for (Map<String, Object> macheInfo : serverList) {
+			// Map<String, Object>
+			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
+			String ip = macheInfo.get("sp_value1") + "";
+			String server = macheInfo.get("sp_code") + "";
+			searchResult = commonService.executeFindFileOffLine(macheInfo,server, fileName);
+			if (StringUtils.isNotEmpty(searchResult)) {
+				String[] matchInfo = searchResult.split("\n");
+				for (int i = 0; i < matchInfo.length; i++) {
+					Map<String, Object> rowMap = new HashMap<>();
+					rowMap.put("filePath", matchInfo[i]);
+					rowMap.put("ip", ip);
+					rowMap.put("server", server);
+					rsList.add(rowMap);
+
+				}
+			}
+
+		}
+
+		return rsList;
 	}
 	
 
@@ -469,36 +500,97 @@ public class BurnServiceImpl implements BurnService {
 		return true;
 	}
 	
+//	public boolean RunTask( Map<String, Object> paramMap)
+//	{
+//		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
+//		List<Map<String, Object>> serverList = commonService.getAllMachine();
+//		String servers = "";
+//		for (Map<String, Object> machine : serverList) {
+//			servers += machine.get("sp_value1") + ",";
+//		}
+//		servers = servers.substring(0, servers.length() - 1);
+//		String cmd = exportInfo.get("sp_value3") + "";
+//		String username = exportInfo.get("sp_value1") + "";
+//		String soucePath = paramMap.get("filelist") + "";
+//		String targetPath = paramMap.get("export_path") + "";
+//		String passwd = exportInfo.get("sp_value2") + "";
+//
+//		try {
+//       
+//			int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
+//			if (-1 != rsInt) {
+//				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+//
+//			} else {
+//				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+//			}
+//			burnDao.updateExportFile(paramMap);
+//
+//		} catch (Exception e) {
+//			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+//			burnDao.updateExportFile(paramMap);
+//		}
+//		return true;
+//
+//	}
+	
 	public boolean RunTask( Map<String, Object> paramMap)
 	{
 		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
 		List<Map<String, Object>> serverList = commonService.getAllMachine();
 		String servers = "";
-		for (Map<String, Object> machine : serverList) {
-			servers += machine.get("sp_value1") + ",";
-		}
-		servers = servers.substring(0, servers.length() - 1);
+		String rootPath="/juekbox/mirror/";
+		int  successDownNum=0;
 		String cmd = exportInfo.get("sp_value3") + "";
 		String username = exportInfo.get("sp_value1") + "";
+		String passwd = exportInfo.get("sp_value2") + "";
 		String soucePath = paramMap.get("filelist") + "";
 		String targetPath = paramMap.get("export_path") + "";
-		String passwd = exportInfo.get("sp_value2") + "";
+		
+		for (Map<String, Object> machine : serverList) {
+			servers = machine.get("sp_value1") + "";		
+			String[] fileList = soucePath.split(",");
+			FtpUtil ftpUtil = new FtpUtil();
+			FTPClient client = null;
+			try {
+				String cfgRootPath=CommonsUtils.getPropertiesValue("CFG_ROOTPATH");
+				if(StringUtils.isNotEmpty(cfgRootPath))
+					rootPath=cfgRootPath;
+				client = ftpUtil.getConnectionFTP(servers, 21, username, passwd);
+				for (String file : fileList) {
+					String ftpPath=file.substring(0,file.lastIndexOf("/"));
+					String filename=file.substring(file.lastIndexOf("/")+1);
+					String filePath=rootPath+ftpPath;
+					
+					boolean downRS=ftpUtil.downFileV2(client, filePath.replaceAll("//", "/"), filename, targetPath);
+					if(downRS){
+						successDownNum++;
+					}
+				}
 
-		try {
-
-			int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
-			if (-1 != rsInt) {
-				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
-
-			} else {
+			} catch (Exception e) {
+				 paramMap.put("number_success", successDownNum+"");
 				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+				burnDao.updateExportFile(paramMap);
+				logger.error(e.getMessage());
+			} finally {
+				ftpUtil.closeFTP(client);
 			}
+		}
+		//合并split文件
+	
+		int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
+		if (-1 != rsInt) {
+			paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+
+		} else {
+			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+		}
+		burnDao.updateExportFile(paramMap);		
+		    paramMap.put("number_success", successDownNum+"");
 			burnDao.updateExportFile(paramMap);
 
-		} catch (Exception e) {
-			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
-			burnDao.updateExportFile(paramMap);
-		}
+	
 		return true;
 
 	}
@@ -526,7 +618,7 @@ public class BurnServiceImpl implements BurnService {
    
 
     
-//	public static void main(String[] args) {
+	public static void main(String[] args) {
 ////		String aa = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC /n"
 ////				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC /n"
 ////				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC /n";
@@ -544,12 +636,18 @@ public class BurnServiceImpl implements BurnService {
 ////
 ////		}
 //	
-//	   String executeResult = RunCommand.executeResult("adfas");
-//	  RunCommand.execute("aa");
+//	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
+//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC \n"
+//				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC \n"
+//				+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
+// 	return testdata;
 //
 //	}
 	
-	
+  String a=" /0077_????/testdata2/testfile012/t12t26.jpg";
+  int b=a.lastIndexOf("/");
+   System.out.println(a.substring(0,b));
+	}
 	 
 
 }

@@ -132,6 +132,7 @@ public class FtpUtil {
     public boolean downFile(FTPClient ftp, String path, String fileName, String localPath) {  
         boolean success = false;  
         try {  
+        	  System.out.println(" path : " + path+" fileName:"+fileName+"  localPath:"+ localPath);  
             ftp.changeWorkingDirectory(new String(path.getBytes("UTF-8"),"iso8859-1"));//转移到FTP服务器目录  
             ftp.setFileType(FTP.BINARY_FILE_TYPE);  
             FTPFile[] fs = ftp.listFiles(); //得到目录的相应文件列表  
@@ -152,6 +153,48 @@ public class FtpUtil {
             }  
 //            ftp.logout();  
             success = true;  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }  
+        return success;  
+    }  
+    
+    
+    /** 
+     * 上传文件-FTP方式 
+     * @param ftp FTPClient对象 
+     * @param path FTP服务器上传地址 
+     * @param fileName 本地文件路径 
+     * @param localPath 本里存储路径 
+     * @return boolean 
+     */  
+    public boolean downFileV2(FTPClient ftp, String path, String fileName, String localPath) {  
+        boolean success = false;  
+        int downNUM=0;
+        try {  
+        	  System.out.println(" path : " + path+" fileName:"+fileName+"  localPath:"+ localPath);  
+            ftp.changeWorkingDirectory(new String(path.getBytes("UTF-8"),"iso8859-1"));//转移到FTP服务器目录  
+            ftp.setFileType(FTP.BINARY_FILE_TYPE);  
+            FTPFile[] fs = ftp.listFiles(); //得到目录的相应文件列表  
+            for (FTPFile ff : fs) {  
+                if (ff.getName().equals(fileName)) {  
+                    File localFile = new File(localPath + "/" + ff.getName());  
+                    if(!localFile.exists()) {
+                    	localFile.getParentFile().mkdirs();
+                        boolean bool = localFile.createNewFile();
+                        System.out.println("创建本地文件：" + bool + ", " + localFile);
+                    }
+                    OutputStream outputStream = new FileOutputStream(localFile);  
+                    //将文件保存到输出流outputStream中  
+                    boolean downBool = ftp.retrieveFile(new String(ff.getName().getBytes("GBK"), "ISO-8859-1"), outputStream);  
+                    outputStream.flush();  
+                    outputStream.close();  
+                    downNUM++;
+                    System.out.println("下载成功 : " + downBool);  
+                }  
+            }  
+//            ftp.logout();  
+            success = downNUM==0?false:true;  
         } catch (Exception e) {  
             e.printStackTrace();  
         }  

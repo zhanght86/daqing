@@ -236,7 +236,17 @@ public interface BurnService {
 	 */
 
 	PageInfo<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap, Page page);
+
+	/**
+	 * 离线文件位置查询
+	 * @param fileName
+	 * @return
+	 */
+	List<Map<String, Object>> listExportFileListOffline(String fileName);
     
+	
+	
+	public boolean RunTask( Map<String, Object> paramMap);
 
 	
 

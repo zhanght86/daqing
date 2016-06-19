@@ -1,5 +1,6 @@
 package com.midas.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,16 @@ public class BurnServiceImplTest extends BaseTest {
         burn = context.getBean(BurnService.class);
         List<Map<String, Object>> list = burn.listExportRecord("", "");
         System.out.println(list);
+    }
+    
+    
+    @Test
+    public void RunTaskTest() {
+        burn = context.getBean(BurnService.class);
+        Map<String, Object> paramMap=new HashMap<String, Object>();
+        
+    	
+       
     }
     
 }

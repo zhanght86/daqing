@@ -91,8 +91,8 @@ $(document).ready(function() {
 
 					<li><label>&nbsp;</label> <input name="" type="submit"
 						class="scbtn" value="文件查询" /></li>
-					<%-- 	<li><label>&nbsp;</label> <input name="" type="submit"
-						class="scbtn" value="卷标查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportVolList.do';"/></li> --%>
+					 	<li><label>&nbsp;</label> <input name="" type="submit"
+						class="scbtn" value="离线柜查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
 				</ul>
 			</form>
 

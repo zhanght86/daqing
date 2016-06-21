@@ -248,6 +248,8 @@ public interface BurnService {
 	
 	public boolean RunTask( Map<String, Object> paramMap);
 
+
+
 	
 
 }

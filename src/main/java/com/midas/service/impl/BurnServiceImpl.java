@@ -326,13 +326,15 @@ public class BurnServiceImpl implements BurnService {
     public void updateSize(String volLabel, BigDecimal size) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("volLabel", volLabel);
-        map.put("size", size);
+        map.put("size", size.toBigInteger());
         burnDao.updateSize(map);
     }
 
     @Override
     public boolean isCancel(String volLabel) {
         Map<String, Object> map = burnDao.getBurnByVolLabel(volLabel);
+        if(null==map)
+        	return false;
         if (BurnState.CANCEL.getKey().equals(map.get("burning_state"))) {
             return true;
         }
@@ -438,45 +440,14 @@ public class BurnServiceImpl implements BurnService {
 		return rsList;
 	}
 	
+    
+   
 
 	  @Override
 	    public   PageInfo<Map<String, Object>>  listExportFileRecord( Map<String, Object> paramMap,Page page) {
 	        return burnDao.listExportFileRecord(paramMap, page);
 	    }	
-//update by sullivan 
-	
-//	public List<Map<String, Object>> matchVolLabel( String keyWord) {
-//		
-//		List<Map<String, Object>>  rsList=new ArrayList<>();
-//		rsList=listPosition(keyWord);
-//		String queryRs=commonService.getAllMachine();
-//		String result="";
-//		Gson g=new Gson();
-//		Machine machine =g.fromJson(result, Machine.class);
-//		List<Mag> maglist=machine.getMag();
-//		for (Mag mag : maglist) {
-//		 List <Slot> slotlist=	mag.getSlot();
-//		   for (Slot slot : slotlist) {
-//			   HashMap<String , Object> rowMap=new HashMap<>();
-//			   String volabel=slot.getLabel();
-//			   if(volabel.indexOf(keyWord)>0)
-//			   {
-//				   rowMap.put("MagNo", mag.getMagNo());   
-//				   rowMap.put("Rfid", mag.getRfid());   
-//				   rowMap.put("label", slot.getLabel());   
-//				   rowMap.put("slot_status", slot.getSlot_status());   
-//			
-//			   }
-//			   rsList.add(rowMap);
-//		   }
-//		}
-//		
-//		return rsList;
-//		
-//	}
 
-	
-	
 
 	
 	@Override
@@ -619,23 +590,7 @@ public class BurnServiceImpl implements BurnService {
 
     
 	public static void main(String[] args) {
-////		String aa = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC /n"
-////				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC /n"
-////				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC /n";
-////		String[] row = aa.split("/n");
-////		List<Map<String, Object>> rslist = new ArrayList<>();
-////		for (int i = 0; i < row.length; i++) {
-////			Map<String, Object> rowMap = new HashMap<>();
-////			rowMap.put("row", row[i]);
-////			rslist.add(rowMap);
-////			// String[] column =row[i].split("/");
-////			// for (int j = 0; j < column.length; j++) {
-////			// rowMap.put("content", arg1)
-////			//
-////			// }
-////
-////		}
-//	
+
 //	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
 //				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC \n"
 //				+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC \n"

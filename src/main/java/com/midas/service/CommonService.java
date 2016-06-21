@@ -119,7 +119,21 @@ public interface CommonService {
      */
     public List<Map<String, Object>> getAllMachine();
     
+    /**
+     * 在线文件查询
+     * @param server
+     * @param name
+     * @return
+     */
     public String executeFindFile(String server,String name);
+    
+    /**
+     * 离线文件查询
+     * @param map
+     * @param server
+     * @param name
+     * @return
+     */
     public String executeFindFileOffLine(Map<String, Object> map,String server ,String name);
     public List<FileVo> executeFindFileBySocket(String server,String name);
 

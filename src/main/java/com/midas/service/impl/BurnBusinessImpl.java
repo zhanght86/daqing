@@ -84,9 +84,9 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
     @Override
     public void master(String filename, String indexFile, String dataType, String dataSource, String discType,String exportPath,String server)
             throws ServiceException {
+    	
         // 获取可以使用的盘库数据为系统参数表外加系统可用盘的数量
         Map<String, Object> burnMapParam = burnService.getFreeBurn();
-
         if (burnMapParam == null || burnMapParam.isEmpty()) {
             throw new ServiceException(ErrorConstant.CODE4000, "没有盘库可以使用!");
         }
@@ -112,7 +112,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             burnMachine = ObjectUtils.toString(burnMapParam.get("sp_value1"));
             logger.info("分配盘库{}",burnMachine);
         }   
-      
+     
         String valLabel = burnService.insertBurn(filename, discType, dataSource, burnMachine, dataType,exportPath); // 获取卷标号
         setDataService(dataType);
         // 添加数据索引
@@ -121,7 +121,6 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         List<String> filepathList = dataService.getFilepath(valLabel,dataSource);
         // 检查文件
         checkFile(filepathList, dataSource, valLabel);
-
         boolean isCancel = burnService.isCancel(valLabel);
         if (!isCancel) {
             Thread t = new Thread(new Burn(valLabel));
@@ -571,10 +570,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 map.put("export_state", ExportState.MEGE_SUCCESS.getKey());
                 map.put("export_desc", "导出成功");
                 map.put("eid", eid);
-                burnService.updateExportRecord(map);
-                
-                
-                
+                burnService.updateExportRecord(map);               
                 Map<String, Object> standingMap = new HashMap<String, Object>();
                 standingMap.put("eid", eid);
                 standingMap.put("volume_label", volLabel);

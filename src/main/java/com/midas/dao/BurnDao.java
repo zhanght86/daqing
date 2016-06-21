@@ -129,6 +129,8 @@ public interface BurnDao {
     
     void deleteExport(String eid);
     
+    void deleteExportFile(String eid);
+    
     /**
      * 保存导出任务
      * @param map

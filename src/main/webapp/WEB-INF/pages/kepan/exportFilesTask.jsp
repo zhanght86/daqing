@@ -98,21 +98,22 @@ $(document).ready(function() {
 			<table class="tablelist" >
 				<thead>
 					<tr>
-						<th width="400">导出文件</th>
-						<th width="150">导出路径</th>
-						<th width="100">创建时间</th>
-	
-						<th width="100">修改时间</th>
+					    <th width="50px">序号</th>
+						<th width="900px">导出文件</th>
+						<th width="160px">导出路径</th>
+						<th width="150px">创建时间</th>	
+						<th width="150px" >修改时间</th>
 						<!-- 
 						<th>操作用户</th>
 						 -->
-						<th width="50">状态</th>
+						<th width="70px">状态</th>
+						<th width="50px">操作</th>
 					</tr>
 				</thead>
 				<tbody>
 					<c:forEach items="${pageInfo.list }" var="map" varStatus="status">
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
-							
+							<td>${status.count }</td>
 							<td >${map.filelist}</td>						
 							<td >${map.export_path}</td>
 							<td >${map.create_time }</td>
@@ -128,7 +129,7 @@ $(document).ready(function() {
 							</td> 
 							
 							<!-- <td>${map.c_user}</td>  -->
-							
+							<td><a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExportFile.do?eid=${map.eid}">删除</a></td>
 						</tr>
 					</c:forEach>
 				</tbody>

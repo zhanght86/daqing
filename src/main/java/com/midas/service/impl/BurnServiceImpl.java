@@ -369,6 +369,11 @@ public class BurnServiceImpl implements BurnService {
         burnDao.deleteExport(eid);
     }
 
+    @Override
+    public void deleteExportFile(String eid) {
+        // TODO Auto-generated method stub
+        burnDao.deleteExportFile(eid);
+    }
     
     
     

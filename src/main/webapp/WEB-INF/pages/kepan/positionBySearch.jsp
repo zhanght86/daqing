@@ -183,11 +183,11 @@
 						id="volLabel" name="volLabel" type="text" class="scinput"
 						style="width: 200px" /></li>
 
-					<li><label>&nbsp;</label> <input name="" type="submit"
+					<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
 						class="scbtn" value="在线文件查询" /></li>
-					 	<li><label>&nbsp;</label> <input name="" type="submit"
-						class="scbtn" value="离线柜查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
-						<li><label>&nbsp;</label> <input name="" type="submit"
+					 	<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
+						class="scbtn" value="离线文件查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
+						<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
 						class="scbtn" value="刻录位置查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/positionBySearch.do';"/></li> 
 						
 				</ul>

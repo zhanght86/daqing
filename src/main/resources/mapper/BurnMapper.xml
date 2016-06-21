@@ -233,6 +233,11 @@
 		delete from export_data_record where eid = #{eid}
 	</delete>
 	
+	<delete id="deleteExportFile">
+		delete from export_file_record where eid = #{eid}
+	</delete>
+	
+	
 	
 	<!-- 文件导出 -->
 	<insert id="insertExportFileRecord" parameterType="Map" useGeneratedKeys="true" keyProperty="eid">

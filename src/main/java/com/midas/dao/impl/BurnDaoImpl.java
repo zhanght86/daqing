@@ -118,6 +118,11 @@ public class BurnDaoImpl implements BurnDao {
 		// TODO Auto-generated method stub
 		mapper.deleteExport(eid);
 	}
+	
+	@Override
+	public void deleteExportFile(String eid) {
+		mapper.deleteExportFile(eid);
+	}
 
 	@Override
 	public int insertExportFileRecord(Map<String, Object> map) {

@@ -245,8 +245,18 @@ public interface BurnService {
 	List<Map<String, Object>> listExportFileListOffline(String fileName);
     
 	
-	
+	/**
+	 * 文件导出任务执行
+	 * @param paramMap
+	 * @return
+	 */
 	public boolean RunTask( Map<String, Object> paramMap);
+
+	/**
+	 * 导出文件任务删除
+	 * @param eid
+	 */
+	void deleteExportFile(String eid);
 
 
 

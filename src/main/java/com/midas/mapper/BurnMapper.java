@@ -191,6 +191,8 @@ public interface BurnMapper {
 	public List<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap);
 
 	public List<Map<String, Object>> listExportRecordCheck(String state);
+
+	public void deleteExportFile(String eid);
     
 	
 }

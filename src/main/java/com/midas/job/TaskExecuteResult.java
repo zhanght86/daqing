@@ -73,9 +73,18 @@ public class TaskExecuteResult {
 				taskMap.put("export_state", ExportState.EXPORTTING.getKey());
 				runVoLabel = taskMap.get("volume_label") + "";
 				exportPath = taskMap.get("export_path") + "";
-
+			
+				
 				if (isRunDump)// 如果有全部为0 没有1正在导出的任务则执行下载
 				{
+					if(!business.diskSpacecheck(runVoLabel, exportPath))// 更新任务为空间不足无法导出
+					{
+						taskMap.put("export_state", ExportState.EXPORT_SPACE.getKey());
+						taskMap.put("export_desc", ExportState.EXPORT_SPACE.getValue());
+						taskMap.put("update_time", new Date());
+						burnService.updateExportRecord(taskMap);
+						return ;
+					}
 					burnService.updateExportRecord(taskMap);// 更新任务状态
 					Thread td = new Thread(new Burn(runVoLabel, exportPath, taskMap));
 					td.start();

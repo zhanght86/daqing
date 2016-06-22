@@ -137,4 +137,11 @@ public interface CommonService {
     public String executeFindFileOffLine(Map<String, Object> map,String server ,String name);
     public List<FileVo> executeFindFileBySocket(String server,String name);
 
+    /**
+     * 离线柜查询
+     * @param tag
+     * @return
+     */
+	Map<String, Object> getTagpositionDirect(String tag);
+
 }

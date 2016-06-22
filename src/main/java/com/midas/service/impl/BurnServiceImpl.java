@@ -232,6 +232,39 @@ public class BurnServiceImpl implements BurnService {
 
         return list;
     }
+    
+    
+    @Override
+    public List<Map<String, Object>> listPositionOffline(String volLabel) {
+        List<Map<String, Object>> list = burnDao.listPosition(volLabel);
+        Map<String, Map<String, Object>> mapTags = new HashMap<String, Map<String, Object>>();
+        for (Map<String, Object> map : list) {
+            String tag = ObjectUtils.toString(map.get("electronic_tag"));
+            if (tag != null && !"".equals(tag)) {
+                mapTags.put(tag, null);
+            }
+        }
+        Set<String> set = mapTags.keySet();
+        for (String s : set) {
+            try {
+                // TODO 获取电子标签在什么位置
+                Map<String, Object> tagPos = commonService.getTagpositionDirect(s);
+                mapTags.put(s, tagPos);
+            } catch (Exception e) {
+                logger.error("未获取到电子标签:" + s + ", 所在的位置", e);
+            }
+        }
+
+        for (Map<String, Object> map : list) {
+            String tag = ObjectUtils.toString(map.get("electronic_tag"));
+            Map<String, Object> tags = mapTags.get(tag);
+            if (null != tags && !tags.isEmpty()) {
+                map.putAll(tags);
+            }
+        }
+
+        return list;
+    }
 
     @Override
     public boolean checkMerge(String volLabel) {
@@ -531,9 +564,11 @@ public class BurnServiceImpl implements BurnService {
 			FTPClient client = null;
 			try {
 				client = ftpUtil.getConnectionFTP(servers, 21, username, passwd);
+				if(null==client)
+					throw new Exception("ftp服务器:"+servers+" user: "+username+" 连接失败,请检查服务是否正常");
 				for (String file : fileList) {
-					String ftpPath=file.substring(0,file.lastIndexOf("/"));
-					String filename=file.substring(file.lastIndexOf("/")+1);
+					String ftpPath=file.substring(0,file.lastIndexOf("/")); //截取路径名称
+					String filename=file.substring(file.lastIndexOf("/")+1);//获取文件名
 					String filePath=rootPath+ftpPath;
 					
 					boolean downRS=ftpUtil.downFileV2(client, filePath.replaceAll("//", "/"), filename, targetPath);

@@ -63,7 +63,23 @@ public interface BurnBusiness {
 	public void masterNotify(Map<String, Object> map);
 
 	public String getLocalPath(String volLabel);
-
+ 
+	/**
+	 * 导出任务插入数据库
+	 * @param volLabel
+	 * @param exportpath
+	 * @return
+	 * @throws ServiceException
+	 */
 	public boolean masterMergeTaskSave(String volLabel, String exportpath) throws ServiceException;
+
+	 /**
+	  * 磁盘空间检查
+	  * @param volLabel
+	  * @param exportpath
+	  * @return
+	  * @throws ServiceException
+	  */
+	boolean diskSpacecheck(String volLabel, String exportpath) throws ServiceException;
 
 }

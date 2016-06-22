@@ -186,9 +186,7 @@
 					<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
 						class="scbtn" value="在线文件查询" /></li>
 					 	<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
-						class="scbtn" value="离线文件查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
-						<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
-						class="scbtn" value="刻录位置查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/positionBySearch.do';"/></li> 
+						class="scbtn" value="离线文件查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/positionBySearch.do';"/></li> 
 						
 				</ul>
 			</form>

@@ -351,6 +351,67 @@ public class CommonServiceImpl implements CommonService {
         map.put("spCode", spCode);
         return map;
     }
+    
+    
+    @Override
+    public Map<String, Object> getTagpositionDirect(String tag) {
+        int magNo = 0;
+        // 盘库机器名称
+        String serverInfo = null;
+        // 盘库机器SERVER1， or SERVER2
+        String server = null;
+        Object spCode = null;
+        boolean isOk = false;
+        try {
+
+          
+                List<Map<String, Object>> offlineList = this.listSystemParameters(SysConstant.OFF_LINE_CABINET);
+                for (Map<String, Object> map : offlineList) {
+                    String result = null;
+                    try {
+                        result = getOfflineInfo(map);
+                        if (null == result || "".equals(result)) {
+                            logger.error("离线柜：" + map + ", 查询返回结果为空");
+                            continue;
+                        }
+                    } catch (Exception e) {
+                        logger.error("离线柜查询失败", e);
+                        continue;
+                    }
+                    Gson g = new Gson();
+                    OfflineMachine offline = g.fromJson(result, OfflineMachine.class);
+                    if (offline.isOpenDoor()) {
+                        logger.info("离线柜开门状态： {}, 状态查询不正确", map);
+                        continue;
+                    }
+                    for (Mag mag : offline.getMag()) {
+                        if (tag.equals(mag.getRfid().trim())) {
+                            magNo = mag.getMagNo();
+                            serverInfo = ObjectUtils.toString(map.get("sp_name"));
+                            server = ObjectUtils.toString(map.get("sp_value1"));
+                            spCode = map.get("sp_code");
+                            isOk = true;
+                            break;
+                        }
+                    }
+                    if (isOk) {
+                        break;
+                    }
+                }
+       
+        } catch (Exception e) {
+            throw new ServiceException(ErrorConstant.CODE3000, "未找到所在位置并出错", e);
+        }
+        // machine and position
+        Map<String, Object> map = new HashMap<String, Object>();
+        if (null != serverInfo && !"".equals(serverInfo)) {
+            map.put("position", magNo);
+        }
+        map.put("serverName", serverInfo);
+        map.put("server", server);
+        map.put("spCode", spCode);
+        return map;
+    }
 
     @Override
     public boolean executeDUMPMEDIA(String server, String position) {
@@ -466,32 +527,32 @@ public class CommonServiceImpl implements CommonService {
     
     public String executeFindFile(String server,String name){
     	    	
-//    	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
-//		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1011B19.DOC \n"
-//		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1013B20.DOC \n"
-//		+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
-//return testdata;
-//    	
+    	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
+		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160(1-2).split\n"
+		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160408000001(34-10).split \n"
+		+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
+return testdata;
     	
-		Map<String, Object> machineInfo = this.getSystemParameters(server);
-		String result = null;
-		String command = "FINDFILE," + name + ",";
-
-		if (null == machineInfo || machineInfo.isEmpty()) {
-			throw new ServiceException(ErrorConstant.CODE2000, "未找到机器信息");
-		}
-		String ip = ObjectUtils.toString(machineInfo.get("sp_value1"));
-		int port = Integer.parseInt(ObjectUtils.toString(machineInfo.get("sp_value5")));
-		// String ip="192.168.0.227";
-		// int port=2021;
-		try {
-			result = TelnetOperator.commandFileSearch(ip, port, command);
-		} catch (Exception e) {
-			throw new ServiceException(ErrorConstant.CODE3000,
-					"执行查询指令失败, 不能判断机器是否正常, ip: " + ip + ", port:" + port + ", command:" + command);
-		}
-		logger.debug("对机器: {}, 执行指令: {}, 返回结果为: {}", server, command, result);
-		return result;
+ //TODO back	
+//		Map<String, Object> machineInfo = this.getSystemParameters(server);
+//		String result = null;
+//		String command = "FINDFILE," + name + ",";
+//
+//		if (null == machineInfo || machineInfo.isEmpty()) {
+//			throw new ServiceException(ErrorConstant.CODE2000, "未找到机器信息");
+//		}
+//		String ip = ObjectUtils.toString(machineInfo.get("sp_value1"));
+//		int port = Integer.parseInt(ObjectUtils.toString(machineInfo.get("sp_value5")));
+//		// String ip="192.168.0.227";
+//		// int port=2021;
+//		try {
+//			result = TelnetOperator.commandFileSearch(ip, port, command);
+//		} catch (Exception e) {
+//			throw new ServiceException(ErrorConstant.CODE3000,
+//					"执行查询指令失败, 不能判断机器是否正常, ip: " + ip + ", port:" + port + ", command:" + command);
+//		}
+//		logger.debug("对机器: {}, 执行指令: {}, 返回结果为: {}", server, command, result);
+//		return result;
     }
     
     public List<FileVo> executeFindFileBySocket(String server,String name){

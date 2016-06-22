@@ -99,7 +99,7 @@ $(document).ready(function() {
 				<thead>
 					<tr>
 					    <th width="50px">序号</th>
-						<th width="900px">导出文件</th>
+						<th width="800px">导出文件</th>
 						<th width="160px">导出路径</th>
 						<th width="150px">创建时间</th>	
 						<th width="150px" >修改时间</th>

@@ -99,6 +99,7 @@
 								<c:if test="${map.export_state == 4}">导出成功</c:if>
 								<c:if test="${map.export_state == 5}">导出失败</c:if>
 								<c:if test="${map.export_state == 6}">关闭</c:if>
+								<c:if test="${map.export_state == 7}">导出空间不足</c:if>
 							</td>
 							<td>${map.export_path }</td>
 							<td>${map.export_desc}</td>

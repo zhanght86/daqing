@@ -56,6 +56,24 @@ $(document).ready(function() {
 	
 	})
 	});
+	
+   
+	var split_filename = '';
+	function isDictory(checkfile) {
+		var filename = checkfile.substring(checkfile.lastIndexOf('/'));
+		if (filename.lastIndexOf('.') < 0) {
+
+			return confirm('您选择的文件可能是一个目录,目录将无法导出,您确定要选择吗?');
+		}
+
+		if (filename.indexOf('.split') > 0) {
+			var split_filename_temp = filename.substring(0, filename
+					.indexOf('('));
+			if (split_filename_temp != split_filename) {
+				return confirm('您选择的分割文件可能不属于同一个文件,,目录导出文件可能不可用,您确定要选择吗?');
+			}
+		}
+	}
 </script>
 </head>
 <!-- 电子标签位置查看 -->
@@ -91,10 +109,11 @@ $(document).ready(function() {
 
 					<li><label>&nbsp;</label> <input name="" style="width: 100px" type="submit"
 						class="scbtn"  value="在线文件查询" /></li>
-					 	<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
-						class="scbtn" value="离线文件查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
-						<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
-						class="scbtn" value="刻录位置查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/positionBySearch.do';"/></li> 
+					 	<li><label>&nbsp;</label> 
+					 	<%-- <input name="" type="submit" style="width: 100px" class="scbtn" value="离线查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
+						<li><label>&nbsp;</label>  --%>
+						<input name="" type="submit" style="width: 100px"
+						class="scbtn" value="离线文件查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/positionBySearch.do';"/></li> 
 						
 				</ul>
 			</form>
@@ -133,7 +152,7 @@ $(document).ready(function() {
 							<td >${map.filePath}</td>
 							<!-- <td>${map.c_user}</td>  -->
 							<td><input id="box" name="box" type="checkbox"
-								value="${map.filePath}" onclick="checkonebox('checkall','box')" />
+								value="${map.filePath}" onclick="return isDictory('${map.filePath}');checkonebox('checkall','box');" />
 							</td>
 						</tr>
 					</c:forEach>

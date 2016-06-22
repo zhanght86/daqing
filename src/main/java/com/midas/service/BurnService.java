@@ -258,6 +258,13 @@ public interface BurnService {
 	 */
 	void deleteExportFile(String eid);
 
+	/**
+	 * 查询离线柜查询
+	 * @param volLabel
+	 * @return
+	 */
+	List<Map<String, Object>> listPositionOffline(String volLabel);
+
 
 
 	

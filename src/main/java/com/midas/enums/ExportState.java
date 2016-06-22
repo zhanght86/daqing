@@ -28,7 +28,9 @@ public enum ExportState {
 
     MEGE_FAILD("5", "导出失败"),
     
-    MEGE_CANCEL("6", "手动关闭")
+    MEGE_CANCEL("6", "手动关闭"),
+    
+      EXPORT_SPACE("7", "导出空间不足")
     ;
 
     private String key;

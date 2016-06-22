@@ -68,7 +68,23 @@ function getallcheckedvalue(name) {
         }  
     }  
     return boxvalues;  
-}  
+} 
+
+function getallcheckedvalue_old(name) {  
+    var boxvalues = "";  
+    var boxarray = document.getElementsByName(name);  
+    for(var i = 0; i < boxarray.length; i++) {  
+        if(boxarray[i].checked) {  
+            var boxvalue = boxarray[i].value;  
+            if(boxvalues == "") {  
+                boxvalues = boxvalue;  
+            }else {  
+                boxvalues = boxvalues + "," + boxvalue;  
+            }  
+        }  
+    }  
+    return boxvalues;  
+} 
 //如果只需要得到其中选中项的id值的集合，方法如下，得到的值为（1,2,3,…）  
 function getIds() {  
         var boxvalues = getallcheckedvalue();  

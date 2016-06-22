@@ -48,17 +48,25 @@ $(document).ready(function() {
 		window.location.href = '<%=basePath%>/burn/mergeList.do?volLabel=' + $("#volLabel").val();
 	});
 	$(".exportClick").click(function() {
-		$(".tip").fadeIn(200);
+		
 		var checkFiles=getallcheckedvalue('box');
+		var ischeck=splitCheck(checkFiles);	
+		if(!ischeck)
+			{
+			alert('您选择的带有split结尾文件,可能不属于同一个源文件,请重新选择同一个编号文件进行导出合并,谢谢!')
+			return false;
+			}
+		$(".tip").fadeIn(200);
+				
 		var sourcePath = document.getElementById('sourcePath');
-		sourcePath.value=checkFiles;
-	
+		sourcePath.value=checkFiles;		
+		
 	
 	})
 	});
 	
    
-	var split_filename = '';
+	
 	function isDictory(checkfile) {
 		var filename = checkfile.substring(checkfile.lastIndexOf('/'));
 		if (filename.lastIndexOf('.') < 0) {
@@ -66,14 +74,44 @@ $(document).ready(function() {
 			return confirm('您选择的文件可能是一个目录,目录将无法导出,您确定要选择吗?');
 		}
 
-		if (filename.indexOf('.split') > 0) {
-			var split_filename_temp = filename.substring(0, filename
-					.indexOf('('));
+		/* if (filename.indexOf('.split') > 0) {
+			var split_filename_temp = filename.substring(0, filename.indexOf('('));
 			if (split_filename_temp != split_filename) {
 				return confirm('您选择的分割文件可能不属于同一个文件,,目录导出文件可能不可用,您确定要选择吗?');
 			}
-		}
+		} */
 	}
+	
+
+	function splitCheck(sourcePath) {
+		var sourcelist = sourcePath.split(',');
+		var volumelabel = '';
+		for (var int = 0; int < sourcelist.length; int++) {
+			var filename = sourcelist[int].substring(sourcelist[int].lastIndexOf('/')+1);
+			if (filename.indexOf('.split') > 0) {
+				var split_filename_temp = filename.substring(0, filename
+						.indexOf('('));
+				if (volumelabel == '') {
+					volumelabel = split_filename_temp;
+				} else {
+					if (volumelabel != split_filename_temp)
+						return false;
+				}
+			}
+
+		}
+		return true;
+	}
+	
+	function getDataPath1(obj)
+	{
+	 document.getElementById("exportPath").value =obj.value;  //显示获取结果
+	}
+
+	
+	 function setCurrent(obj){
+		 document.getElementById("exportPath").value=obj;
+	 }
 </script>
 </head>
 <!-- 电子标签位置查看 -->
@@ -193,7 +231,7 @@ $(document).ready(function() {
 
 				<div style="position: absolute; height: 200px; overflow: auto">
 					输出数据目录:<input type="text" id="exportPath" name="exportPath"
-						class="scinput" value="/jukebox"> <input type="submit"
+						class="scinput" width="120px" value="/jukebox"> <input type="submit"
 						class="sure" value="确定" /> <input type="button" name="goback"
 						value="返回根目录" class="button">
 					<table class="info" id="info">

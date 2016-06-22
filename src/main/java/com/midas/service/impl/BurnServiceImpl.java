@@ -515,7 +515,7 @@ public class BurnServiceImpl implements BurnService {
 		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
 		List<Map<String, Object>> serverList = commonService.getAllMachine();
 		String servers = "";
-		String rootPath="/juekbox/mirror/";
+		String rootPath=exportInfo.get("sp_value4") ==null?"/juekbox/mirror/":exportInfo.get("sp_value4")+"";
 		int  successDownNum=0;
 		String cmd = exportInfo.get("sp_value3") + "";
 		String username = exportInfo.get("sp_value1") + "";
@@ -523,15 +523,13 @@ public class BurnServiceImpl implements BurnService {
 		String soucePath = paramMap.get("filelist") + "";
 		String targetPath = paramMap.get("export_path") + "";
 		
+		
 		for (Map<String, Object> machine : serverList) {
 			servers = machine.get("sp_value1") + "";		
 			String[] fileList = soucePath.split(",");
 			FtpUtil ftpUtil = new FtpUtil();
 			FTPClient client = null;
 			try {
-				String cfgRootPath=CommonsUtils.getPropertiesValue("CFG_ROOTPATH");
-				if(StringUtils.isNotEmpty(cfgRootPath))
-					rootPath=cfgRootPath;
 				client = ftpUtil.getConnectionFTP(servers, 21, username, passwd);
 				for (String file : fileList) {
 					String ftpPath=file.substring(0,file.lastIndexOf("/"));

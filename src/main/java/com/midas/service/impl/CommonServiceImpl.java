@@ -15,11 +15,13 @@ import java.util.Map;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
 import com.google.gson.Gson;
 import com.midas.constant.ErrorConstant;
 import com.midas.constant.SysConstant;
@@ -527,32 +529,39 @@ public class CommonServiceImpl implements CommonService {
     
     public String executeFindFile(String server,String name){
     	    	
-    	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/1010B20.DOC \n"
-		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160(1-2).split\n"
-		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160408000001(34-10).split \n"
-		+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
-return testdata;
+//    	String testdata = "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160408000001(34-11).split \n"
+//		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160(1-2).split\n"
+//		+ "/0022_000010000020101/2013年工程/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测（2013.10）-王新胜/检测2013-18越洋广场项目对轨道交通六号线大剧院站、千厮门大桥引桥及C、D匝道影响第三方监测报告及原始资料（2013年10月份）/爆破振动监测波形/W20160408000001(34-10).split \n"
+//		+"/tmp/a_split\n /tmp/b_split\n /tmp/c_split\n";
+//return testdata;
+    	int  exportLimitNum=1000;
+    	Map<String, Object> limitNumMap = this.getSystemParameters("EXPORT_LIMIT_NUM");
+    	if(null!=limitNumMap)
+    	{
+    		String exportNumTemp=limitNumMap.get("sp_value1")+"";
+    		exportNumTemp= (StringUtils.isEmpty(exportNumTemp)?1000:exportNumTemp)+"";
+    	    exportLimitNum=Integer.parseInt(exportNumTemp);
+    	}
     	
- //TODO back	
-//		Map<String, Object> machineInfo = this.getSystemParameters(server);
-//		String result = null;
-//		String command = "FINDFILE," + name + ",";
-//
-//		if (null == machineInfo || machineInfo.isEmpty()) {
-//			throw new ServiceException(ErrorConstant.CODE2000, "未找到机器信息");
-//		}
-//		String ip = ObjectUtils.toString(machineInfo.get("sp_value1"));
-//		int port = Integer.parseInt(ObjectUtils.toString(machineInfo.get("sp_value5")));
-//		// String ip="192.168.0.227";
-//		// int port=2021;
-//		try {
-//			result = TelnetOperator.commandFileSearch(ip, port, command);
-//		} catch (Exception e) {
-//			throw new ServiceException(ErrorConstant.CODE3000,
-//					"执行查询指令失败, 不能判断机器是否正常, ip: " + ip + ", port:" + port + ", command:" + command);
-//		}
-//		logger.debug("对机器: {}, 执行指令: {}, 返回结果为: {}", server, command, result);
-//		return result;
+		Map<String, Object> machineInfo = this.getSystemParameters(server);
+		String result = null;
+		String command = "FINDFILE," + name + ",";
+
+		if (null == machineInfo || machineInfo.isEmpty()) {
+			throw new ServiceException(ErrorConstant.CODE2000, "未找到机器信息");
+		}
+		String ip = ObjectUtils.toString(machineInfo.get("sp_value1"));
+		int port = Integer.parseInt(ObjectUtils.toString(machineInfo.get("sp_value5")));
+		// String ip="192.168.0.227";
+		// int port=2021;
+		try {
+			result = TelnetOperator.commandFileSearch(ip, port, command,exportLimitNum);
+		} catch (Exception e) {
+			throw new ServiceException(ErrorConstant.CODE3000,
+					"执行查询指令失败, 不能判断机器是否正常, ip: " + ip + ", port:" + port + ", command:" + command);
+		}
+		logger.debug("对机器: {}, 执行指令: {}, 返回结果为: {}", server, command, result);
+		return result;
     }
     
     public List<FileVo> executeFindFileBySocket(String server,String name){
@@ -623,10 +632,19 @@ return testdata;
         }
         String ip = ObjectUtils.toString(map.get("sp_value1"));
         int port = Integer.parseInt(ObjectUtils.toString(map.get("sp_value5")));
-        ip="192.168.0.227";
-        port=2021;
+//        ip="192.168.0.227";
+//        port=2021;
+        int  exportLimitNum=1000;
+    	Map<String, Object> limitNumMap = this.getSystemParameters("EXPORT_LIMIT_NUM");
+    	if(null!=limitNumMap)
+    	{
+    		String exportNumTemp=limitNumMap.get("sp_value1")+"";
+    		exportNumTemp= (StringUtils.isEmpty(exportNumTemp)?1000:exportNumTemp)+"";
+    	    exportLimitNum=Integer.parseInt(exportNumTemp);
+    	}
+    	
         try {
-            result = TelnetOperator.commandFileSearch(ip, port, command);
+            result = TelnetOperator.commandFileSearch(ip, port, command,exportLimitNum);
             
         } catch (Exception e) {
             logger.error("对盘库机器执行查询指令失败", e);

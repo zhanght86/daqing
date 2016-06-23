@@ -202,7 +202,7 @@
 						<th>卷标号</th>
 						<th>电子标签</th>
 						<th>存放机器</th>
-						<th>盘槽位置</th>
+						<th>盘仓位置</th>
 						<th>光盘位置</th>
 						<th>文件名称</th>
 						<th>完成刻录时间</th>
@@ -212,16 +212,17 @@
 					<c:forEach items="${list }" var="map" varStatus="status">
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							<td>${status.count }</td>
-							<td>${map.volume_label }</td>
+							<td>${map.volabel }</td>
 							<td>${map.electronic_tag }</td>
 							<td>${map.serverName }</td>
 							<td><c:if test="${map.position != 0}">${map.position }</c:if>
 							</td>
-							<td>${(map.disc_position - 1) % 50 + 1}</td>
+							<%-- <td>${(map.disc_position - 1) % 50 + 1}</td> --%>
+							<td>${map.offset}</td>
 							<td>${map.iso_file }</td>
 							<td><fmt:formatDate value="${map.create_time }"
 									pattern="yyyy-MM-dd HH:mm:ss" /></td>
-								<td>	</td>
+								
 						</tr>
 					</c:forEach>
 				</tbody>

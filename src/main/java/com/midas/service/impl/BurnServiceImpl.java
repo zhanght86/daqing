@@ -465,9 +465,26 @@ public class BurnServiceImpl implements BurnService {
 				String[] matchInfo = searchResult.split("\n");
 				for (int i = 0; i < matchInfo.length; i++) {
 					Map<String, Object> rowMap = new HashMap<>();
-					rowMap.put("filePath", matchInfo[i]);
-					rowMap.put("ip", ip);
-					rowMap.put("server", server);
+					String [] matchInfoAry=matchInfo[i].split(",");
+					String elecNo="";
+					String offset="";
+					String volabel="";
+					if(null!=matchInfoAry&&matchInfoAry.length>=1) //获取盘槽位置和电子标签
+					{
+						 elecNo=matchInfoAry[0].substring(matchInfoAry[0].indexOf("-")+1);
+						 offset=matchInfoAry[0].substring( 0,matchInfoAry[0].indexOf("-"));
+						 rowMap.put("electronic_tag", elecNo );
+						 rowMap.put("offset", offset );
+						 
+					}
+					if(null!=matchInfoAry&&matchInfoAry.length>=2)  //获取卷标和文件路径
+					{
+						volabel=matchInfoAry[1].substring( matchInfoAry[1].indexOf("_")+1,matchInfoAry[1].indexOf("("));
+						rowMap.put("iso_file", matchInfoAry[1]);
+						rowMap.put("volabel", volabel);
+					}
+					//rowMap.put("ip", ip);
+					rowMap.put("server", server);				
 					rsList.add(rowMap);
 
 				}

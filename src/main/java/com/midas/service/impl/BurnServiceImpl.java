@@ -477,9 +477,15 @@ public class BurnServiceImpl implements BurnService {
 						 rowMap.put("offset", offset );
 						 
 					}
-					if(null!=matchInfoAry&&matchInfoAry.length>=2)  //获取卷标和文件路径
+					if (null != matchInfoAry && matchInfoAry.length >= 2) // 获取卷标和文件路径
 					{
-						volabel=matchInfoAry[1].substring( matchInfoAry[1].indexOf("_")+1,matchInfoAry[1].indexOf("("));
+
+						String tempfilePath = matchInfoAry[1].substring(matchInfoAry[1].indexOf("_") + 1);
+
+						int pos = tempfilePath.indexOf("(");
+						if (pos < 0)
+							pos = tempfilePath.indexOf("/") < 0 ? 15 : tempfilePath.indexOf("/");
+						volabel = tempfilePath.substring(0, pos);
 						rowMap.put("iso_file", matchInfoAry[1]);
 						rowMap.put("volabel", volabel);
 					}
@@ -565,7 +571,7 @@ public class BurnServiceImpl implements BurnService {
 		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
 		List<Map<String, Object>> serverList = commonService.getAllMachine();
 		String servers = "";
-		String rootPath=exportInfo.get("sp_value4") ==null?"/juekbox/mirror/":exportInfo.get("sp_value4")+"";
+		String rootPath=exportInfo.get("sp_value4") ==null?"/groups/":exportInfo.get("sp_value4")+"";
 		int  successDownNum=0;
 		String cmd = exportInfo.get("sp_value3") + "";
 		String username = exportInfo.get("sp_value1") + "";

@@ -95,19 +95,19 @@ $(document).ready(function() {
 				</ul>
 			</form>
 
-			<table class="tablelist" >
+			<table class="tablelist">
 				<thead>
 					<tr>
-					    <th width="50px">序号</th>
-						<th width="800px">导出文件</th>
-						<th width="160px">导出路径</th>
-						<th width="150px">创建时间</th>	
-						<th width="150px" >修改时间</th>
-						<!-- 
-						<th>操作用户</th>
-						 -->
-						<th width="70px">状态</th>
-						<th width="50px">操作</th>
+						    <th width="50px">序号</th>
+							<th width="800px">导出文件</th>
+							<th width="200px">导出路径</th>
+							<th width="180px">创建时间</th>	
+							<th width="180px" >修改时间</th>
+							<!-- 
+							<th>操作用户</th>
+							 -->
+							<th width="90px">状态</th>
+							<th width="50px">操作</th>
 					</tr>
 				</thead>
 				<tbody>

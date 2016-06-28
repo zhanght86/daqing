@@ -244,17 +244,62 @@
 		insert 
 			into 
 		export_file_record
-			(fileList,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user) 
+			(server,fileList,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user) 
 		values 
-			(#{fileList},#{volume_label}, #{number_success}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
+			(#{server},#{fileList},#{volume_label}, #{number_success}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
 	</insert>
 	
 	
-	<select id="listExportTask" parameterType="String" resultType="Map">
+	<!-- <select id="listExportTask" parameterType="String" resultType="Map">
 		select eid,filelist,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user 
 		from export_file_record where export_state in( '0','1') order by eid 
-	</select>
+	</select> -->
 	
+	
+	<select id="listExportTask" parameterType="String" resultType="Map">
+	SELECT
+	*
+	FROM
+	(
+	SELECT
+	*
+	FROM
+	export_file_record t
+	WHERE
+	t.export_state = '0'
+	AND SERVER LIKE '%SERVER1%'
+	AND NOT EXISTS (
+	SELECT
+	1
+	FROM
+	export_file_record B
+	WHERE
+	B.export_state = '1'
+	AND SERVER LIKE '%SERVER1%'
+	)
+	UNION
+	SELECT
+	*
+	FROM
+	export_file_record t
+	WHERE
+	t.export_state = '0'
+	AND SERVER LIKE '%SERVER2%'
+	AND NOT EXISTS (
+	SELECT
+	1
+	FROM
+	export_file_record B
+	WHERE
+	B.export_state = '1'
+	AND SERVER LIKE '%SERVER2%'
+	)
+	) AS task
+	ORDER BY
+	eid
+	LIMIT 1
+
+</select>
 	
 	<update id="updateExportFile" parameterType="Map">
 		UPDATE

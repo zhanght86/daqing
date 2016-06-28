@@ -216,7 +216,7 @@ public interface BurnService {
      * @return
      * @throws ServiceException
      */
-	boolean savefileExportTask(String soucePath, String exportpath) throws ServiceException;
+	boolean savefileExportTask(String soucePath, String exportpath,String serverInfo) throws ServiceException;
     
 	/**
 	 * 检查可导出的任务
@@ -264,6 +264,8 @@ public interface BurnService {
 	 * @return
 	 */
 	List<Map<String, Object>> listPositionOffline(String volLabel);
+
+	
 
 
 

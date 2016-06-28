@@ -190,7 +190,7 @@ $(document).ready(function() {
 							<td >${map.filePath}</td>
 							<!-- <td>${map.c_user}</td>  -->
 							<td><input id="box" name="box" type="checkbox"
-								value="${map.filePath}" onclick="return isDictory('${map.filePath}');checkonebox('checkall','box');" />
+								value="${map.server}:${map.filePath}" onclick="return isDictory('${map.server}:${map.filePath}');checkonebox('checkall','box');" />
 							</td>
 						</tr>
 					</c:forEach>

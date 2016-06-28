@@ -48,7 +48,6 @@
 			window.location.href = '<%=basePath%>/burn/mergeList.do?volLabel=' + $("#volLabel").val();
 		});
 		$(".exportClick").click(function() {
-			
 		
 			$.ajax({url:"<%=basePath%>/burn/mergeCheck.do",
 				type : 'GET',

@@ -516,13 +516,28 @@ public class BurnServiceImpl implements BurnService {
 	public boolean CheckTaskAndRun(String soucePath) throws Exception{
 
 		List<Map<String, Object>> rslist = listExportTask("");
+	
 		if (null != rslist && rslist.size() > 0) {
-
-			for (Map<String, Object> taskinfo : rslist) {
-				if (ExportState.EXPORTTING.getKey().equals(taskinfo.get("export_state")))
-					return false;
-			}
-			Map<String, Object> paramMap = rslist.get(0);
+//        String runServer="";
+//        Map<String, Object> paramMap =new HashMap<String, Object>();
+//			for (Map<String, Object> taskinfo : rslist) {
+//				String tempServer = taskinfo.get("server") + "";
+//				if (ExportState.EXPORTTING.getKey().equals(taskinfo.get("export_state"))) {
+//					// 首次赋值
+//					if ("".equals(runServer)) {
+//						runServer = tempServer;
+//						
+//					} else {
+//						if (runServer.equals(tempServer)) { // 如果同时有2个运行为1的状态的服务器相同,则退出,要保证一台服务器只运行一个任务
+//							return false;
+//						} else {// 如果服务器不同,则赋值paramMap 准备更新状态并行运行第二个任务
+//							paramMap = taskinfo;
+//						}
+//					}
+//				}
+//
+//			}
+			 Map<String, Object> paramMap =rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
 			paramMap.put("update_time", new Date());
 			burnDao.updateExportFile(paramMap);
@@ -578,9 +593,20 @@ public class BurnServiceImpl implements BurnService {
 		String passwd = exportInfo.get("sp_value2") + "";
 		String soucePath = paramMap.get("filelist") + "";
 		String targetPath = paramMap.get("export_path") + "";
+		String tmpServer=paramMap.get("server")+"";
+		List<Map<String, Object>> downServerList=new ArrayList<>();
+		if (tmpServer.indexOf(",") < 0)// 单服务器任务判断准确ftp服务器,
+		{
+			for (Map<String, Object> map : serverList) {
+				if (map.get("sp_code").equals(tmpServer)) {
+					downServerList.add(map);
+				}
+			}
+		}
 		
-		
-		for (Map<String, Object> machine : serverList) {
+		if(downServerList.size()==0)
+			downServerList = commonService.getAllMachine();
+		for (Map<String, Object> machine : downServerList) {
 			servers = machine.get("sp_value1") + "";		
 			String[] fileList = soucePath.split(",");
 			FtpUtil ftpUtil = new FtpUtil();
@@ -599,12 +625,15 @@ public class BurnServiceImpl implements BurnService {
 						successDownNum++;
 					}
 				}
+				paramMap.put("number_success", successDownNum+"");
+				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+				burnDao.updateExportFile(paramMap);
 
 			} catch (Exception e) {
 				 paramMap.put("number_success", successDownNum+"");
 				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
 				burnDao.updateExportFile(paramMap);
-				logger.error(e.getMessage());
+				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
 			} finally {
 				ftpUtil.closeFTP(client);
 			}
@@ -613,10 +642,10 @@ public class BurnServiceImpl implements BurnService {
 	
 		int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
 		if (-1 != rsInt) {
-			paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+			paramMap.put("export_state", ExportState.MEGE_SUCCESS.toString());
 
 		} else {
-			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+			paramMap.put("export_state", ExportState.MEGE_FAILD.toString());
 		}
 		burnDao.updateExportFile(paramMap);		
 		    paramMap.put("number_success", successDownNum+"");
@@ -631,7 +660,7 @@ public class BurnServiceImpl implements BurnService {
 	
 	
     @Override
-	public boolean savefileExportTask(String soucePath, String exportpath) throws ServiceException {
+	public boolean savefileExportTask(String soucePath, String exportpath,String serverInfo) throws ServiceException {
 		boolean isSucc = true;
 		Map<String, Object> exportMap = new HashMap<String, Object>();
 
@@ -640,6 +669,7 @@ public class BurnServiceImpl implements BurnService {
 		exportMap.put("export_state", "0");
 		exportMap.put("export_desc", "准备下载");
 		exportMap.put("export_path", exportpath);
+		exportMap.put("server", serverInfo);
 		// exportMap.put("c_user", null);
 		insertExportFileRecord(exportMap);
 

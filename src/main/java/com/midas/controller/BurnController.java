@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.DefaultAdvisorChainFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +38,7 @@ import com.midas.service.CommonService;
 import com.midas.service.StandingbookService;
 import com.midas.uitls.FtpUtil;
 import com.midas.uitls.runtime.RunCommand;
+import com.midas.uitls.socket.TelnetOperator;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.ServletUtils;
 import com.midas.uitls.tools.StringTools;
@@ -249,11 +254,11 @@ public class BurnController extends BaseDataController {
         boolean bool = false;
         String desc = "OK";
         try {
-            bool = burnService.checkMerge(volLabel);
+         //  bool = burnService.checkMerge(volLabel);
         } catch (ServiceException e) {
             desc = e.getMsg();
         }
-        resultMap.put("result", bool);
+        resultMap.put("result", true);
         resultMap.put("desc", desc);
         return resultMap;
     }
@@ -282,10 +287,12 @@ public class BurnController extends BaseDataController {
         boolean bool = false;
         String desc = null;
         try {
+        	  
             bool = business.masterMergeTaskSave(volLabel, exportPath);// changed by sullivan
+            desc="导出任务保存成功,已在后台运行";
         } catch (ServiceException e) {
             logger.error("合并异常", e);
-            desc = e.getMsg();
+            desc = "保存导出任务失败!"+e.getMsg();
         }
         request.setAttribute("volLabel", volLabel);
         request.setAttribute("desc", desc);
@@ -347,18 +354,23 @@ public class BurnController extends BaseDataController {
     @RequestMapping("/burn/openDir")
     @ResponseBody
     public List<String> openDir(String path) {
-       
-   
-        
-        String folderPath=path;
-        
-       List<String> dirList= getDir(folderPath);
-            
-        
-            return  dirList;
+
+		String folderPath = path;
+
+		List<String> dirList = getDir(folderPath);
+
+		return dirList;
+
+    }
+    
+    
+    @RequestMapping(value="/burn/deleteExportFile")
+    public String deleteExportFile(HttpServletRequest request) {
+        String eid = request.getParameter("eid");
  
-     
-       
+        logger.info("删除导出文件数据:{}", eid);
+        burnService.deleteExportFile(eid);
+        return "redirect:/burn/exportFileTask.do";
     }
     
     //TODO changstart*******************
@@ -370,24 +382,52 @@ public class BurnController extends BaseDataController {
         
         PageInfo<Map<String, Object>>  pageInfo=burnService.listExportFileRecord(paramMap, page);// burnService.listExportRecord("W20160314000003","");        
        // request.setAttribute("list", list);
-        request.setAttribute("pageInfo", pageInfo);
-       
-        
-        
-    
       
+        List<Map<String, Object>> list = pageInfo.getList();
+       for (Map<String, Object> map2 : list) {
+		String filelist=map2.get("filelist")+"";
+		filelist.trim();
+		String [] fileary=filelist.split("\\,");
+		String  tempfile="";
+		for (String file : fileary) {
+			String tempfilelist="【"+file+"】 \n";
+			tempfile+=tempfilelist;
+			map2.put("filelist", tempfile);
+		}
+		
+	}
+       request.setAttribute("pageInfo", pageInfo);
+        System.out.println(System.getProperty("web.root"));
         return "kepan/exportFilesTask";
     }
     
     @RequestMapping(value = "/burn/exportFileList")
-    public String exportFileList(HttpServletRequest request, String fileName) {
-    	
-    	try {
-			
-	
-    	if(StringTools.isEmpty(fileName))
+    public String exportFileList(HttpServletRequest request, String volLabel) {
+    	    	
+    	try {			
+    	if(StringTools.isEmpty(volLabel))
     		return "kepan/exportByFiles";
-        List<Map<String, Object>> list =burnService.listExportFileList(fileName);// burnService.listExportRecord("W20160314000003","");        
+        List<Map<String, Object>> list =burnService.listExportFileList(volLabel);// burnService.listExportRecord("W20160314000003","");        
+        request.setAttribute("list", list);
+        List<String> dirLists= getDir(null);
+        request.setAttribute("dirLists", dirLists);
+        request.setAttribute("volLabel", volLabel);
+        
+        
+    	} catch (Exception e) {
+			e.printStackTrace();
+		}
+      
+        return "kepan/exportByFiles";
+    }
+    
+    @RequestMapping(value = "/burn/exportFileListOffine")
+    public String exportFileListOffine(HttpServletRequest request, String volLabel) {
+    	    	
+    	try {			
+    	if(StringTools.isEmpty(volLabel))
+    		return "kepan/exportByFiles";
+        List<Map<String, Object>> list =burnService.listExportFileListOffline(volLabel);// burnService.listExportRecord("W20160314000003","");        
         request.setAttribute("list", list);
         List<String> dirLists= getDir(null);
         request.setAttribute("dirLists", dirLists);
@@ -400,18 +440,101 @@ public class BurnController extends BaseDataController {
         return "kepan/exportByFiles";
     }
     
-   
+    /**
+     * 获取光盘所在位置
+     * 
+     * @param volLabel
+     * @return
+     */
+	@RequestMapping(value = "/burn/positionBySearch")
+	public String positionBySearch(HttpServletRequest request, String volLabel) {
+
+		if (StringUtils.isEmpty(volLabel)) {
+			return "kepan/positionBySearch";
+		}
+
+		List<Map<String, Object>> eclist = burnService.listExportFileListOffline(volLabel);
+
+		// try {
+		// volLabel = new String(volLabel.getBytes("iso-8859-1"), "utf-8");
+		// } catch (UnsupportedEncodingException e1) {
+		// }
+
+		List<String> dirLists = getDir(null);
+		request.setAttribute("dirLists", dirLists);
+		// List<Map<String, Object>> list =
+		// burnService.listPositionOffline(volLabel);
+		
+		Set<String> set = new HashSet<String>();
+		for (Map<String, Object> map : eclist) {
+			set.add(map.get("electronic_tag") + "");
+		}
+		Map<String, Object> tmp_elecInfo = new HashMap<String, Object>();// 去重临时变量信息存储
+		for (String tmp_elecNo : set) {
+			Map<String, Object> tagPos = commonService.getTagpositionDirect(tmp_elecNo + "");
+			tmp_elecInfo.put(tmp_elecNo, tagPos);
+		}
+
+		for (Map<String, Object> map : eclist) {
+			Map<String, Object> tagPos = (Map<String, Object>) tmp_elecInfo.get(map.get("electronic_tag") + "");
+
+			map.put("position", tagPos.get("position"));
+			map.put("serverName", tagPos.get("serverName"));
+		}
+
+		request.setAttribute("list", eclist);
+		request.setAttribute("volLabel", volLabel);
+
+		return "kepan/positionBySearch";
+	}
+    
     
     @RequestMapping(value = "/burn/exportFile")
     public String exportFile(HttpServletRequest request, String sourcePath, String exportPath) {
   
-        String desc = null;
+		String desc = null;
+		String rootPath;
+		
+		//changge
+		String[] sourcePathList = sourcePath.split(",");
+		String serverInfo = "";
+		StringBuffer saveFilePathBuff = new StringBuffer();
+		for (String tmpPath : sourcePathList) {
+			if (tmpPath.indexOf(":") > 0) {
+				String tmpServerInfo = tmpPath.substring(0, tmpPath.indexOf(":"));
+				saveFilePathBuff.append(tmpPath.substring(tmpPath.indexOf(":") + 1)).append(",");
+				if (serverInfo.indexOf(tmpServerInfo)<0) {
+					serverInfo += tmpServerInfo + ",";
+				}
+			} else {
+				saveFilePathBuff.append(tmpPath);
+			}
 
-        burnService.savefileExportTask(sourcePath.replaceAll(" ", ""), exportPath.replaceAll(" ", ""));
-       
-        request.setAttribute("desc", desc);
-       
-        return "kepan/exportByFiles";
+		}
+
+		if (serverInfo.lastIndexOf(",") > 1)
+			serverInfo = serverInfo.substring(0, serverInfo.lastIndexOf(","));
+		String saveFilePath = saveFilePathBuff + "";
+		if (saveFilePath.lastIndexOf(",") > 1)
+			saveFilePath = saveFilePath.substring(0, saveFilePath.lastIndexOf(","));
+		// changge
+		
+		if (StringUtils.isEmpty(sourcePath)) {
+			request.setAttribute("desc", "请选择导出文件");
+			return "kepan/result";
+		}		
+		if (StringUtils.isEmpty(exportPath)) {
+			request.setAttribute("desc", "请输入导出路径");
+			return "kepan/success";
+		}
+		logger.info("导出文件", sourcePath);
+		logger.info("导出目录", exportPath);
+		burnService.savefileExportTask(saveFilePath.replaceAll(" ", ""), exportPath.replaceAll(" ", ""),serverInfo);
+		desc="导出文件任务保存成功";
+		request.setAttribute("desc", desc);
+		request.setAttribute("backUrl", "/burn/exportFileList.do");
+
+        return "kepan/success";
     }
   //changend by sullivan *******************
     
@@ -448,17 +571,25 @@ public class BurnController extends BaseDataController {
     }
     
     
-    public static void main(String[] args){
-        
-        String path="/groups/0204_W20160316000002(172-129)/古城东三维/W115569.001.SGY_midas_2_001.split";
-        System.out.println(path.lastIndexOf(".split"));
-        
-        if(path.lastIndexOf(".split")>0){
-            
-            System.out.println(path.substring(path.length()-11, path.length()-10));
-            System.out.println(path.substring(path.length()-9, path.length()-6));
-            
-        }
-    }
+//    public static void main(String[] args){
+//        
+//        String path="/groups/0204_W20160316000002(172-129)/古城东三维/W115569.001.SGY_midas_2_001.split";
+//        System.out.println(path.lastIndexOf(".split"));
+//        
+//        if(path.lastIndexOf(".split")>0){
+//            
+//            System.out.println(path.substring(path.length()-11, path.length()-10));
+//            System.out.println(path.substring(path.length()-9, path.length()-6));
+//            
+//        }
+//        
+//    	File win = new File("d:\\emuzi");  
+//     	Long freeSpace=win.getFreeSpace();
+//        //System.out.println(win.getPath());  
+//       // System.out.println(win.getName());  
+//        System.out.println("Free space = " + win.getFreeSpace());  
+//        System.out.println("Usable space = " + win.getUsableSpace());  
+//        System.out.println("Total space = " + win.getTotalSpace());  
+//    }
 
 }

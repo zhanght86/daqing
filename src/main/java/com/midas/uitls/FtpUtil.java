@@ -168,15 +168,16 @@ public class FtpUtil {
      * @param localPath 本里存储路径 
      * @return boolean 
      */  
-    public boolean downFileV2(FTPClient ftp, String path, String fileName, String localPath) {  
+    public boolean downFileV2(FTPClient ftp, String path, String fileName, String localPath)throws Exception {  
         boolean success = false;  
         int downNUM=0;
-        try {  
+      
         	  System.out.println(" path : " + path+" fileName:"+fileName+"  localPath:"+ localPath);  
             ftp.changeWorkingDirectory(new String(path.getBytes("UTF-8"),"iso8859-1"));//转移到FTP服务器目录  
             ftp.setFileType(FTP.BINARY_FILE_TYPE);  
             FTPFile[] fs = ftp.listFiles(); //得到目录的相应文件列表  
-            for (FTPFile ff : fs) {  
+            for (FTPFile ff : fs) { 
+            	
                 if (ff.getName().equals(fileName)) {  
                     File localFile = new File(localPath + "/" + ff.getName());  
                     if(!localFile.exists()) {
@@ -193,11 +194,9 @@ public class FtpUtil {
                     System.out.println("下载成功 : " + downBool);  
                 }  
             }  
-//            ftp.logout();  
+           ftp.logout();  
             success = downNUM==0?false:true;  
-        } catch (Exception e) {  
-            e.printStackTrace();  
-        }  
+       
         return success;  
     }  
     

@@ -115,11 +115,37 @@ public class TelnetOperator {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
             String line = null;
+            int readCount=0;
             while ((line = br.readLine()) != null) {
-                if (prompt.equals(line)) {
+            	readCount++;
+                if (prompt.equals(line)||line.indexOf("results in")>0) {
                     break;
                 }
                 sb.append(line + "\n");
+               
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+    
+    //TODO sullivan
+    public String readUntilLimit(int limtNum) {
+        StringBuffer sb = new StringBuffer();
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+            String line = null;
+            int readCount=0;
+            while ((line = br.readLine()) != null) {
+            	if(readCount>=limtNum){//最大读取行数据
+            		break;
+            	}            		
+                if (prompt.equals(line)||line.indexOf("match results in offline")>0||line.indexOf("match results in online")>0) {
+                    break;
+                }
+                sb.append(line + "\n");
+            	readCount++;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -204,6 +230,20 @@ public class TelnetOperator {
             telnet.distinct();
         }
     }
+    //TODO sullivan
+    public static String commandFileSearch(String ip, int port, String command,int limitNum) throws Exception {
+        TelnetOperator telnet = null;
+        try {
+            telnet = new TelnetOperator(); // Windows,用VT220,否则会乱码
+            telnet.login(ip, port);            
+            telnet. write(command);
+            return telnet.readUntilLimit(limitNum);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            telnet.distinct();
+        }
+    }
 
     public static void commandOnly(String ip, int port, String command) throws Exception {
         TelnetOperator telnet = null;
@@ -234,7 +274,8 @@ public class TelnetOperator {
     }
 
     public static void main(String[] args) throws Exception {
-        commandBurnMachine("192.168.2.222", 2021, "QUERYSTATION,");
+        String aa=commandBurnMachine("192.168.1.222", 22, "ls,");
+        System.out.println(aa);
         // System.out.println(commandBurnMachine("192.168.2.222", 2021,
         // "QUERYSTATION,"));
         // System.out.println(commandBurnMachine("192.168.0.222", 2021,

@@ -349,7 +349,17 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
 			if (!exportFile.isDirectory()) {
 				throw new ServiceException(ErrorConstant.CODE3000, "合并文件失败， 请输入一个可以访问的目录！");
 			}
-            //burnService.checkMerge(volLabel);
+			//TODO  online
+			//保存导出任务执行的服务器信息
+			List<Map<String, Object>> list=  burnService.listPosition(volLabel);
+			String serverInfo="";
+			for (Map<String, Object> map : list) {
+				serverInfo=map.get("server")+",";
+			}
+			if (serverInfo.lastIndexOf(",") > 1)
+				serverInfo = serverInfo.substring(0, serverInfo.lastIndexOf(","));
+			exportMap.put("server", serverInfo);
+			/////////////////////
             exportMap.put("volume_label", volLabel);
             exportMap.put("number_success", 0);
             exportMap.put("export_state", "0");
@@ -599,19 +609,6 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         
         System.out.println(JSONUtils.toJSONString(list));
         
-//        File f = new File("/abaf/sddd");
-//        System.out.println(f.getParent());
-        // Byte b = (byte) 255;
-        // System.out.println(b.toString());
-        //
-        // Set<String> s = new HashSet<>();
-        // s.add("ab");
-        // s.add("ab");
-        // s.add("ab");
-        // s.add("abc");
-        //
-        // System.out.println(s);
-        // System.out.println(StringUtils.join(s, ","));
 
     }
 

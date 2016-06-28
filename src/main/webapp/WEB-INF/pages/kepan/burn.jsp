@@ -22,7 +22,7 @@
 <script type="text/javascript" src="<%=basePath%>/static/js/jquery.idTabs.min.js"></script>
 <script type="text/javascript" src="<%=basePath%>/static/js/select-ui.min.js"></script>
 <script type="text/javascript" src="<%=basePath%>/static/editor/kindeditor.js"></script>
-<script type="text/javascript" src="<%=basePath%>/static/js/common.js"></script>
+
 <script type="text/javascript">
 	$(document).ready(function() {
 		$(".click").click(function() {
@@ -165,13 +165,13 @@
 								<%-- 	<a href="<%=basePath %>/burn/downloadfile.do?volLabel=${page.volume_label}&server=${page.burning_machine}">刻录文件</a> --%>
 								</c:if>
 
-								<input id="box" name="box" type="checkbox" value="id|username" onclick="checkonebox('checkall','box')"/>
+							
 							</td>
 						</tr>
 					</c:forEach>
 				</tbody>
 			</table>
-			<input id="checkall"     type="checkbox" value="" onclick="checkboxall('checkall','box')"/> 全选/全不选  
+			
 			
 			<div class="pagin">
 		    	<div class="message">共<i class="blue">${pageInfo.total }</i>条记录，当前显示第&nbsp;<i class="blue">${pageInfo.pageNum }&nbsp;</i>页</div>

@@ -44,6 +44,7 @@ public class RunCommand {
         int waitFor = -1;
 
         try {
+        	System.out.println("RunComand:"+s);
             pro = Runtime.getRuntime().exec(s);
 
             is = pro.getInputStream();
@@ -77,6 +78,8 @@ public class RunCommand {
 
     public static void main(String[] args) {
         execute("ipconfig");
+        execute("./fileExport.sh root 121.40.125.114 /tmp/a_split,/tmp/b_split,/tmp/c_split /tmp/download Emuzi666");
+         
     }
 
     /**
@@ -120,6 +123,58 @@ public class RunCommand {
             s[i] = strings[i];
         }
         return s;
+    }
+    //add by sullivan
+    public static String executeResult(String... strings) {
+        StringBuffer sb = new StringBuffer();
+        String[] s = convert(strings);
+        if (null == s) {
+            logger.error("传递参数为空");
+            return "-1";
+        }
+
+        String os = System.getProperty("os.name");
+        if (!os.toUpperCase().startsWith("LINUX")) {
+            logger.error("使用的系统不正确，请使用Linux系统运行， 当前使用系统为： " + os);
+            return "-1";
+        }
+
+        InputStream is = null;
+        BufferedReader br = null;
+        Process pro = null;
+
+        int waitFor = -1;
+
+        try {
+            pro = Runtime.getRuntime().exec(s);
+
+            is = pro.getInputStream();
+            br = new BufferedReader(new InputStreamReader(is, SysConstant.ENCODING));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            waitFor = pro.waitFor();
+            logger.info("执行命令： {}， 等待时间为： {}， 运行结果为： {}", s, waitFor, sb.toString());
+        } catch (IOException e) {
+            logger.error("执行失败IOException", e);
+        } catch (InterruptedException e) {
+            logger.error("执行失败InterruptedException", e);
+        } finally {
+            try {
+                if (null != br) {
+                    br.close();
+                }
+                if (null != is) {
+                    is.close();
+                }
+            } catch (IOException e) {
+            }
+            if (null != pro) {
+                pro.destroy();
+            }
+        }
+        return sb.toString();
     }
 
 }

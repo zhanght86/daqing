@@ -54,7 +54,6 @@
 			<param-name>forceEncoding</param-name>
 			<param-value>true</param-value>
 		</init-param>
-		<async-supported>true</async-supported>
 	</filter>
 	<filter-mapping>
 		<filter-name>SpringEncodingFilter</filter-name>
@@ -70,8 +69,7 @@
 			<param-name>contextConfigLocation</param-name>
 			<param-value>classpath:conf/spring-mvc.xml</param-value>
 		</init-param>
-		<load-on-startup>1</load-on-startup>
-		<async-supported>true</async-supported>
+		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>spring</servlet-name>

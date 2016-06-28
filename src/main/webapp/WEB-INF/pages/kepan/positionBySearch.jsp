@@ -181,7 +181,7 @@
 				<ul class="seachform">
 					<li><label>&nbsp;&nbsp;&nbsp;&nbsp;文件名</label> <input
 						id="volLabel" name="volLabel" type="text" class="scinput"
-						style="width: 200px" /></li>
+						style="width: 200px"  value="${volLabel}"/></li>
 
 					<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
 						class="scbtn" value="在线文件查询" /></li>
@@ -205,7 +205,7 @@
 						<th>盘仓位置</th>
 						<th>光盘位置</th>
 						<th>文件名称</th>
-						<th>完成刻录时间</th>
+						
 					</tr>
 				</thead>
 				<tbody>
@@ -220,8 +220,7 @@
 							<%-- <td>${(map.disc_position - 1) % 50 + 1}</td> --%>
 							<td>${map.offset}</td>
 							<td>${map.iso_file }</td>
-							<td><fmt:formatDate value="${map.create_time }"
-									pattern="yyyy-MM-dd HH:mm:ss" /></td>
+						
 								
 						</tr>
 					</c:forEach>

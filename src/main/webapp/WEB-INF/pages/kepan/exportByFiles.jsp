@@ -110,7 +110,7 @@ $(document).ready(function() {
 
 	
 	 function setCurrent(obj){
-		 document.getElementById("exportPath").value=obj;
+		 document.getElementById("currentPath").value=obj;
 	 }
 </script>
 </head>
@@ -143,7 +143,7 @@ $(document).ready(function() {
 				<ul class="seachform">
 					<li><label>&nbsp;&nbsp;&nbsp;&nbsp;文件名</label> <input
 						id="volLabel" name="volLabel" type="text" class="scinput"
-						style="width: 200px" /></li>
+						style="width: 200px" value="${volLabel}"/></li>
 
 					<li><label>&nbsp;</label> <input name="" style="width: 100px" type="submit"
 						class="scbtn"  value="在线文件查询" /></li>
@@ -160,7 +160,7 @@ $(document).ready(function() {
 				<thead>
 					<tr>
 						<th width="5%">序号</th>
-						<th width="5%">卷标号</th>
+						
 						<th width="5%">服务器名</th>
 	
 						<th width="75%">文件路径</th>
@@ -174,7 +174,7 @@ $(document).ready(function() {
 					<c:forEach items="${list }" var="map" varStatus="status">
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							<td width="50px">${status.count }</td>
-							<td width="50px">${map.volume_label }</td>
+							
 
 							<%--<td>
 								<c:if test="${map.export_state == 1}">下载数据</c:if>

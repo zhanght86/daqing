@@ -70,7 +70,7 @@
     
     <!-- =========================================公用配置End=============================== -->
     
-    <root level="DEBUG">
+    <root level="INFO">
         	
      <appender-ref ref="MODULENAME-ERROR"/>
      <appender-ref ref="MODULENAME-INFO"/>

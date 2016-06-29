@@ -225,7 +225,7 @@ public interface BurnService {
 	 * @param task_name
 	 * @return
 	 */
-	List<Map<String, Object>> listExportRecordCheck(String volLabel, String state, String task_name);
+	Map<String, Object> listExportRecordCheck(String volLabel, String state, String task_name);
 
 	/**
 	 * 导出文件任务列表

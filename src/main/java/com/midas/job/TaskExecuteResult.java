@@ -37,11 +37,11 @@ public class TaskExecuteResult {
     private BurnService burnService;
 
     
-    @Scheduled(cron="0/30 * *  * * ? ") 
+    @Scheduled(fixedDelay = 30*1000) 
     public void execute() {
 
         long st = System.currentTimeMillis();
-        Map<String, Object>  taskMap=null;
+        
         try {
           
 			Map<String, Object> paramMap = new HashMap<String, Object>();
@@ -56,38 +56,33 @@ public class TaskExecuteResult {
 
 		try {
 			boolean isRunDump = true;
-			List<Map<String, Object>> checklist = burnService.listExportRecordCheck(null, "0,1", null);// 查询状态为0,1的任务
+			Map<String, Object> taskMap = burnService.listExportRecordCheck(null, "0,1", null);// 查询状态为0,1的任务
 			String runVoLabel = "";
 			String exportPath = "";
 
-			if (null != checklist && checklist.size() > 0) {
-				for (Map<String, Object> map : checklist) {
-					String export_state = map.get("export_state") + "";
-					if (ExportState.EXPORTTING.getKey().equals(export_state))// 发现有状态为1的正在导出的任务则不执行导出
-					{
-						isRunDump = false;
-					}
-				}
-				taskMap = checklist.get(0);
+			if (null != taskMap) {
+
 				taskMap.put("update_time", new Date());
 				taskMap.put("export_state", ExportState.EXPORTTING.getKey());
 				runVoLabel = taskMap.get("volume_label") + "";
 				exportPath = taskMap.get("export_path") + "";
-			
-				
+
 				if (isRunDump)// 如果有全部为0 没有1正在导出的任务则执行下载
 				{
-					if(!business.diskSpacecheck(runVoLabel, exportPath))// 更新任务为空间不足无法导出
+					if (!business.diskSpacecheck(runVoLabel, exportPath))// 更新任务为空间不足无法导出
 					{
 						taskMap.put("export_state", ExportState.EXPORT_SPACE.getKey());
 						taskMap.put("export_desc", ExportState.EXPORT_SPACE.getValue());
 						taskMap.put("update_time", new Date());
 						burnService.updateExportRecord(taskMap);
-						return ;
+						return;
 					}
-					burnService.updateExportRecord(taskMap);// 更新任务状态
-					Thread td = new Thread(new Burn(runVoLabel, exportPath, taskMap));
-					td.start();
+					boolean bool = burnService.checkMerge(runVoLabel);
+					if (bool) {
+						burnService.updateExportRecord(taskMap);// 更新任务状态
+						Thread td = new Thread(new Burn(runVoLabel, exportPath, taskMap));
+						td.start();
+					}
 				}
 
 			} else {

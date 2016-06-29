@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.text.html.parser.TagElement;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -346,8 +348,52 @@ public class BurnServiceImpl implements BurnService {
     }
     
     @Override
-    public List<Map<String, Object>> listExportRecordCheck(String volLabel, String state,String task_name) {
-        return burnDao.listExportRecordCheck(volLabel, state,task_name);
+    public Map<String, Object> listExportRecordCheck(String volLabel, String state,String task_name) {
+		List<Map<String, Object>> checklist = burnDao.listExportRecordCheck(volLabel, state, task_name);
+		List<Map<String, Object>> serverList = commonService.getAllMachine();// 可用的下载服务器列表
+		if (null != checklist && checklist.size() > 0) {
+			for (Map<String, Object> map : checklist) {
+				String export_state = map.get("export_state") + "";
+				if (ExportState.EXPORTTING.getKey().equals(export_state))// 发现有状态为1的正在导出的任务则不执行导出
+				{
+					List<Map<String, Object>> taglist = listPosition(map.get("volume_label") + "");
+					for (Map<String, Object> tag : taglist) {
+						String tempServer = tag.get("server") + "";
+						for (Map<String, Object> server : serverList) {
+							if (tempServer.equals(server.get("sp_code"))) {
+								serverList.remove(server);
+							}
+						}
+
+					}
+				}
+			}
+			if (serverList.size() == 0)
+				return null;
+			else {
+
+				for (Map<String, Object> map : checklist) {
+					String export_state = map.get("export_state") + "";
+					if ("0".equals(export_state))// 0为正准备下载的状态
+					{
+						List<Map<String, Object>> taglist = listPosition(map.get("volume_label") + "");
+						for (Map<String, Object> tag : taglist) {
+							String tempServer = tag.get("server") + "";
+							for (Map<String, Object> server : serverList) {
+								if (tempServer.equals(server.get("sp_code"))) {
+									return map; // 得到可运行的后台任务task返回
+								}
+							}
+
+						}
+
+					}
+				}
+			}
+
+		}
+
+		return null;
     }
 
     @Override
@@ -516,35 +562,49 @@ public class BurnServiceImpl implements BurnService {
 	public boolean CheckTaskAndRun(String soucePath) throws Exception{
 
 		List<Map<String, Object>> rslist = listExportTask("");
-	
 		if (null != rslist && rslist.size() > 0) {
-//        String runServer="";
-//        Map<String, Object> paramMap =new HashMap<String, Object>();
-//			for (Map<String, Object> taskinfo : rslist) {
-//				String tempServer = taskinfo.get("server") + "";
-//				if (ExportState.EXPORTTING.getKey().equals(taskinfo.get("export_state"))) {
-//					// 首次赋值
-//					if ("".equals(runServer)) {
-//						runServer = tempServer;
-//						
-//					} else {
-//						if (runServer.equals(tempServer)) { // 如果同时有2个运行为1的状态的服务器相同,则退出,要保证一台服务器只运行一个任务
-//							return false;
-//						} else {// 如果服务器不同,则赋值paramMap 准备更新状态并行运行第二个任务
-//							paramMap = taskinfo;
-//						}
-//					}
-//				}
-//
-//			}
+			//开门状态不进行导出
+			List<Map<String, Object>> serverList = commonService.getAllMachine();
+		    for (Map<String, Object> server : serverList) {
+	            boolean isbusy = commonService.isBusy(server.get("sp_value1")+"");
+	            if (isbusy) {
+	                logger.debug("服务器{}, 正在被使用， 不能进行合并");
+	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
+	            }
+	        }
 			 Map<String, Object> paramMap =rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
 			paramMap.put("update_time", new Date());
 			burnDao.updateExportFile(paramMap);
-			RunTask(paramMap);
+			
+			//RunTask(paramMap);
+			System.out.println("downFileThread start ................................................................................................ "+paramMap.toString());
+		    new Thread(new RunTaskJob(paramMap)).start();
+			
 		}
 
 		return true;
+	}
+	
+	class RunTaskJob    implements Runnable
+	{
+		Map<String, Object> paramMap;
+		public  RunTaskJob(Map<String, Object> paramMap)
+		{
+			this.paramMap=paramMap;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(5*1000);
+				RunTask(paramMap);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		}
 	}
 	
 //	public boolean RunTask( Map<String, Object> paramMap)
@@ -591,7 +651,7 @@ public class BurnServiceImpl implements BurnService {
 		String cmd = exportInfo.get("sp_value3") + "";
 		String username = exportInfo.get("sp_value1") + "";
 		String passwd = exportInfo.get("sp_value2") + "";
-		String soucePath = paramMap.get("filelist") + "";
+		String soucePath = paramMap.get("fileList") + "";
 		String targetPath = paramMap.get("export_path") + "";
 		String tmpServer=paramMap.get("server")+"";
 		List<Map<String, Object>> downServerList=new ArrayList<>();
@@ -689,7 +749,9 @@ public class BurnServiceImpl implements BurnService {
 // 	return testdata;
 //
 //	}
-	
+
+		
+		
   String a=" /0077_????/testdata2/testfile012/t12t26.jpg";
   int b=a.lastIndexOf("/");
    System.out.println(a.substring(0,b));

@@ -270,11 +270,12 @@ public class BurnServiceImpl implements BurnService {
 
     @Override
     public boolean checkMerge(String volLabel) {
-        List<Map<String, Object>> listExport = burnDao.listExportRecord(null, ExportState.EXPORTTING.getKey(),null);
-        if (null != listExport && !listExport.isEmpty()) {
-            logger.info("有正在导出的任务, 不能进行导出数据");
-            throw new ServiceException(ErrorConstant.CODE2000, "有正在导出的任务, 现在不能导出数据, 请稍后再试!!!");
-        }
+ //TODO 原先检查任务导出的单任务检查,现在放开,有后台定时任务进行判断,不再此处判断
+//        List<Map<String, Object>> listExport = burnDao.listExportRecord(null, ExportState.EXPORTTING.getKey(),null);
+//        if (null != listExport && !listExport.isEmpty()) {
+//            logger.info("有正在导出的任务, 不能进行导出数据");
+//            throw new ServiceException(ErrorConstant.CODE2000, "有正在导出的任务, 现在不能导出数据, 请稍后再试!!!");
+//        }
         List<Map<String, Object>> listPos = listPosition(volLabel);
 
         List<String> listServers = new ArrayList<String>();
@@ -354,7 +355,7 @@ public class BurnServiceImpl implements BurnService {
 		if (null != checklist && checklist.size() > 0) {
 			for (Map<String, Object> map : checklist) {
 				String export_state = map.get("export_state") + "";
-				if (ExportState.EXPORTTING.getKey().equals(export_state))// 发现有状态为1的正在导出的任务则不执行导出
+				if (ExportState.EXPORTTING.getKey().equals(export_state))// 发现有状态为1的正在导出任务的服务器排除则不执行导出
 				{
 					List<Map<String, Object>> taglist = listPosition(map.get("volume_label") + "");
 					for (Map<String, Object> tag : taglist) {
@@ -379,7 +380,7 @@ public class BurnServiceImpl implements BurnService {
 						List<Map<String, Object>> taglist = listPosition(map.get("volume_label") + "");
 						for (Map<String, Object> tag : taglist) {
 							String tempServer = tag.get("server") + "";
-							for (Map<String, Object> server : serverList) {
+							for (Map<String, Object> server : serverList) {//可用服务器列表
 								if (tempServer.equals(server.get("sp_code"))) {
 									return map; // 得到可运行的后台任务task返回
 								}

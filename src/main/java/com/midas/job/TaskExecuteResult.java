@@ -77,7 +77,7 @@ public class TaskExecuteResult {
 						burnService.updateExportRecord(taskMap);
 						return;
 					}
-					boolean bool = burnService.checkMerge(runVoLabel);
+					boolean bool = burnService.checkMerge(runVoLabel);//导出任务前最后检查
 					if (bool) {
 						burnService.updateExportRecord(taskMap);// 更新任务状态
 						Thread td = new Thread(new Burn(runVoLabel, exportPath, taskMap));

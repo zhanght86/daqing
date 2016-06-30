@@ -567,7 +567,7 @@ public class BurnServiceImpl implements BurnService {
 			//开门状态不进行导出
 			List<Map<String, Object>> serverList = commonService.getAllMachine();
 		    for (Map<String, Object> server : serverList) {
-	            boolean isbusy = commonService.isBusy(server.get("sp_value1")+"");
+	            boolean isbusy = commonService.isBusy(server.get("sp_code")+"");
 	            if (isbusy) {
 	                logger.debug("服务器{}, 正在被使用， 不能进行合并");
 	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");

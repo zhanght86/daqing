@@ -35,7 +35,11 @@ public class BurnBase {
         }
     }
 
-    protected Future<?> executeSubmit(Callable<?> call) {
+    public Future<?> executeSubmit(Callable<?> call) {
+        return threadPools.submit(call);
+    }
+    
+    public static Future<?> executeSubmitS(Callable<?> call) {
         return threadPools.submit(call);
     }
 

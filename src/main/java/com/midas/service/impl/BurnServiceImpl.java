@@ -1,6 +1,5 @@
 package com.midas.service.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -9,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.text.html.parser.TagElement;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
@@ -43,7 +40,6 @@ import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
-import com.midas.vo.FileVo;
 
 @Service
 public class BurnServiceImpl implements BurnService {
@@ -565,14 +561,14 @@ public class BurnServiceImpl implements BurnService {
 		List<Map<String, Object>> rslist = listExportTask("");
 		if (null != rslist && rslist.size() > 0) {
 			//开门状态不进行导出
-			List<Map<String, Object>> serverList = commonService.getAllMachine();
-		    for (Map<String, Object> server : serverList) {
-	            boolean isbusy = commonService.isBusy(server.get("sp_code")+"");
-	            if (isbusy) {
-	                logger.debug("服务器{}, 正在被使用， 不能进行合并");
-	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
-	            }
-	        }
+//			List<Map<String, Object>> serverList = commonService.getAllMachine();
+//		    for (Map<String, Object> server : serverList) {
+//	            boolean isbusy = commonService.isBusy(server.get("sp_code")+"");
+//	            if (isbusy) {
+//	                logger.debug("服务器{}, 正在被使用， 不能进行合并");
+//	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
+//	            }
+//	        }
 			 Map<String, Object> paramMap =rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
 			paramMap.put("update_time", new Date());
@@ -667,23 +663,39 @@ public class BurnServiceImpl implements BurnService {
 		
 		if(downServerList.size()==0)
 			downServerList = commonService.getAllMachine();
+		
 		for (Map<String, Object> machine : downServerList) {
-			servers = machine.get("sp_value1") + "";		
+			servers = machine.get("sp_value1") + "";
 			String[] fileList = soucePath.split(",");
 			FtpUtil ftpUtil = new FtpUtil();
-			FTPClient client = null;
+
 			try {
-				client = ftpUtil.getConnectionFTP(servers, 21, username, passwd);
-				if(null==client)
-					throw new Exception("ftp服务器:"+servers+" user: "+username+" 连接失败,请检查服务是否正常");
+				boolean isbusy = commonService.isBusy(machine.get("sp_code") + "");
+				if (isbusy) {
+					logger.debug("服务器{}, 正在被使用， 不能进行合并");
+					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
+				}
+
+				List<Future<?>> listFutures = new ArrayList<Future<?>>();
 				for (String file : fileList) {
-					String ftpPath=file.substring(0,file.lastIndexOf("/")); //截取路径名称
-					String filename=file.substring(file.lastIndexOf("/")+1);//获取文件名
-					String filePath=rootPath+ftpPath;
-					
-					boolean downRS=ftpUtil.downFileV2(client, filePath.replaceAll("//", "/"), filename, targetPath);
-					if(downRS){
-						successDownNum++;
+					String ftpPath = file.substring(0, file.lastIndexOf("/")); // 截取路径名称
+					String filename = file.substring(file.lastIndexOf("/") + 1);// 获取文件名
+					String filePath = rootPath + ftpPath;
+					logger.info("下载的文件路径为: {}", filePath);
+					FTPClient client = ftpUtil.getConnectionFTP(servers, 21, username, passwd);
+					if (null == client)
+						throw new Exception("ftp服务器:" + servers + " user: " + username + " 连接失败,请检查服务是否正常");
+					Future<?> downRs = BurnBase.executeSubmitS(new runDownfile(client, filePath.replaceAll("//", "/"), filename, targetPath));
+					listFutures.add(downRs);
+					successDownNum++;
+
+				}
+				for (Future<?> f : listFutures) {
+					try {
+						f.get();
+					} catch (Exception e) {
+						throw new ServiceException(ErrorConstant.CODE4000, "多线程文件下载失败!");
+
 					}
 				}
 				paramMap.put("number_success", successDownNum+"");
@@ -695,9 +707,7 @@ public class BurnServiceImpl implements BurnService {
 				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
 				burnDao.updateExportFile(paramMap);
 				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
-			} finally {
-				ftpUtil.closeFTP(client);
-			}
+			} 
 		}
 		//合并split文件
 	
@@ -717,6 +727,38 @@ public class BurnServiceImpl implements BurnService {
 
 	}
 	
+	
+	 class runDownfile implements Callable<Boolean> 
+	 {
+		 FTPClient client;
+		 String path;
+		 String fileName;
+		 String localPath;
+		 public runDownfile(FTPClient client, String path, String fileName, String localPath)
+		 {
+			 this.client=client;
+			 this.path=path;
+			 this.fileName=fileName;
+			 this.localPath=localPath;
+		 }
+		 
+		 @Override
+	        public Boolean call() throws ServiceException {
+			 
+			 FtpUtil ftpUtil = new FtpUtil();
+			 try {
+
+				boolean rs= ftpUtil.downFileV2(client, path, fileName, localPath);				
+				return rs;
+			} catch (Exception e) {
+				logger.error("下载文件数据失败"+fileName+" 源路径:"+path+" 目标路径 : "+localPath, e);
+			}
+			 finally {
+				 //ftpUtil.closeFTP(client);
+			}
+			return true;
+		 }
+	 }
 	
 	
 	
@@ -750,12 +792,34 @@ public class BurnServiceImpl implements BurnService {
 // 	return testdata;
 //
 //	}
+//		List<Future> list=new ArrayList<>();
+//		int i=0;
+//		ExecutorService executorService = Executors.newFixedThreadPool(3);  
+//       while(i<10)
+//       {
+//    	   
+//		Future<?> downRs = BurnBase.executeSubmitS(new Callable<String>() {
+//			@Override
+//			public String call() throws Exception {
+//		
+//					Thread.sleep(5000);
+//				System.out.println("线程运行:"+Thread.currentThread().getId());
+//				return Thread.currentThread().getId()+"------------------return ";
+//			}
+//		});
+//		i++;
+//		list.add(downRs);
+//       }
+//       for (Future future : list) {
+//		try {
+//			System.out.println(future.get());
+//		} catch (InterruptedException | ExecutionException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+		
 
-		
-		
-  String a=" /0077_????/testdata2/testfile012/t12t26.jpg";
-  int b=a.lastIndexOf("/");
-   System.out.println(a.substring(0,b));
 	}
 	 
 

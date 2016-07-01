@@ -640,6 +640,7 @@ public class BurnServiceImpl implements BurnService {
 	
 	public boolean RunTask( Map<String, Object> paramMap)
 	{
+		boolean isReadyMerg=false;
 		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
 		List<Map<String, Object>> serverList = commonService.getAllMachine();
 		String servers = "";
@@ -670,11 +671,11 @@ public class BurnServiceImpl implements BurnService {
 			FtpUtil ftpUtil = new FtpUtil();
 
 			try {
-				boolean isbusy = commonService.isBusy(machine.get("sp_code") + "");
-				if (isbusy) {
-					logger.debug("服务器{}, 正在被使用， 不能进行合并");
-					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
-				}
+//				boolean isbusy = commonService.isBusy(machine.get("sp_code") + "");
+//				if (isbusy) {
+//					logger.debug("服务器{}, 正在被使用， 不能进行合并",paramMap.get("eid"));
+//					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
+//				}
 
 				List<Future<?>> listFutures = new ArrayList<Future<?>>();
 				for (String file : fileList) {
@@ -701,6 +702,7 @@ public class BurnServiceImpl implements BurnService {
 				paramMap.put("number_success", successDownNum+"");
 				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
 				burnDao.updateExportFile(paramMap);
+				isReadyMerg=true;
 
 			} catch (Exception e) {
 				 paramMap.put("number_success", successDownNum+"");
@@ -711,6 +713,8 @@ public class BurnServiceImpl implements BurnService {
 		}
 		//合并split文件
 	
+		if(isReadyMerg)
+		{
 		int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
 		if (-1 != rsInt) {
 			paramMap.put("export_state", ExportState.MEGE_SUCCESS.toString());
@@ -721,7 +725,7 @@ public class BurnServiceImpl implements BurnService {
 		burnDao.updateExportFile(paramMap);		
 		    paramMap.put("number_success", successDownNum+"");
 			burnDao.updateExportFile(paramMap);
-
+		}
 	
 		return true;
 
@@ -747,8 +751,9 @@ public class BurnServiceImpl implements BurnService {
 			 
 			 FtpUtil ftpUtil = new FtpUtil();
 			 try {
-
-				boolean rs= ftpUtil.downFileV2(client, path, fileName, localPath);				
+				 long st = System.currentTimeMillis();
+				boolean rs= ftpUtil.downFileV2(client, path, fileName, localPath);	
+				logger.info("文件{}下载耗时,{} 毫秒", path+fileName,System.currentTimeMillis() - st);
 				return rs;
 			} catch (Exception e) {
 				logger.error("下载文件数据失败"+fileName+" 源路径:"+path+" 目标路径 : "+localPath, e);

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -669,39 +671,37 @@ public class BurnServiceImpl implements BurnService {
 			servers = machine.get("sp_value1") + "";
 			String[] fileList = soucePath.split(",");
 			FtpUtil ftpUtil = new FtpUtil();
-
+			ExecutorService executorService = Executors.newFixedThreadPool(4);
 			try {
-//				boolean isbusy = commonService.isBusy(machine.get("sp_code") + "");
+//				boolean isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
 //				if (isbusy) {
 //					logger.debug("服务器{}, 正在被使用， 不能进行合并",paramMap.get("eid"));
 //					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
 //				}
-
 				List<Future<?>> listFutures = new ArrayList<Future<?>>();
 				for (String file : fileList) {
 					String ftpPath = file.substring(0, file.lastIndexOf("/")); // 截取路径名称
 					String filename = file.substring(file.lastIndexOf("/") + 1);// 获取文件名
 					String filePath = rootPath + ftpPath;
-					logger.info("下载的文件路径为: {}", filePath);
-					FTPClient client = ftpUtil.getConnectionFTP(servers, 21, username, passwd);
-					if (null == client)
-						throw new Exception("ftp服务器:" + servers + " user: " + username + " 连接失败,请检查服务是否正常");
-					Future<?> downRs = BurnBase.executeSubmitS(new runDownfile(client, filePath.replaceAll("//", "/"), filename, targetPath));
+					logger.info("下载的文件路径为: {}", filePath);			
+					
+					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd));
 					listFutures.add(downRs);
 					successDownNum++;
 
 				}
 				for (Future<?> f : listFutures) {
 					try {
-						f.get();
+						boolean isDownFinsh=(boolean)f.get();
+						if(!isDownFinsh){//只要一个文件下载失败则抛出异常
+						 throw new ServiceException(ErrorConstant.CODE4000, "多线程文件下载失败!");
+						}
 					} catch (Exception e) {
 						throw new ServiceException(ErrorConstant.CODE4000, "多线程文件下载失败!");
 
 					}
 				}
-				paramMap.put("number_success", successDownNum+"");
-				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
-				burnDao.updateExportFile(paramMap);
+		
 				isReadyMerg=true;
 
 			} catch (Exception e) {
@@ -710,7 +710,15 @@ public class BurnServiceImpl implements BurnService {
 				burnDao.updateExportFile(paramMap);
 				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
 			} 
+			finally {
+				executorService.shutdown();
+			}
 		}
+		
+		
+		paramMap.put("number_success", successDownNum+"");
+		paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+		burnDao.updateExportFile(paramMap);
 		//合并split文件
 	
 		if(isReadyMerg)
@@ -734,35 +742,47 @@ public class BurnServiceImpl implements BurnService {
 	
 	 class runDownfile implements Callable<Boolean> 
 	 {
-		 FTPClient client;
+	
 		 String path;
 		 String fileName;
 		 String localPath;
-		 public runDownfile(FTPClient client, String path, String fileName, String localPath)
+		 String server;
+		 String userName;
+		 String passwd;
+		 public runDownfile( String path, String fileName, String localPath,String server,String userName,String passwd)
 		 {
-			 this.client=client;
+			
 			 this.path=path;
 			 this.fileName=fileName;
 			 this.localPath=localPath;
+			 this.server=server;
+			 this.userName=userName;
+			 this.passwd=passwd;
 		 }
 		 
 		 @Override
 	        public Boolean call() throws ServiceException {
 			 
-			 FtpUtil ftpUtil = new FtpUtil();
-			 try {
-				 long st = System.currentTimeMillis();
-				boolean rs= ftpUtil.downFileV2(client, path, fileName, localPath);	
-				logger.info("文件{}下载耗时,{} 毫秒", path+fileName,System.currentTimeMillis() - st);
+			FtpUtil ftpUtil = new FtpUtil();
+			FTPClient client = null;
+			try {
+
+				client = ftpUtil.getConnectionFTP(server, 21, userName, passwd);
+				if (null == client)
+					throw new Exception("ftp服务器:" + server + " user: " + userName + " 连接失败,请检查服务是否正常");
+				long st = System.currentTimeMillis();
+				boolean rs = ftpUtil.downFileV2(client, path, fileName, localPath);
+				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
+				client.logout();
 				return rs;
 			} catch (Exception e) {
-				logger.error("下载文件数据失败"+fileName+" 源路径:"+path+" 目标路径 : "+localPath, e);
+				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
+				return false;
+			} finally {
+				ftpUtil.closeFTP(client);
 			}
-			 finally {
-				 //ftpUtil.closeFTP(client);
-			}
-			return true;
-		 }
+		
+		}
 	 }
 	
 	

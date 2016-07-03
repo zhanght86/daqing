@@ -2,6 +2,7 @@
 	pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 <%
     String path = request.getContextPath();
 			String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
@@ -95,7 +96,7 @@ $(document).ready(function() {
 				</ul>
 			</form>
 
-			<table class="tablelist">
+			<table class="tablelist"  style="word-break:break-all; word-wrap:break-all;">
 				<thead>
 					<tr>
 						    <th width="50px">序号</th>
@@ -114,7 +115,13 @@ $(document).ready(function() {
 					<c:forEach items="${pageInfo.list }" var="map" varStatus="status">
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							<td>${status.count }</td>
-							<td >${map.filelist}</td>						
+						
+							<td title="${map.filelist}">
+							<c:if test="${fn:length( map.filelist)>100 }">
+							${ fn:substring( map.filelist ,0,100)}. . . . . . </c:if> 
+							<c:if test="${fn:length( map.filelist)<=100 }">
+							${map.filelist}</c:if> 
+							</td>						
 							<td >${map.export_path}</td>
 							<td >${map.create_time }</td>
 							<td >${map.update_time}</td>

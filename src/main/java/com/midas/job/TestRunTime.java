@@ -34,7 +34,10 @@ public class TestRunTime {
 //        } catch (java.io.IOException e) {
 //            System.err.println("IOException " + e.getMessage());
 //        }
-        
+        String teststr1="测试中文";
+        String teststr=new String(teststr1.getBytes("GBK"),"GBK");
+        String filename=new String( teststr.getBytes( "utf8" ), "utf8" ) ;
+        System.out.println(filename);
            String aa="server1,server2,,";
            if(aa.lastIndexOf(",")>1)
            System.out.println(aa.substring(0,aa.lastIndexOf(",")));

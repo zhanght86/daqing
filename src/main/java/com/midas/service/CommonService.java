@@ -143,5 +143,12 @@ public interface CommonService {
      * @return
      */
 	Map<String, Object> getTagpositionDirect(String tag);
+    
+	/**
+	 * 驱动器繁忙判断第二版
+	 * @param server
+	 * @return
+	 */
+	boolean isBusyV2(String server);
 
 }

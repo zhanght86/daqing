@@ -139,6 +139,7 @@ public class BurnDaoImpl implements BurnDao {
 	@Override
 	public int updateExportFile(Map<String, Object> map) {
 		// TODO Auto-generated method stub
+		System.out.println("测试下载失败任务更新状态"+map.toString());
 		return mapper.updateExportFile(map);
 	}
 

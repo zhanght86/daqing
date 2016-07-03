@@ -691,15 +691,10 @@ public class BurnServiceImpl implements BurnService {
 
 				}
 				for (Future<?> f : listFutures) {
-					try {
 						boolean isDownFinsh=(boolean)f.get();
 						if(!isDownFinsh){//只要一个文件下载失败则抛出异常
 						 throw new ServiceException(ErrorConstant.CODE4000, "多线程文件下载失败!");
 						}
-					} catch (Exception e) {
-						throw new ServiceException(ErrorConstant.CODE4000, "多线程文件下载失败!");
-
-					}
 				}
 		
 				isReadyMerg=true;

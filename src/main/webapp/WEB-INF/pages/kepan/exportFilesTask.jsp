@@ -101,7 +101,7 @@ $(document).ready(function() {
 					<tr>
 						    <th width="50px">序号</th>
 							<th width="800px">导出文件</th>
-							<th width="200px">导出路径</th>
+							<th width="250px">导出路径</th>
 							<th width="180px">创建时间</th>	
 							<th width="180px" >修改时间</th>
 							<!-- 
@@ -117,12 +117,18 @@ $(document).ready(function() {
 							<td>${status.count }</td>
 						
 							<td title="${map.filelist}">
-							<c:if test="${fn:length( map.filelist)>100 }">
-							${ fn:substring( map.filelist ,0,100)}. . . . . . </c:if> 
-							<c:if test="${fn:length( map.filelist)<=100 }">
+							<c:if test="${fn:length( map.filelist)>80 }">
+							${ fn:substring( map.filelist ,0,80)}. . . . . . </c:if> 
+							<c:if test="${fn:length( map.filelist)<=80 }">
 							${map.filelist}</c:if> 
 							</td>						
-							<td >${map.export_path}</td>
+							
+							<td title="${map.export_path}">
+							<c:if test="${fn:length( map.export_path)>20 }">
+							${ fn:substring( map.export_path ,0,20)}. . . . . . </c:if> 
+							<c:if test="${fn:length( map.export_path)<=20 }">
+							${map.export_path}</c:if> 
+							</td>
 							<td >${map.create_time }</td>
 							<td >${map.update_time}</td>
 							<td>							

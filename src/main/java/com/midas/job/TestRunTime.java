@@ -34,12 +34,28 @@ public class TestRunTime {
 //        } catch (java.io.IOException e) {
 //            System.err.println("IOException " + e.getMessage());
 //        }
-        String teststr1="测试中文";
-        String teststr=new String(teststr1.getBytes("GBK"),"GBK");
-        String filename=new String( teststr.getBytes( "utf8" ), "utf8" ) ;
-        System.out.println(filename);
-           String aa="server1,server2,,";
-           if(aa.lastIndexOf(",")>1)
-           System.out.println(aa.substring(0,aa.lastIndexOf(",")));
+//        String teststr1="测试中文";
+//        String teststr=new String(teststr1.getBytes("GBK"),"GBK");
+//        String filename=new String( teststr.getBytes( "utf8" ), "utf8" ) ;
+//        System.out.println(filename);
+//           String aa="server1,server2,,";
+//           if(aa.lastIndexOf(",")>1)
+//           System.out.println(aa.substring(0,aa.lastIndexOf(",")));
+        
+        String testvolue="/0254_W20160512000001(84-30)/芳38/W116324.001.SGY_midas_6_000.split,/0256_W20160512000001(84-31)/芳38/W116324.001.SGY_midas_6_001.split,/0257_W20160512000001(84-32)/芳38/W116324.001.SGY_midas_6_002.split,/0258_W20160512000001(84-33)/芳38/W116324.001.SGY_midas_6_003.split,/0259_W20160512000001(84-34)/芳38/W116324.001.SGY_midas_6_004.split,/0542_W20160512000001(84-75)/芳38/W116324.001.SGY_midas_6_005.split";
+        //W20160512000001
+        int beginNum=testvolue.indexOf("_");
+        int endNum=testvolue.indexOf("(");
+        String tmpStr="";
+        if(beginNum>0&&endNum>0)
+        {
+         tmpStr=testvolue.substring(testvolue.indexOf("_")+1,testvolue.indexOf("("));
+        }
+        else
+        {
+        tmpStr=testvolue.substring(6,21);
+        }
+       
+        System.out.println(tmpStr);
     }
 }

@@ -35,6 +35,7 @@ import com.midas.exception.ServiceException;
 import com.midas.service.BurnService;
 import com.midas.service.CommonService;
 import com.midas.service.DataService;
+import com.midas.service.StandingbookService;
 import com.midas.uitls.FtpUtil;
 import com.midas.uitls.date.DateStyle;
 import com.midas.uitls.date.DateUtil;
@@ -54,7 +55,8 @@ public class BurnServiceImpl implements BurnService {
     private BurnDao       burnDao;
     private DataService   dataService;
 
-	
+    @Autowired
+    private StandingbookService standingbookService;
 
     @Override
     public Map<String, Object> getFreeBurn() throws ServiceException {
@@ -563,14 +565,14 @@ public class BurnServiceImpl implements BurnService {
 		List<Map<String, Object>> rslist = listExportTask("");
 		if (null != rslist && rslist.size() > 0) {
 			//开门状态不进行导出
-//			List<Map<String, Object>> serverList = commonService.getAllMachine();
-//		    for (Map<String, Object> server : serverList) {
-//	            boolean isbusy = commonService.isBusy(server.get("sp_code")+"");
-//	            if (isbusy) {
-//	                logger.debug("服务器{}, 正在被使用， 不能进行合并");
-//	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
-//	            }
-//	        }
+			List<Map<String, Object>> serverList = commonService.getAllMachine();
+		    for (Map<String, Object> server : serverList) {
+	            boolean isbusy = commonService.isBusyV2(server.get("sp_code")+"");
+	            if (isbusy) {
+	                logger.debug("服务器{}维护中或正在被使用， 不能进行合并");
+	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
+	            }
+	        }
 			 Map<String, Object> paramMap =rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
 			paramMap.put("update_time", new Date());
@@ -606,39 +608,7 @@ public class BurnServiceImpl implements BurnService {
 		}
 	}
 	
-//	public boolean RunTask( Map<String, Object> paramMap)
-//	{
-//		Map exportInfo = commonService.getSystemParameters(SysConstant.EXPORT_ENV);
-//		List<Map<String, Object>> serverList = commonService.getAllMachine();
-//		String servers = "";
-//		for (Map<String, Object> machine : serverList) {
-//			servers += machine.get("sp_value1") + ",";
-//		}
-//		servers = servers.substring(0, servers.length() - 1);
-//		String cmd = exportInfo.get("sp_value3") + "";
-//		String username = exportInfo.get("sp_value1") + "";
-//		String soucePath = paramMap.get("filelist") + "";
-//		String targetPath = paramMap.get("export_path") + "";
-//		String passwd = exportInfo.get("sp_value2") + "";
-//
-//		try {
-//       
-//			int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
-//			if (-1 != rsInt) {
-//				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
-//
-//			} else {
-//				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
-//			}
-//			burnDao.updateExportFile(paramMap);
-//
-//		} catch (Exception e) {
-//			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
-//			burnDao.updateExportFile(paramMap);
-//		}
-//		return true;
-//
-//	}
+
 	
 	public boolean RunTask( Map<String, Object> paramMap)
 	{
@@ -654,6 +624,7 @@ public class BurnServiceImpl implements BurnService {
 		String soucePath = paramMap.get("fileList") + "";
 		String targetPath = paramMap.get("export_path") + "";
 		String tmpServer=paramMap.get("server")+"";
+		String volumeLabel=paramMap.get("volume_label")+"";
 		List<Map<String, Object>> downServerList=new ArrayList<>();
 		if (tmpServer.indexOf(",") < 0)// 单服务器任务判断准确ftp服务器,
 		{
@@ -729,6 +700,18 @@ public class BurnServiceImpl implements BurnService {
 		    paramMap.put("number_success", successDownNum+"");
 			burnDao.updateExportFile(paramMap);
 		}
+		
+		if(!StringUtils.isEmpty(volumeLabel))
+		{
+	     Map<String, Object> standingMap = new HashMap<String, Object>();
+         standingMap.put("eid", paramMap.get("eid")+"");
+         standingMap.put("volume_label", volumeLabel);
+         standingMap.put("states", "1");
+         // 修改为最后一个刻录完成的时间
+         standingMap.put("update_time", new Date());
+         standingMap.put("type", 2);
+         standingbookService.update(standingMap);
+		}
 	
 		return true;
 
@@ -786,15 +769,51 @@ public class BurnServiceImpl implements BurnService {
 	public boolean savefileExportTask(String soucePath, String exportpath,String serverInfo) throws ServiceException {
 		boolean isSucc = true;
 		Map<String, Object> exportMap = new HashMap<String, Object>();
-
+		int beginNum = soucePath.indexOf("_");
+		int endNum = soucePath.indexOf("(");
+		String volumeLabel = "";
+		if (beginNum > 0 && endNum > 0) {
+			volumeLabel = soucePath.substring(beginNum + 1, endNum);
+		} else {
+			if (soucePath!=null&&soucePath.length()>21) {
+				volumeLabel = soucePath.substring(6, 21);
+			}
+			
+		}
+	     //导出任务保存  
 		exportMap.put("fileList", soucePath);
 		exportMap.put("number_success", 0);
 		exportMap.put("export_state", "0");
 		exportMap.put("export_desc", "准备下载");
 		exportMap.put("export_path", exportpath);
 		exportMap.put("server", serverInfo);
+		exportMap.put("volume_label", volumeLabel);
 		// exportMap.put("c_user", null);
 		insertExportFileRecord(exportMap);
+		
+		Map<String, Object> paraMap = new HashMap<String, Object>();
+
+		//更新台帐
+		if (!StringUtils.isEmpty(volumeLabel)) {
+			paraMap.put("volume_label", volumeLabel);
+			paraMap.put("type", 1);
+			List<Map<String, Object>> mergelist = standingbookService.getStandingbook(paraMap);
+			for (Map<String, Object> o : mergelist) {
+				Map<String, Object> standingMap = new HashMap<String, Object>();
+				standingMap.put("eid", exportMap.get("eid"));
+				standingMap.put("volume_label", volumeLabel);
+				standingMap.put("data_type", o.get("data_type"));
+				standingMap.put("work_area", o.get("work_area"));
+				standingMap.put("construction_unit", o.get("construction_unit"));
+				standingMap.put("construction_year", o.get("construction_year"));
+				standingMap.put("data_quantity", o.get("data_quantity"));
+				standingMap.put("burn_count", o.get("burn_count"));
+				standingMap.put("create_time", new Date());
+				standingMap.put("type", "2");
+				standingbookService.insert(standingMap);
+	         }    
+		}
+	
 
 		return true;
 

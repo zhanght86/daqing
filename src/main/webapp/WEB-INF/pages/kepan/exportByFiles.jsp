@@ -59,11 +59,77 @@ $(document).ready(function() {
 		$(".tip").fadeIn(200);
 				
 		var sourcePath = document.getElementById('sourcePath');
-		sourcePath.value=checkFiles;		
+		sourcePath.value=checkFiles;	
 		
+		 var dirPath=document.getElementById('dirPath');		    
+	     dirPath.value=document.getElementById('volLabel').value;
+		
+			
 	
-	})
 	});
+	
+	
+$(document).on('click','.button',function(){ 
+	/* 		$(".aaa").click(function(){ */
+	 
+		  var currentPath=$("#currentPath").val() ;
+		 // alert($("#currentPath").val());
+		/*   var currentPath1= currentPath.substring(0, currentPath.lastIndexOf("/"));
+		  alert(currentPath.split('/')[3]); */
+		  var projectName=currentPath.substring(0,currentPath.substr(1).lastIndexOf('/')+1);
+		 // alert(projectName);
+		    var arg = {};
+		    var arg1="path";
+		    arg[arg1]=projectName;
+		  
+		  
+							  $.post("<%=basePath%>/burn/openDir.do", arg,function(data,status){
+							  
+							  var json =eval(data); 
+						      
+							  $("#info").html(""); 
+								 var table="<table>"
+							  $.each(data, function(i, item) {
+								  table+="<tr> <td><input type='radio' name='dir' value='"+item+"' onchange='getDataPath1(this)'></input></td> <td><a href='#' class='aaa' name='button' value='"+item+"'>"+item+"</a></td></tr>";
+								
+						        });
+						
+							table+=("</table>");
+							 
+							  /*  $("#info").append("<table> <tr> <td> "+item+"</td></tr></table>");*/
+							  document.getElementById("info").innerHTML = table;
+							
+							/*  alert("Data: " + data + "\nStatus: " + status); */ 
+						  });
+				});
+				
+				
+			$(document).on('click','.aaa',function(){ 
+				/* 		$(".aaa").click(function(){ */
+				 
+					 
+										  $.post("<%=basePath%>/burn/openDir.do", {path:$(this).attr("value")},function(data,status){
+										  
+										  var json =eval(data); 
+							 
+										  $("#info").html(""); 
+											 var table="<table>"
+										  $.each(data, function(i, item) {
+											  table+="<tr> <td><input type='radio' name='dir' value='"+item+"' onchange='getDataPath1(this)'></input></td> <td><a href='#' class='aaa' name='button' value='"+item+"' onclick='setCurrent(\""+item+"\")'>"+item+"</a></td></tr>";
+											
+									        });
+									
+										table+=("</table>");
+										 
+										  /*  $("#info").append("<table> <tr> <td> "+item+"</td></tr></table>");*/
+										  document.getElementById("info").innerHTML = table;
+										
+										/*  alert("Data: " + data + "\nStatus: " + status); */ 
+									  });
+							});
+		});
+
+             
 	
    
 	
@@ -112,6 +178,8 @@ $(document).ready(function() {
 	 function setCurrent(obj){
 		 document.getElementById("currentPath").value=obj;
 	 }
+	 
+
 </script>
 </head>
 <!-- 电子标签位置查看 -->
@@ -146,7 +214,7 @@ $(document).ready(function() {
 						style="width: 200px" value="${volLabel}"/></li>
 
 					<li><label>&nbsp;</label> <input name="" style="width: 100px" type="submit"
-						class="scbtn"  value="在线文件查询" /></li>
+						class="scbtn"   value="在线文件查询" /></li>
 					 	<li><label>&nbsp;</label> 
 					 	<%-- <input name="" type="submit" style="width: 100px" class="scbtn" value="离线查询"  onclick="javascript:this.form.action='<%=basePath%>/burn/exportFileListOffine.do';"/></li> 
 						<li><label>&nbsp;</label>  --%>
@@ -211,6 +279,8 @@ $(document).ready(function() {
 		<form action="<%=basePath%>/burn/exportFile.do">
 			<input type="hidden" id="sourcePath" name="sourcePath"> <input
 				type="hidden" name="currentPath" id="currentPath" value="">
+				 <input
+				type="hidden" name="dirPath" id="dirPath" >
 
 			<div class="tipinfo">
 				<span><img src="<%=basePath%>/static/images/ticon.png" /></span>
@@ -232,7 +302,7 @@ $(document).ready(function() {
 				<div style="position: absolute; height: 200px; overflow: auto">
 					输出数据目录:<input type="text" id="exportPath" name="exportPath"
 						class="scinput" width="120px" value="/jukebox"> <input type="submit"
-						class="sure" value="确定" /> <input type="button" name="goback"
+						class="sure" onclick="return confirm('请确认导出目录没有任何其它文件存在,尤其是split分割文件,否则导出任务将无法获取正确结果')" value="确定" /> <input type="button" name="goback"
 						value="返回根目录" class="button">
 					<table class="info" id="info">
 

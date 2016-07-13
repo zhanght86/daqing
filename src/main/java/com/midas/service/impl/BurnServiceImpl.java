@@ -1,5 +1,6 @@
 package com.midas.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -39,6 +40,8 @@ import com.midas.service.StandingbookService;
 import com.midas.uitls.FtpUtil;
 import com.midas.uitls.date.DateStyle;
 import com.midas.uitls.date.DateUtil;
+import com.midas.uitls.file.FileOper;
+import com.midas.uitls.file.LocalFileOper;
 import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
@@ -569,7 +572,7 @@ public class BurnServiceImpl implements BurnService {
 		    for (Map<String, Object> server : serverList) {
 	            boolean isbusy = commonService.isBusyV2(server.get("sp_code")+"");
 	            if (isbusy) {
-	                logger.debug("服务器{}维护中或正在被使用， 不能进行合并");
+	                logger.debug("服务器{}维护中或正在被使用， 不能进行导出");
 	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
 	            }
 	        }
@@ -640,11 +643,13 @@ public class BurnServiceImpl implements BurnService {
 		
 		for (Map<String, Object> machine : downServerList) {
 			servers = machine.get("sp_value1") + "";
+			String serverPath=machine.get("sp_code") + "";
 			String[] fileList = soucePath.split(",");
-			FtpUtil ftpUtil = new FtpUtil();
 			ExecutorService executorService = Executors.newFixedThreadPool(4);
 			try {
-//				boolean isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
+				//TODO 删除
+			//	 int rs=RunCommand.execute("/tmp/dumpFile.sh",soucePath,targetPath);
+			
 //				if (isbusy) {
 //					logger.debug("服务器{}, 正在被使用， 不能进行合并",paramMap.get("eid"));
 //					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
@@ -653,21 +658,41 @@ public class BurnServiceImpl implements BurnService {
 				for (String file : fileList) {
 					String ftpPath = file.substring(0, file.lastIndexOf("/")); // 截取路径名称
 					String filename = file.substring(file.lastIndexOf("/") + 1);// 获取文件名
-					String filePath = rootPath + ftpPath;
-					logger.info("下载的文件路径为: {}", filePath);			
+					String filePath ="/"+ serverPath+rootPath + ftpPath;
+					logger.info("下载的文件路径为v3 {}", filePath);							
 					
+//					boolean isbusy =true;
+//					while (isbusy) {
+//					Thread.sleep(5*1000L);
+//					System.out.println("线程检查是否光盘已准备好做导出操作");
+//					 isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
+//					
+//					}			
+					System.out.println("最新版本V1");
 					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd));
+					
+//					  Callable<Boolean> call = new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd);
+//		                FutureTask<Boolean> future = new FutureTask<Boolean>(call);
+//		             new Thread(future).start();
+					//new Thread(new runDownfileV( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd)).start();
+		             
 					listFutures.add(downRs);
 					successDownNum++;
 
 				}
 				for (Future<?> f : listFutures) {
-						boolean isDownFinsh=(boolean)f.get();
-						if(!isDownFinsh){//只要一个文件下载失败则抛出异常
-						 throw new ServiceException(ErrorConstant.CODE4000, "多线程文件下载失败!");
-						}
+					  try {
+			                f.get();
+			            } catch (Exception e) {
+			                logger.error("下载数据失败ExecutionException", e);			                
+			                isReadyMerg = false;
+			                break;
+			            }
 				}
-		
+				
+				paramMap.put("number_success", successDownNum+"");
+				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+				burnDao.updateExportFile(paramMap);
 				isReadyMerg=true;
 
 			} catch (Exception e) {
@@ -676,41 +701,41 @@ public class BurnServiceImpl implements BurnService {
 				burnDao.updateExportFile(paramMap);
 				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
 			} 
-			finally {
-				executorService.shutdown();
-			}
+			
 		}
 		
 		
-		paramMap.put("number_success", successDownNum+"");
-		paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
-		burnDao.updateExportFile(paramMap);
+
 		//合并split文件
 	
 		if(isReadyMerg)
 		{
-		int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
-		if (-1 != rsInt) {
+		//int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
+			int rsInt = RunCommand.execute(cmd, targetPath.trim());
+			if (-1 != rsInt) {
 			paramMap.put("export_state", ExportState.MEGE_SUCCESS.toString());
 
 		} else {
 			paramMap.put("export_state", ExportState.MEGE_FAILD.toString());
 		}
-		burnDao.updateExportFile(paramMap);		
+		   burnDao.updateExportFile(paramMap);		
 		    paramMap.put("number_success", successDownNum+"");
 			burnDao.updateExportFile(paramMap);
-		}
+			
+			
+			//更新台帐数据
+			if(!StringUtils.isEmpty(volumeLabel))
+			{
+		     Map<String, Object> standingMap = new HashMap<String, Object>();
+	         standingMap.put("eid", paramMap.get("eid")+"");
+	         standingMap.put("volume_label", volumeLabel);
+	         standingMap.put("states", "1");
+	         // 修改为最后一个刻录完成的时间
+	         standingMap.put("update_time", new Date());
+	         standingMap.put("type", 2);
+	         standingbookService.update(standingMap);
+			}
 		
-		if(!StringUtils.isEmpty(volumeLabel))
-		{
-	     Map<String, Object> standingMap = new HashMap<String, Object>();
-         standingMap.put("eid", paramMap.get("eid")+"");
-         standingMap.put("volume_label", volumeLabel);
-         standingMap.put("states", "1");
-         // 修改为最后一个刻录完成的时间
-         standingMap.put("update_time", new Date());
-         standingMap.put("type", 2);
-         standingbookService.update(standingMap);
 		}
 	
 		return true;
@@ -738,29 +763,136 @@ public class BurnServiceImpl implements BurnService {
 			 this.passwd=passwd;
 		 }
 		 
+//		 @Override
+//	        public Boolean call() throws ServiceException {
+//			 
+//			FtpUtil ftpUtil = new FtpUtil();
+//			FTPClient client = null;
+//			try {
+//
+//				client = ftpUtil.getConnectionFTP(server, 21, userName, passwd);
+////				client.setDefaultTimeout(600* 1000);
+////				client.setConnectTimeout(600* 1000);
+////				client.setDataTimeout(20 * 1000);
+//                client.setBufferSize(1024);
+//				System.out.println("超时时间设置");
+//				if (null == client)
+//					throw new Exception("ftp服务器:" + server + " user: " + userName + " 连接失败,请检查服务是否正常");
+//				long st = System.currentTimeMillis();
+//				boolean rs = ftpUtil.downFileV2(client, path, fileName, localPath);
+//				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
+//				client.logout();
+//				return rs;
+//			} catch (Exception e) {
+//				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
+//				return false;
+//			} finally {
+//				ftpUtil.closeFTP(client);
+//			}
+//		
+//		}
+		 
 		 @Override
 	        public Boolean call() throws ServiceException {
 			 
 			FtpUtil ftpUtil = new FtpUtil();
 			FTPClient client = null;
 			try {
-
-				client = ftpUtil.getConnectionFTP(server, 21, userName, passwd);
-				if (null == client)
-					throw new Exception("ftp服务器:" + server + " user: " + userName + " 连接失败,请检查服务是否正常");
+				   // 文件操作
+			    FileOper   fileOper = new LocalFileOper();
 				long st = System.currentTimeMillis();
-				boolean rs = ftpUtil.downFileV2(client, path, fileName, localPath);
+				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
+				//String loclDir=fileNameToCreateDir(fileName);
+                BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
+                if (size.doubleValue()<=0) {
+                   return false;
+                }
+                logger.info("copy文件或者目录： {}， 大小为： {}", path, size);
 				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
-				client.logout();
-				return rs;
+			
+				return true;
 			} catch (Exception e) {
 				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
 				return false;
-			} finally {
-				ftpUtil.closeFTP(client);
-			}
+			} 
 		
 		}
+	 }
+	 
+	 
+//	 @Override
+//     public Boolean call() throws ServiceException {
+//		 
+//		FtpUtil ftpUtil = new FtpUtil();
+//		FTPClient client = null;
+//		try {
+//			   // 文件操作
+//		    //FileOper   fileOper = new LocalFileOper();
+//			long st = System.currentTimeMillis();
+//			String filePath=path+File.separator+fileName;
+//			filePath=filePath.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
+//			System.out.println("filePathV5:"+filePath+"   localPath:"+localPath+"   fileName:"+fileName);
+//             
+//              int rs=RunCommand.execute("/tmp/cpyExport.sh",filePath,localPath);
+//          if(rs==-1)
+//          {
+//        	  throw new Exception("文件"+path+fileName+"下载失败");
+//          }
+//			logger.error("文件{}下载耗时,{} 毫秒", filePath, System.currentTimeMillis() - st);
+//		
+//			return true;
+//		} catch (Exception e) {
+//			logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
+//			return false;
+//		} 
+//	
+//	}
+//}
+	 
+	 
+	 class runDownfileV implements  Runnable{
+		 String path;
+		 String fileName;
+		 String localPath;
+		 String server;
+		 String userName;
+		 String passwd;
+		 public runDownfileV( String path, String fileName, String localPath,String server,String userName,String passwd)
+		 {
+			
+			 this.path=path;
+			 this.fileName=fileName;
+			 this.localPath=localPath;
+			 this.server=server;
+			 this.userName=userName;
+			 this.passwd=passwd;
+		 }
+		 
+			public void run() {
+				FtpUtil ftpUtil = new FtpUtil();
+				FTPClient client = null;
+				try {
+					   // 文件操作
+				    //FileOper   fileOper = new LocalFileOper();
+					long st = System.currentTimeMillis();
+					String filePath=path+File.separator+fileName;
+					filePath=filePath.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
+					System.out.println("filePathV5:"+filePath+"   localPath:"+localPath+"   fileName:"+fileName);
+		             
+		              int rs=RunCommand.execute("/tmp/cpyExport.sh",filePath,localPath);
+		          if(rs==-1)
+		          {
+		        	  throw new Exception("文件"+path+fileName+"下载失败");
+		          }
+					logger.error("文件{}下载耗时,{} 毫秒", filePath, System.currentTimeMillis() - st);
+				
+					
+				} catch (Exception e) {
+					logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
+				
+				} 
+			}
+		
 	 }
 	
 	
@@ -861,5 +993,28 @@ public class BurnServiceImpl implements BurnService {
 
 	}
 	 
+	private String fileNameToCreateDir(String fileName)
+		{
+			String rsStr="";
+		    if(StringUtils.isEmpty(fileName))
+		    	return "";
+		    if(fileName.indexOf(".")>0){
+		     rsStr=fileName.substring(0,fileName.indexOf("."));
+		    }
+		    else if (fileName.indexOf("_")>0) {
+		    	 rsStr=fileName.substring(0,fileName.indexOf("_"));
+			}
+		    else if (fileName.indexOf("-")>0) {
+		    	 rsStr=fileName.substring(0,fileName.indexOf("-"));
+			}
+		    else if (fileName.length()>7) {
+		    	 rsStr=fileName.substring(0,7);
+			}
+		   else {
+			   rsStr=fileName;
+		 }
+		    
+			return rsStr;
+		}
 
 }

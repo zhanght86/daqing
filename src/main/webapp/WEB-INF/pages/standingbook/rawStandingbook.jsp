@@ -105,12 +105,12 @@
 					<tr>
 						<th width="60">序号</th>
 						<th width="200">工区</th>
-						<th width="100">归档单位</th>
-						<th width="100">归档日期</th>
-						<th width="100">数据大小(MB)</th>
+						<!-- <th width="100">归档单位</th>
+						<th width="100">归档日期</th> 
+						<th width="100">数据大小(MB)</th>-->
 						<th width="100">数据大小(GB)</th>
 						<th width="100">刻盘数量</th>
-						<th width="100">开始刻录时间</th>
+						<th width="100">刻录开始时间</th>
 						<th width="100">刻录结束时间</th>
 						<th width="100">刻录用时(小时)</th>
 						<th width="60">类型</th>
@@ -122,10 +122,11 @@
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							<td>${status.count }</td>
 							<td>${page.work_area}</td>
-							<td>${page.construction_unit}</td>
+						<%-- 	<td>${page.construction_unit}</td>
 							<td>${page.construction_year}</td>
 							<td> <fmt:formatNumber pattern="##.##">${page.data_quantity/1024/1024}</fmt:formatNumber></td>
-							<td> <fmt:formatNumber pattern="##.####">${page.data_quantity/1024/1024/1024}</fmt:formatNumber></td>
+							 --%>
+							 <td> <fmt:formatNumber pattern="##.####">${page.data_quantity/1024/1024/1024}</fmt:formatNumber></td>
 							<td>${page.burn_count}</td>
 							<td><fmt:formatDate value="${page.create_time}" pattern="yyyy-MM-dd HH:mm:ss" /></td>
 							<td><fmt:formatDate value="${page.update_time}" pattern="yyyy-MM-dd HH:mm:ss" /></td>

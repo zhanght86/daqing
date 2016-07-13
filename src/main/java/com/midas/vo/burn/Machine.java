@@ -31,7 +31,7 @@ public class Machine implements Serializable {
     private List<Mag>         mag;
     @SerializedName("Drivers")
     private List<Drivers>     dirvers;
-    @SerializedName("Printer")
+	@SerializedName("Printer")
     private Printer           printer;
 
     /**
@@ -85,7 +85,14 @@ public class Machine implements Serializable {
     public void setPrinter(Printer printer) {
         this.printer = printer;
     }
+    
+    public int getEventCnt() {
+		return eventCnt;
+	}
 
+	public void setEventCnt(int eventCnt) {
+		this.eventCnt = eventCnt;
+	}
     @Override
     public int hashCode() {
         final int prime = 31;

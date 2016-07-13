@@ -123,6 +123,73 @@ public class LocalFileOper extends FileOper {
         }
         return size;
     }
+    
+    @Override
+    public BigDecimal copyV2(String srcPath, String destPath, String file, String targetPath)
+            throws ServiceException {
+        
+        Map<String,BigDecimal>  fileSizeMap=new HashMap<String,BigDecimal>();
+        File sourceFile = new File(srcPath + "/" + file);
+     
+        File targetFile = new File(destPath + "/" + targetPath);
+        BigDecimal size = new BigDecimal(0);
+        try {
+            long st = System.currentTimeMillis();
+            // File f2 = new File(sourceFile.getParent());
+
+            if (sourceFile.isDirectory()) {
+                for (File fs : sourceFile.listFiles()) {
+                    BigDecimal currentsize = new BigDecimal(0);
+                    currentsize=(new BigDecimal(fs.length()));
+                    logger.info("文件名{} size={}", fs.getName(), currentsize);
+                    fileSizeMap.put(fs.getName(), currentsize);
+                    size = size.add(new BigDecimal(fs.length()));
+                }
+                FileUtils.copyDirectory(sourceFile,
+                        new File(targetFile.getAbsolutePath() + "/" + sourceFile.getName()));
+            } else {
+                for (File fs : sourceFile.getParentFile().listFiles()) {
+                    if (fs.getName().startsWith(sourceFile.getName())) {
+                        BigDecimal currentsize = new BigDecimal(0);
+                        currentsize=(new BigDecimal(fs.length()));
+                        fileSizeMap.put(fs.getName(), currentsize);
+                        logger.info("文件名{} size={}", fs.getName(), currentsize);
+                        size = size.add(new BigDecimal(fs.length()));
+                        FileUtils.copyFile(fs, targetFile);
+                        logger.info("copy文件从： {} 到 {}, 耗时： {}", fs.getAbsoluteFile(), targetFile.getAbsolutePath(),
+                                System.currentTimeMillis() - st);
+
+                    }
+                }
+            }
+            
+			if (targetFile.isDirectory()) {
+				for (File f : targetFile.listFiles()) {
+					if (f.isDirectory()) {
+						for (File fs : f.listFiles()) {
+
+							BigDecimal oldSize = fileSizeMap.get(fs.getName());
+							BigDecimal currentSize = getCurrentSize(fs.getAbsolutePath());
+							logger.info("文件名{} oldsize={}, size={}", fs.getAbsolutePath(), oldSize, currentSize);
+						}
+
+					} else if (f.getName().startsWith(sourceFile.getName())) {
+
+						BigDecimal oldSize = fileSizeMap.get(f.getName());
+						BigDecimal currentSize = getCurrentSize(f.getAbsolutePath());
+						logger.info("文件名{} oldsize={}, 当前size={}", f.getAbsolutePath(), oldSize, currentSize);
+
+					}
+				}
+			}
+            
+         
+        } catch (IOException e) {
+            logger.error("文件copy失败, 源文件为：" + sourceFile.getAbsolutePath(), e);
+            throw new ServiceException(ErrorConstant.CODE4000, "文件copy失败, 源文件未找到" + sourceFile.getAbsolutePath());
+        }
+        return size;
+    }
 
     public BigDecimal getCurrentSize(String file) {
 
@@ -194,7 +261,7 @@ public class LocalFileOper extends FileOper {
 //        System.out.println(bd.intValue());
 
          LocalFileOper fo = new LocalFileOper();
-         BigDecimal bd = fo.copy("f:/tmp/share", "c:/", "电子组/20140825LOG.rar","abcdef");
+         BigDecimal bd = fo.copyV2("E:/", "f:/", "kinggsoft","test");
          System.out.println(bd.doubleValue());
          LocalFileOper oper = new LocalFileOper();
         

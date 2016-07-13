@@ -2,6 +2,8 @@ package com.midas.uitls.file;
 
 import java.math.BigDecimal;
 
+import com.midas.exception.ServiceException;
+
 /**
  * 文件操作
  * 
@@ -45,5 +47,7 @@ public abstract class FileOper {
      *            写入的数据
      */
     public abstract boolean createFile(String srcPath, String workdir, String filename, String data);
+
+	public abstract BigDecimal copyV2(String srcPath, String destPath, String file, String targetPath) throws ServiceException ;
 
 }

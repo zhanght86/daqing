@@ -181,7 +181,7 @@
 				<ul class="seachform">
 					<li><label>&nbsp;&nbsp;&nbsp;&nbsp;文件名</label> <input
 						id="volLabel" name="volLabel" type="text" class="scinput"
-						style="width: 200px"  value="${volLabel}"/></li>
+						style="width: 400px"  value="${volLabel}"/></li>
 
 					<li><label>&nbsp;</label> <input name="" type="submit" style="width: 100px"
 						class="scbtn" value="在线文件查询" /></li>

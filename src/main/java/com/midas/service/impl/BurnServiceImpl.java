@@ -43,6 +43,7 @@ import com.midas.uitls.date.DateUtil;
 import com.midas.uitls.file.FileOper;
 import com.midas.uitls.file.LocalFileOper;
 import com.midas.uitls.runtime.RunCommand;
+import com.midas.uitls.socket.SSHHelper;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
@@ -460,48 +461,130 @@ public class BurnServiceImpl implements BurnService {
     
     
     
-    //TODO sullivan
+    //TODO 删除
 	
-	/**
-	 * 在线文件导出列表
-	 */
+//	/**
+//	 * 在线文件导出列表
+//	 */
+//    @Override
+//	public List<Map<String, Object>> listExportFileList(String fileName) {
+//		List<Map<String, Object>> rsList = new ArrayList<>();
+//
+//		String searchResult = null;
+//		List<Map<String, Object>> serverList = commonService.getAllMachine();
+//
+//		for (Map<String, Object> macheInfo : serverList) {
+//			// Map<String, Object>
+//			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
+//			String ip = macheInfo.get("sp_value1") + "";
+//			String server = macheInfo.get("sp_code") + "";
+//			searchResult = commonService.executeFindFile(server, fileName);
+//			if (StringUtils.isNotEmpty(searchResult)) {
+//				String[] matchInfo = searchResult.split("\n");
+//				for (int i = 0; i < matchInfo.length; i++) {
+//					Map<String, Object> rowMap = new HashMap<>();
+//					rowMap.put("filePath", matchInfo[i]);
+//					rowMap.put("ip", ip);
+//					rowMap.put("server", server);
+//					rsList.add(rowMap);
+//
+//				}
+//			}
+//
+//		}
+//
+//		return rsList;
+//	}
+    @SuppressWarnings("unchecked")
     @Override
 	public List<Map<String, Object>> listExportFileList(String fileName) {
-		List<Map<String, Object>> rsList = new ArrayList<>();
+	 
+    	 String[] keyWord=fileName.split("\\|");
+    	 List<Map<String, Object>> rsList=new ArrayList<>();
+    	 for (String word : keyWord) {
+    		 List<Map<String, Object>> tmplist=listExportFileListOne(word);
+    		 rsList.addAll(tmplist);
+		}
+    	return rsList;
+	}
+    @SuppressWarnings("unchecked")
+ 	public List<Map<String, Object>> listExportFileListOne(String fileName) {
+ 		List<Map<String, Object>> rsList = new ArrayList<>();
+ 		
+        HashMap<String, Object> pmap=parseSearchWord(fileName);
+        String keyWord=pmap.get("word")+""; //获取搜索关键字        
+		ArrayList<String> keylist=(ArrayList<String>)pmap.get("list");//得到范围数组
+		
+ 		String searchResult = null;
+ 		List<Map<String, Object>> serverList = commonService.getAllMachine();
+ 		for (Map<String, Object> macheInfo : serverList) {
+ 			// Map<String, Object>
+ 			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
+ 			String ip = macheInfo.get("sp_value1") + "";
+ 			String server = macheInfo.get("sp_code") + "";
+ 			searchResult = commonService.executeFindFile(server, keyWord);
+ 		
+ 			if (StringUtils.isNotEmpty(searchResult)) {
+ 				String[] matchInfo = searchResult.split("\n");
+ 				for (int i = 0; i < matchInfo.length; i++) {
+ 					Map<String, Object> rowMap = new HashMap<>(); 					
+ 					rowMap.put("filePath", matchInfo[i]);
+ 					rowMap.put("ip", ip);
+ 					rowMap.put("server", server);
+ 					rsList.add(rowMap);
 
-		String searchResult = null;
-		List<Map<String, Object>> serverList = commonService.getAllMachine();
+ 				}
+ 			}
 
-		for (Map<String, Object> macheInfo : serverList) {
-			// Map<String, Object>
-			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
-			String ip = macheInfo.get("sp_value1") + "";
-			String server = macheInfo.get("sp_code") + "";
-			searchResult = commonService.executeFindFile(server, fileName);
-			if (StringUtils.isNotEmpty(searchResult)) {
-				String[] matchInfo = searchResult.split("\n");
-				for (int i = 0; i < matchInfo.length; i++) {
-					Map<String, Object> rowMap = new HashMap<>();
-					rowMap.put("filePath", matchInfo[i]);
-					rowMap.put("ip", ip);
-					rowMap.put("server", server);
-					rsList.add(rowMap);
-
+ 		}
+ 		//如果有需要匹配的序列号
+		if (null != keylist && keylist.size() > 0) {
+			List<Map<String, Object>> dataList = new ArrayList<>();
+			for (String keyNum : keylist) {
+				for (Map<String, Object> map : rsList) {
+					String filePath = map.get("filePath") + "";
+					if (filePath.indexOf(keyNum) > 0) {
+						dataList.add(map);
+					}
 				}
 			}
-
+			return dataList;
 		}
+ 		
+ 		
 
-		return rsList;
-	}
+ 		return rsList;
+ 	}
 	
 	/**
 	 * 离线文件导出列表
 	 */
     @Override
 	public List<Map<String, Object>> listExportFileListOffline(String fileName) {
+    	
+    	
+    	 String[] keyWord=fileName.split("\\|");
+    	 List<Map<String, Object>> rsList=new ArrayList<>();
+    	 for (String word : keyWord) {
+    		 List<Map<String, Object>> tmplist=listExportFileListOfflineOne(word);
+    		 rsList.addAll(tmplist);
+		}
+		return rsList;
+	}
+	
+    
+    /**
+     * 离线单次查询
+     * @param fileName
+     * @return
+     */
+	public List<Map<String, Object>> listExportFileListOfflineOne(String fileName) {
+    	
+    	HashMap<String, Object> pmap=parseSearchWord(fileName);
+        String keyWord=pmap.get("word")+""; //获取搜索关键字        
+  		ArrayList<String> keylist=(ArrayList<String>)pmap.get("list");//得到范围数组
+    	
 		List<Map<String, Object>> rsList = new ArrayList<>();
-
 		String searchResult = null;
 		List<Map<String, Object>> serverList = commonService.getAllMachine();
 
@@ -510,7 +593,7 @@ public class BurnServiceImpl implements BurnService {
 			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
 			String ip = macheInfo.get("sp_value1") + "";
 			String server = macheInfo.get("sp_code") + "";
-			searchResult = commonService.executeFindFileOffLine(macheInfo,server, fileName);
+			searchResult = commonService.executeFindFileOffLine(macheInfo,server, keyWord);
 			if (StringUtils.isNotEmpty(searchResult)) {
 				String[] matchInfo = searchResult.split("\n");
 				for (int i = 0; i < matchInfo.length; i++) {
@@ -547,11 +630,24 @@ public class BurnServiceImpl implements BurnService {
 			}
 
 		}
+		
+		
+		//如果有需要匹配的序列号
+		if (null != keylist && keylist.size() > 0) {
+			List<Map<String, Object>> dataList = new ArrayList<>();
+			for (String keyNum : keylist) {
+				for (Map<String, Object> map : rsList) {
+					String filePath = map.get("iso_file") + "";
+					if (filePath.indexOf(keyNum) > 0) {
+						dataList.add(map);
+					}
+				}
+			}
+			return dataList;
+		}
 
 		return rsList;
 	}
-	
-    
    
 
 	  @Override
@@ -647,46 +743,33 @@ public class BurnServiceImpl implements BurnService {
 			String[] fileList = soucePath.split(",");
 			ExecutorService executorService = Executors.newFixedThreadPool(4);
 			try {
-				//TODO 删除
-			//	 int rs=RunCommand.execute("/tmp/dumpFile.sh",soucePath,targetPath);
-			
-//				if (isbusy) {
-//					logger.debug("服务器{}, 正在被使用， 不能进行合并",paramMap.get("eid"));
-//					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
-//				}
+
+				boolean isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
+				if (isbusy) {
+					logger.debug("服务器{}, 正在被使用， 不能进行合并",paramMap.get("eid"));
+					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
+				}
 				List<Future<?>> listFutures = new ArrayList<Future<?>>();
 				for (String file : fileList) {
 					String ftpPath = file.substring(0, file.lastIndexOf("/")); // 截取路径名称
 					String filename = file.substring(file.lastIndexOf("/") + 1);// 获取文件名
-					String filePath ="/"+ serverPath+rootPath + ftpPath;
-					logger.info("下载的文件路径为v3 {}", filePath);							
-					
-//					boolean isbusy =true;
-//					while (isbusy) {
-//					Thread.sleep(5*1000L);
-//					System.out.println("线程检查是否光盘已准备好做导出操作");
-//					 isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
-//					
-//					}			
+					String filePath =rootPath + ftpPath;
+					logger.info("下载的文件路径为v3 {}", filePath);								
 					System.out.println("最新版本V1");
-					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd));
-					
-//					  Callable<Boolean> call = new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd);
-//		                FutureTask<Boolean> future = new FutureTask<Boolean>(call);
-//		             new Thread(future).start();
-					//new Thread(new runDownfileV( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd)).start();
-		             
+					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd));             
 					listFutures.add(downRs);
 					successDownNum++;
 
 				}
 				for (Future<?> f : listFutures) {
 					  try {
-			                f.get();
+			              boolean rs=(boolean)f.get();
+			              if(!rs)
+			            	  throw new Exception("下载任务线程失败");
 			            } catch (Exception e) {
 			                logger.error("下载数据失败ExecutionException", e);			                
 			                isReadyMerg = false;
-			                break;
+			                throw new Exception(e);
 			            }
 				}
 				
@@ -763,6 +846,38 @@ public class BurnServiceImpl implements BurnService {
 			 this.passwd=passwd;
 		 }
 		 
+		 
+		 @SuppressWarnings("unused")
+		@Override
+	     public Boolean call() throws ServiceException {
+			 
+			FtpUtil ftpUtil = new FtpUtil();
+			FTPClient client = null;
+			try {
+				   // 文件操作
+			    FileOper   fileOper = new LocalFileOper();
+				long st = System.currentTimeMillis();
+				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
+				//String loclDir=fileNameToCreateDir(fileName);
+				String cmd="mkdir -p "+localPath+"; cp  -f "+path+File.separator+fileName+" "+localPath;
+				cmd=cmd.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
+				System.out.println("执行下载命令:"+cmd);
+				String rsStr=SSHHelper.exec(server, userName, passwd, 22, cmd);
+				System.out.println("执行下载命令:"+cmd+" \n 执行结果:"+rsStr);
+	         //BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
+	    
+	         
+				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
+			
+				return true;
+			} catch (Exception e) {
+				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
+				return false;
+			} 
+		
+		}
+	}
+		 
 //		 @Override
 //	        public Boolean call() throws ServiceException {
 //			 
@@ -792,32 +907,32 @@ public class BurnServiceImpl implements BurnService {
 //		
 //		}
 		 
-		 @Override
-	        public Boolean call() throws ServiceException {
-			 
-			FtpUtil ftpUtil = new FtpUtil();
-			FTPClient client = null;
-			try {
-				   // 文件操作
-			    FileOper   fileOper = new LocalFileOper();
-				long st = System.currentTimeMillis();
-				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
-				//String loclDir=fileNameToCreateDir(fileName);
-                BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
-                if (size.doubleValue()<=0) {
-                   return false;
-                }
-                logger.info("copy文件或者目录： {}， 大小为： {}", path, size);
-				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
-			
-				return true;
-			} catch (Exception e) {
-				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
-				return false;
-			} 
-		
-		}
-	 }
+//		 @Override
+//	        public Boolean call() throws ServiceException {
+//			 
+//			FtpUtil ftpUtil = new FtpUtil();
+//			FTPClient client = null;
+//			try {
+//				   // 文件操作
+//			    FileOper   fileOper = new LocalFileOper();
+//				long st = System.currentTimeMillis();
+//				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
+//				//String loclDir=fileNameToCreateDir(fileName);
+//               BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
+//                if (size.doubleValue()<=0) {
+//                   return false;
+//                }
+//                logger.info("copy文件或者目录： {}， 大小为： {}", path, size);
+//				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
+//			
+//				return true;
+//			} catch (Exception e) {
+//				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
+//				return false;
+//			} 
+//		
+//		}
+//	 }
 	 
 	 
 //	 @Override
@@ -849,53 +964,7 @@ public class BurnServiceImpl implements BurnService {
 //	}
 //}
 	 
-	 
-	 class runDownfileV implements  Runnable{
-		 String path;
-		 String fileName;
-		 String localPath;
-		 String server;
-		 String userName;
-		 String passwd;
-		 public runDownfileV( String path, String fileName, String localPath,String server,String userName,String passwd)
-		 {
-			
-			 this.path=path;
-			 this.fileName=fileName;
-			 this.localPath=localPath;
-			 this.server=server;
-			 this.userName=userName;
-			 this.passwd=passwd;
-		 }
-		 
-			public void run() {
-				FtpUtil ftpUtil = new FtpUtil();
-				FTPClient client = null;
-				try {
-					   // 文件操作
-				    //FileOper   fileOper = new LocalFileOper();
-					long st = System.currentTimeMillis();
-					String filePath=path+File.separator+fileName;
-					filePath=filePath.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
-					System.out.println("filePathV5:"+filePath+"   localPath:"+localPath+"   fileName:"+fileName);
-		             
-		              int rs=RunCommand.execute("/tmp/cpyExport.sh",filePath,localPath);
-		          if(rs==-1)
-		          {
-		        	  throw new Exception("文件"+path+fileName+"下载失败");
-		          }
-					logger.error("文件{}下载耗时,{} 毫秒", filePath, System.currentTimeMillis() - st);
-				
-					
-				} catch (Exception e) {
-					logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
-				
-				} 
-			}
-		
-	 }
-	
-	
+
 	
     @Override
 	public boolean savefileExportTask(String soucePath, String exportpath,String serverInfo) throws ServiceException {
@@ -989,32 +1058,76 @@ public class BurnServiceImpl implements BurnService {
 //			e.printStackTrace();
 //		}
 //	}
+		BurnServiceImpl bb=new BurnServiceImpl();
+		System.out.println(bb.parseSearchWord("W116321-116337"));
 		
 
 	}
 	 
-	private String fileNameToCreateDir(String fileName)
-		{
-			String rsStr="";
-		    if(StringUtils.isEmpty(fileName))
-		    	return "";
-		    if(fileName.indexOf(".")>0){
-		     rsStr=fileName.substring(0,fileName.indexOf("."));
-		    }
-		    else if (fileName.indexOf("_")>0) {
-		    	 rsStr=fileName.substring(0,fileName.indexOf("_"));
+	/**
+	 * 关键字解析
+	 * @param keyword
+	 * @return
+	 */
+	private HashMap parseSearchWord(String keyword) {
+		HashMap<String, Object> rsMap = new HashMap<>();
+		if (StringUtils.isEmpty(keyword))
+			return null;
+		ArrayList<String> difflist = new ArrayList<>();
+		String searchWord = "";
+		String rsStr = "";
+		String startNum = "";
+		String endNum = "";
+		int splitPos = 0;
+		try {
+
+			if (keyword.indexOf("-") > 0) {
+				startNum = keyword.substring(0, keyword.indexOf("-"));
+				endNum = keyword.substring(keyword.indexOf("-") + 1);
+				if (Character.isLetter(startNum.charAt(0))) {
+					startNum = startNum.substring(1);
+				}
+				if (Character.isLetter(endNum.charAt(0))) {
+					endNum = endNum.substring(1);
+				}
+				// 比较2字符串不同的部分截取位置
+				char[] a1 = startNum.toCharArray();
+				char[] b1 = endNum.toCharArray();
+				int c = a1.length < b1.length ? a1.length : b1.length;
+				for (int i = 0; i < c; i++) {
+					if (a1[i] != b1[i]) {
+						splitPos = i;
+						// System.out.println("错误位置"+i);
+						break;
+					}
+				}
+				searchWord = keyword.substring(0, splitPos + 1); // 得到模糊匹配字符串
+				int diffStartNum = Integer.parseInt(startNum.substring(splitPos));
+				int diffEndNum = Integer.parseInt(endNum.substring(splitPos));
+				if (diffStartNum > diffEndNum) {
+					int tmpNum = diffEndNum;
+					diffEndNum = diffStartNum;
+					diffStartNum = tmpNum;
+
+				}
+				for (int j = diffStartNum; j <= diffEndNum; j++) {
+					difflist.add(searchWord + j);
+				}
+				rsMap.put("list", difflist);
+				rsMap.put("word", searchWord);
+			} else {
+
+				rsMap.put("list", null);
+				rsMap.put("word", keyword);
 			}
-		    else if (fileName.indexOf("-")>0) {
-		    	 rsStr=fileName.substring(0,fileName.indexOf("-"));
-			}
-		    else if (fileName.length()>7) {
-		    	 rsStr=fileName.substring(0,7);
-			}
-		   else {
-			   rsStr=fileName;
-		 }
-		    
-			return rsStr;
+			return rsMap;
+		} catch (Exception e) {
+			logger.error("搜索关键字解析错误" + e);
+			rsMap.put("list", null);
+			rsMap.put("word", keyword);
+			return rsMap;
 		}
+
+	}
 
 }

@@ -110,9 +110,9 @@
 						<th width="100">数据大小(MB)</th>-->
 						<th width="100">数据大小(GB)</th>
 						<th width="100">刻盘数量</th>
-						<th width="100">刻录开始时间</th>
-						<th width="100">刻录结束时间</th>
-						<th width="100">刻录用时(小时)</th>
+						<th width="100">刻录(导出)开始时间</th>
+						<th width="100">刻录(导出)结束时间</th>
+						<th width="100">刻录(导出)用时(小时)</th>
 						<th width="60">类型</th>
 						<th width="60">操作</th>
 					</tr>

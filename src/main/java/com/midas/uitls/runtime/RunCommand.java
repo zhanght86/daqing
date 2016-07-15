@@ -77,8 +77,10 @@ public class RunCommand {
     }
 
     public static void main(String[] args) {
-        execute("ipconfig");
-        execute("./fileExport.sh root 121.40.125.114 /tmp/a_split,/tmp/b_split,/tmp/c_split /tmp/download Emuzi666");
+//        execute("ipconfig");
+//        execute("./fileExport.sh root 121.40.125.114 /tmp/a_split,/tmp/b_split,/tmp/c_split /tmp/download Emuzi666");
+//        
+        execute("e:\\123.bat","f:\\eclipse.ini","e:\\");
          
     }
 

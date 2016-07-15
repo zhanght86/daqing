@@ -193,6 +193,19 @@ public interface BurnMapper {
 	public List<Map<String, Object>> listExportRecordCheck(String state);
 
 	public void deleteExportFile(String eid);
+
+	/**
+	 * 查询导出文件信息
+	 * @param map
+	 * @return
+	 */
+	public List<Map<String, Object>> listExportFileInfo(Map<String, Object> map);
+     /**
+      * 任务重跑
+      * @param eid
+      * @return
+      */
+	public void reRunExportFile(String eid);
     
 	
 }

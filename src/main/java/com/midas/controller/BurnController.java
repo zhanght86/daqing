@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import com.midas.service.BurnService;
 import com.midas.service.CommonService;
 import com.midas.service.StandingbookService;
 import com.midas.uitls.FtpUtil;
+import com.midas.uitls.date.DateUtil;
 import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.socket.TelnetOperator;
 import com.midas.uitls.tools.CommonsUtils;
@@ -254,7 +256,7 @@ public class BurnController extends BaseDataController {
         boolean bool = false;
         String desc = "OK";
         try {
-         //  bool = burnService.checkMerge(volLabel);
+          bool = burnService.checkMerge(volLabel);
         } catch (ServiceException e) {
             desc = e.getMsg();
         }
@@ -370,6 +372,15 @@ public class BurnController extends BaseDataController {
  
         logger.info("删除导出文件数据:{}", eid);
         burnService.deleteExportFile(eid);
+        return "redirect:/burn/exportFileTask.do";
+    }
+    
+    @RequestMapping(value="/burn/reRunExportFile")
+    public String reRunExportFile(HttpServletRequest request) {
+        String eid = request.getParameter("eid");
+ 
+        logger.info("继续下载任务:{}", eid);
+        burnService.reRunExportFile(eid);
         return "redirect:/burn/exportFileTask.do";
     }
     
@@ -489,54 +500,34 @@ public class BurnController extends BaseDataController {
 	}
     
     
-    @RequestMapping(value = "/burn/exportFile")
-    public String exportFile(HttpServletRequest request, String sourcePath, String exportPath) {
-  
+	@RequestMapping(value = "/burn/exportFile")
+	public String exportFile(HttpServletRequest request, String sourcePath, String exportPath, String dirPath) {
+
 		String desc = null;
 		String rootPath;
-		
-		//changge
-		String[] sourcePathList = sourcePath.split(",");
-		String serverInfo = "";
-		StringBuffer saveFilePathBuff = new StringBuffer();
-		for (String tmpPath : sourcePathList) {
-			if (tmpPath.indexOf(":") > 0) {
-				String tmpServerInfo = tmpPath.substring(0, tmpPath.indexOf(":"));
-				saveFilePathBuff.append(tmpPath.substring(tmpPath.indexOf(":") + 1)).append(",");
-				if (serverInfo.indexOf(tmpServerInfo)<0) {
-					serverInfo += tmpServerInfo + ",";
-				}
-			} else {
-				saveFilePathBuff.append(tmpPath);
-			}
 
-		}
-
-		if (serverInfo.lastIndexOf(",") > 1)
-			serverInfo = serverInfo.substring(0, serverInfo.lastIndexOf(","));
-		String saveFilePath = saveFilePathBuff + "";
-		if (saveFilePath.lastIndexOf(",") > 1)
-			saveFilePath = saveFilePath.substring(0, saveFilePath.lastIndexOf(","));
-		// changge
-		
 		if (StringUtils.isEmpty(sourcePath)) {
 			request.setAttribute("desc", "请选择导出文件");
 			return "kepan/result";
-		}		
+		}
 		if (StringUtils.isEmpty(exportPath)) {
 			request.setAttribute("desc", "请输入导出路径");
 			return "kepan/success";
 		}
+
+		dirPath = DateUtil.DateToString(new Date(), "yyyyMMddHHmmss");
+
 		logger.info("导出文件", sourcePath);
 		logger.info("导出目录", exportPath);
-		burnService.savefileExportTask(saveFilePath.replaceAll(" ", ""), exportPath.replaceAll(" ", ""),serverInfo);
-		desc="导出文件任务保存成功";
+		exportPath = exportPath + File.separator + dirPath;
+		burnService.savefileExportTask(sourcePath, exportPath.replaceAll(" ", ""));
+		desc = "导出文件任务保存成功";
 		request.setAttribute("desc", desc);
 		request.setAttribute("backUrl", "/burn/exportFileList.do");
 
-        return "kepan/success";
-    }
-  //changend by sullivan *******************
+		return "kepan/success";
+	}
+
     
     public List<String> getDir(String folderPath){
         

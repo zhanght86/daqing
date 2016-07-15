@@ -4,12 +4,13 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>信息管理系统界面</title>
 </head>
-<frameset rows="88,*" cols="*" frameborder="no" border="0" framespacing="0">
+<frameset rows="99,*,30" cols="*" frameborder="no" border="0" framespacing="0">
   <frame src="to.do?file=top" name="topFrame" scrolling="no" noresize="noresize" id="topFrame" title="topFrame" />
   <frameset cols="187,*" frameborder="no" border="0" framespacing="0">
     <frame src="to.do?file=left" name="leftFrame" scrolling="no" noresize="noresize" id="leftFrame" title="leftFrame" />
     <frame src="burn/list.do" name="rightFrame" id="rightFrame" title="rightFrame" />
   </frameset>
+   <frame src="to.do?file=foot" name="footFrame" scrolling="no" noresize="noresize" id="footFrame" title="footFrame" />
 </frameset> 
 <noframes><body> 
 </body></noframes>

@@ -14,6 +14,7 @@ import com.midas.constant.ErrorConstant;
 import com.midas.dao.BurnDao;
 import com.midas.exception.ServiceException;
 import com.midas.mapper.BurnMapper;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 @Repository
 public class BurnDaoImpl implements BurnDao {
@@ -138,8 +139,7 @@ public class BurnDaoImpl implements BurnDao {
 
 	@Override
 	public int updateExportFile(Map<String, Object> map) {
-		// TODO Auto-generated method stub
-		System.out.println("任务更新状态"+map.toString());
+		map.put("update_time", new Date());
 		return mapper.updateExportFile(map);
 	}
 
@@ -159,6 +159,25 @@ public class BurnDaoImpl implements BurnDao {
 	            throw new ServiceException(ErrorConstant.CODE2000, "查询数据列表失败", e);
 	        }
 		//return mapper.listExportFileRecord(paramMap,page);
+	}
+
+	@Override
+	public int insertExportFileDetail(Map<String, Object> map) {
+		map.put("create_time", new Date());
+		return mapper.insertExportFileRecord(map);
+		
+	}
+
+	@Override
+	public List<Map<String, Object>> listExportFileInfo(Map<String, Object> map) {
+		
+		return mapper.listExportFileInfo(map);
+	}
+
+	@Override
+	public void reRunExportFile(String eid) {
+		
+		 mapper.reRunExportFile(eid);
 	}
 
 }

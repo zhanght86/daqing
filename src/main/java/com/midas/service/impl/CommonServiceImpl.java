@@ -164,6 +164,55 @@ public class CommonServiceImpl implements CommonService {
         }
         return isbusy;
     }
+    
+    
+   
+    public boolean isBusyV3(String server) {
+        boolean isbusy = false;
+        int  eventQue=6;
+        try {
+            Machine machine = commandQUERYSTATION(server);
+            if (!machine.isOpenDoor()) {
+                 eventQue=machine.getEventCnt();
+                if(eventQue>0)
+                	isbusy=true;                
+            }
+            System.out.println("当前光驱等待队列数: "+eventQue);
+        } catch (Exception e) {
+            logger.error("盘库繁忙：", e);
+        }
+        return isbusy;
+    }
+    
+    
+    @Override
+    public boolean isBusyV2(String server) {
+        boolean isbusy = false;
+        int  freeNum=6;
+        try {
+            Machine machine = commandQUERYSTATION(server);
+            if (!machine.isOpenDoor()) {
+                List<Drivers> list = machine.getDirvers();
+                for (Drivers d : list) {                	
+                	  if(freeNum<4) //当空闲驱动器小于4 则提示繁忙
+                      {
+                		logger.info("驱动器繁忙,可用驱动器不足: {}", d);                      
+                      	isbusy=true;
+                      	break;
+                      }
+                    if (d.isBusy() && d.isValid()) {
+                        freeNum--;
+                    }                  
+                }
+                isbusy = false;
+            }
+            System.out.println(server+" 可用光驱数: "+freeNum);
+        } catch (Exception e) {
+            logger.error("盘库繁忙：", e);
+        }
+        return isbusy;
+    }
+
 
     /**
      * 通过发送 QOFFLINEJOG,JOBNAME,\N 指令获取刻录的信息 QOFFLINEJOB，卷标名，\n

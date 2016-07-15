@@ -17,10 +17,14 @@ $(function(){
 
 </head>
 
-<body style="background:url(static/images/topbg.gif) repeat-x;">
+<body style="background:url(static/images/logo.png)">
 
-    <div class="topleft">
-    <a href="to.do?file=index" target="rightFrame"><img src="static/images/logo.png" title="系统首页" /></a>
+ <ul>
+    	<a href="to.do?file=index" target="rightFrame"><img src="static/images/logo.png" title="系统首页" /></a>
+    
+     </ul>
+   <%--  <div class="topleft">
+    
     </div>
         
     <ul class="nav">
@@ -37,7 +41,7 @@ $(function(){
     <div class="user">
     <span>${userName }</span>
     </div>    
-    </div>
+    </div> --%>
 
 </body>
 </html>

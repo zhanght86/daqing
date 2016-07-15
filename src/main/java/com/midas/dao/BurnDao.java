@@ -167,6 +167,25 @@ public interface BurnDao {
 	 * @return
 	 */
 	public PageInfo<Map<String, Object>> listExportFileRecord(Map<String, Object> paramMap, Page page);
+
+	/**
+	 * 保存导出文件明细
+	 * @param map
+	 * @return
+	 */
+	 int insertExportFileDetail(Map<String, Object> map);
+
+	 /**
+	  * 获取导出文件信息
+	  * @param map
+	  * @return
+	  */
+	public List<Map<String, Object>> listExportFileInfo(Map<String, Object> map);
+     /**
+      * 下载任务重跑
+      * @param eid
+      */
+	public void reRunExportFile(String eid);
     
 
 }

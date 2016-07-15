@@ -237,6 +237,9 @@
 		delete from export_file_record where eid = #{eid}
 	</delete>
 	
+	<update id="reRunExportFile">
+		update  export_file_record set export_state='0' where eid = #{eid}
+	</update>
 	
 	
 	<!-- 文件导出 -->
@@ -249,11 +252,20 @@
 			(#{server},#{fileList},#{volume_label}, #{number_success}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
 	</insert>
 	
+		<insert id="insertExportFileDetail" parameterType="Map" useGeneratedKeys="true" keyProperty="fid">
+		insert 
+			into 
+		export_file_detail
+			(eid,server,file_path,file_name, taget_path, state, create_time, update_time, info) 
+		values 
+			(#{eid},#{server},#{file_path},#{file_name}, #{taget_path}, #{state}, #{create_time}, #{update_time}, #{info}) 
+	</insert>
 	
-	<!-- <select id="listExportTask" parameterType="String" resultType="Map">
+	
+	 <select id="listExportFileInfo" parameterType="String" resultType="Map">
 		select eid,filelist,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user 
-		from export_file_record where export_state in( '0','1') order by eid 
-	</select> -->
+		from export_file_record where filelist=#{filelist}
+	</select> 
 	
 	
 	<select id="listExportTask" parameterType="String" resultType="Map">
@@ -323,7 +335,7 @@
 	
 	
 	<select id="listExportFileRecord" parameterType="String" resultType="Map">
-	select eid,filelist,volume_label,`server`,number_success,export_path,export_state,export_desc,create_time,update_time from export_file_record
+	select eid,filelist,volume_label,`server`,number_success,number_sum,export_path,export_state,export_desc,create_time,update_time from export_file_record
 		
 			order by eid desc
 		

@@ -334,8 +334,16 @@ public class BurnServiceImpl implements BurnService {
         return burnDao.insertExportRecord(map);
     }
 
+    public  List<Map<String, Object>> listExportFileInfo(Map<String, Object> map) {
+        return burnDao.listExportFileInfo(map);
+    }
+    
     public int insertExportFileRecord(Map<String, Object> map) {
         return burnDao.insertExportFileRecord(map);
+    }
+    
+    public int insertExportFileDetail(Map<String, Object> map) {
+        return burnDao.insertExportFileDetail(map);
     }
     @Override
     public List<Map<String, Object>> listExportTask(String param) {
@@ -457,6 +465,12 @@ public class BurnServiceImpl implements BurnService {
     public void deleteExportFile(String eid) {
         // TODO Auto-generated method stub
         burnDao.deleteExportFile(eid);
+    }
+    
+    @Override
+    public void reRunExportFile(String eid) {
+        // TODO Auto-generated method stub
+        burnDao.reRunExportFile(eid);
     }
     
     
@@ -724,6 +738,8 @@ public class BurnServiceImpl implements BurnService {
 		String targetPath = paramMap.get("export_path") + "";
 		String tmpServer=paramMap.get("server")+"";
 		String volumeLabel=paramMap.get("volume_label")+"";
+		BigDecimal sumDumpSize=null;
+		int failNum=0;
 		List<Map<String, Object>> downServerList=new ArrayList<>();
 		if (tmpServer.indexOf(",") < 0)// 单服务器任务判断准确ftp服务器,
 		{
@@ -756,6 +772,7 @@ public class BurnServiceImpl implements BurnService {
 					String filePath =rootPath + ftpPath;
 					logger.info("下载的文件路径为v3 {}", filePath);								
 					System.out.println("最新版本V1");
+					Thread.sleep(10*1000L);
 					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd));             
 					listFutures.add(downRs);
 					successDownNum++;
@@ -763,23 +780,33 @@ public class BurnServiceImpl implements BurnService {
 				}
 				for (Future<?> f : listFutures) {
 					  try {
-			              boolean rs=(boolean)f.get();
-			              if(!rs)
-			            	  throw new Exception("下载任务线程失败");
+						  runDownfile rs=(runDownfile)f.get();
+			              String copysize=rs.copySize;
+			            
+			              if ("0".equals(copysize)||"".equals(copysize)) {
+			            	  logger.error(rs.path+" 文件下载失败:");
+			            	  failNum++;
+						}
+			              else
+			              {
+			            	  sumDumpSize=sumDumpSize.add(new BigDecimal(copysize));
+			              }
 			            } catch (Exception e) {
 			                logger.error("下载数据失败ExecutionException", e);			                
 			                isReadyMerg = false;
 			                throw new Exception(e);
 			            }
 				}
-				
-				paramMap.put("number_success", successDownNum+"");
-				paramMap.put("export_state", ExportState.EXPORT_SUCCESS.toString());
+				isReadyMerg=failNum==0?true:false;
+				paramMap.put("number_sum", successDownNum+"");
+				paramMap.put("number_success", (successDownNum-failNum)+"");
+				paramMap.put("export_state",isReadyMerg? ExportState.EXPORT_SUCCESS.toString():ExportState.EXPORT_FAILD.toString());
 				burnDao.updateExportFile(paramMap);
-				isReadyMerg=true;
+				
 
 			} catch (Exception e) {
-				 paramMap.put("number_success", successDownNum+"");
+				paramMap.put("number_success", (successDownNum-failNum)+"");
+				paramMap.put("number_sum", successDownNum+"");
 				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
 				burnDao.updateExportFile(paramMap);
 				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
@@ -801,8 +828,6 @@ public class BurnServiceImpl implements BurnService {
 		} else {
 			paramMap.put("export_state", ExportState.MEGE_FAILD.toString());
 		}
-		   burnDao.updateExportFile(paramMap);		
-		    paramMap.put("number_success", successDownNum+"");
 			burnDao.updateExportFile(paramMap);
 			
 			
@@ -826,15 +851,16 @@ public class BurnServiceImpl implements BurnService {
 	}
 	
 	
-	 class runDownfile implements Callable<Boolean> 
+	 class runDownfile implements Callable<runDownfile> 
 	 {
 	
-		 String path;
-		 String fileName;
-		 String localPath;
-		 String server;
-		 String userName;
-		 String passwd;
+		 String path=null;
+		 String fileName=null;
+		 String localPath=null;
+		 String server=null;
+		 String userName=null;
+		 String passwd=null;
+		 String copySize=null;
 		 public runDownfile( String path, String fileName, String localPath,String server,String userName,String passwd)
 		 {
 			
@@ -849,7 +875,7 @@ public class BurnServiceImpl implements BurnService {
 		 
 		 @SuppressWarnings("unused")
 		@Override
-	     public Boolean call() throws ServiceException {
+	     public runDownfile call() throws ServiceException {
 			 
 			FtpUtil ftpUtil = new FtpUtil();
 			FTPClient client = null;
@@ -859,20 +885,24 @@ public class BurnServiceImpl implements BurnService {
 				long st = System.currentTimeMillis();
 				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
 				//String loclDir=fileNameToCreateDir(fileName);
-				String cmd="mkdir -p "+localPath+"; cp  -f "+path+File.separator+fileName+" "+localPath;
+				String targetFile=localPath+File.separator+fileName;
+				String sourceFile=path+File.separator+fileName;
+			//	String cmd="mkdir -p "+localPath+"; cp  -f "+sourceFile+" "+localPath+ ";ls -lk "+targetFile+" | awk '{print $5}'";
+				String slot=sourceFile.substring(sourceFile.indexOf("_")-4,sourceFile.indexOf("_"));
+				String cmd="/jukebox/dumpFile.sh "+sourceFile+" " +localPath +" "+fileName +" "+slot ;				
 				cmd=cmd.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
 				System.out.println("执行下载命令:"+cmd);
-				String rsStr=SSHHelper.exec(server, userName, passwd, 22, cmd);
-				System.out.println("执行下载命令:"+cmd+" \n 执行结果:"+rsStr);
+				copySize=SSHHelper.exec(server, userName, passwd, 22, cmd);
+				System.out.println("执行下载命令:"+cmd+" \n 下载大小:"+copySize);
 	         //BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
 	    
 	         
 				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
 			
-				return true;
+				return this;
 			} catch (Exception e) {
 				logger.error("下载文件数据失败" + fileName + " 源路径:" + path + " 目标路径 : " + localPath, e);
-				return false;
+				return this;
 			} 
 		
 		}
@@ -964,25 +994,54 @@ public class BurnServiceImpl implements BurnService {
 //	}
 //}
 	 
-
-	
-    @Override
-	public boolean savefileExportTask(String soucePath, String exportpath,String serverInfo) throws ServiceException {
+	@Override
+	public boolean savefileExportTask(String soucePath, String exportpath) throws ServiceException {
 		boolean isSucc = true;
 		Map<String, Object> exportMap = new HashMap<String, Object>();
-		int beginNum = soucePath.indexOf("_");
-		int endNum = soucePath.indexOf("(");
+
+		// 剥离server字符串---------------------------------------------------------------------
+		String[] sourcePathList = soucePath.split(",");
+		String serverInfo = "";
+		StringBuffer saveFilePathBuff = new StringBuffer();
+		for (String tmpPath : sourcePathList) {
+			if (tmpPath.indexOf(":") > 0) {
+				String tmpServerInfo = tmpPath.substring(0, tmpPath.indexOf(":"));
+				saveFilePathBuff.append(tmpPath.substring(tmpPath.indexOf(":") + 1)).append(",");
+				if (serverInfo.indexOf(tmpServerInfo) < 0) {
+					serverInfo += tmpServerInfo + ",";
+				}
+			} else {
+				saveFilePathBuff.append(tmpPath);
+			}
+
+		}
+
+		if (serverInfo.lastIndexOf(",") > 1)
+			serverInfo = serverInfo.substring(0, serverInfo.lastIndexOf(","));
+		String saveFilePath = saveFilePathBuff + "";
+		if (saveFilePath.lastIndexOf(",") > 1)
+			saveFilePath = saveFilePath.substring(0, saveFilePath.lastIndexOf(","));
+		
+		saveFilePath=saveFilePath.replaceAll(" ", "");
+		exportpath=exportpath.replaceAll(" ", "");
+	
+		// ------------------------------------------------------------------------------
+		// online
+
+		int beginNum = saveFilePath.indexOf("_");
+		int endNum = saveFilePath.indexOf("(");
 		String volumeLabel = "";
 		if (beginNum > 0 && endNum > 0) {
-			volumeLabel = soucePath.substring(beginNum + 1, endNum);
+			volumeLabel = saveFilePath.substring(beginNum + 1, endNum);
 		} else {
-			if (soucePath!=null&&soucePath.length()>21) {
-				volumeLabel = soucePath.substring(6, 21);
+			if (saveFilePath != null && saveFilePath.length() > 21) {
+				volumeLabel = saveFilePath.substring(6, 21);
 			}
-			
+
 		}
-	     //导出任务保存  
-		exportMap.put("fileList", soucePath);
+
+		// 导出任务保存
+		exportMap.put("fileList", saveFilePath);
 		exportMap.put("number_success", 0);
 		exportMap.put("export_state", "0");
 		exportMap.put("export_desc", "准备下载");
@@ -991,10 +1050,21 @@ public class BurnServiceImpl implements BurnService {
 		exportMap.put("volume_label", volumeLabel);
 		// exportMap.put("c_user", null);
 		insertExportFileRecord(exportMap);
-		
+		// List<Map<String, Object>> fileInfo=listExportFileInfo(exportMap);
+		// String eid=null;
+		// if (null!=fileInfo&&fileInfo.size()>0) {
+		// Map map=fileInfo.get(0);
+		// eid=map.get("eid")+"";
+		// }
+		// Map<String, Object> fileDetailMap = new HashMap<String, Object>();
+		// for (String tmpPath : sourcePathList) {
+		// fileDetailMap.put("eid", eid);
+		// insertExportFileDetail(fileDetailMap);
+		// }
+
 		Map<String, Object> paraMap = new HashMap<String, Object>();
 
-		//更新台帐
+		// 更新台帐
 		if (!StringUtils.isEmpty(volumeLabel)) {
 			paraMap.put("volume_label", volumeLabel);
 			paraMap.put("type", 1);
@@ -1012,9 +1082,8 @@ public class BurnServiceImpl implements BurnService {
 				standingMap.put("create_time", new Date());
 				standingMap.put("type", "2");
 				standingbookService.insert(standingMap);
-	         }    
+			}
 		}
-	
 
 		return true;
 

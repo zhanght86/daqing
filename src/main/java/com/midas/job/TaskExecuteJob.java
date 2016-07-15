@@ -28,10 +28,10 @@ public class TaskExecuteJob {
 
     
     
-    @Scheduled(cron="0/30 * *  * * ? ") 
+  @Scheduled(fixedDelay = 30*1000) 
     public void execute() {
 
-        long st = System.currentTimeMillis();
+       // long st = System.currentTimeMillis();
        
         try {
            boolean rtnVal=burnService.CheckTaskAndRun("");
@@ -40,7 +40,7 @@ public class TaskExecuteJob {
             logger.error("执行定时任务失败--fileExportTask", e);
         }
 
-        logger.info("start file export Task, times ： {} 毫秒", System.currentTimeMillis() - st);
+        //logger.info("start file export Task, times ： {} 毫秒", System.currentTimeMillis() - st);
     }
 
 }

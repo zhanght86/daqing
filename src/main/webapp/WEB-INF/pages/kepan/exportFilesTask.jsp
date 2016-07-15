@@ -96,19 +96,20 @@ $(document).ready(function() {
 				</ul>
 			</form>
 
-			<table class="tablelist"  style="word-break:break-all; word-wrap:break-all;">
+			<table class="tablelist" align="center"  style="word-break:break-all; word-wrap:break-all;">
 				<thead>
 					<tr>
 						    <th width="50px">序号</th>
 							<th width="800px">导出文件</th>
 							<th width="250px">导出路径</th>
-							<th width="180px">创建时间</th>	
-							<th width="180px" >修改时间</th>
+							<th width="80px">下载进度</th>
+							<th width="160px">创建时间</th>	
+							<th width="160px" >修改时间</th>
 							<!-- 
 							<th>操作用户</th>
 							 -->
 							<th width="90px">状态</th>
-							<th width="50px">操作</th>
+							<th width="80px" >操作</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -116,7 +117,7 @@ $(document).ready(function() {
 						<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							<td>${status.count }</td>
 						
-							<td title="${map.filelist}">
+							<td  title="${map.filelist}" ondblclick="alert('${map.filelist}')">
 							<c:if test="${fn:length( map.filelist)>80 }">
 							${ fn:substring( map.filelist ,0,80)}. . . . . . </c:if> 
 							<c:if test="${fn:length( map.filelist)<=80 }">
@@ -128,6 +129,18 @@ $(document).ready(function() {
 							${ fn:substring( map.export_path ,0,20)}. . . . . . </c:if> 
 							<c:if test="${fn:length( map.export_path)<=20 }">
 							${map.export_path}</c:if> 
+							</td>
+							
+							<td >
+							<c:choose>
+							<c:when test="${map.number_success > 0&& map.number_sum > 0}">
+							${(map.number_success/map.number_sum)*100}%
+							</c:when>
+							<c:otherwise>
+							0
+							</c:otherwise>
+							</c:choose>
+							
 							</td>
 							<td >${map.create_time }</td>
 							<td >${map.update_time}</td>
@@ -141,8 +154,14 @@ $(document).ready(function() {
 								<c:if test="${map.export_state == 6}">关闭</c:if>
 							</td> 
 							
-							<!-- <td>${map.c_user}</td>  -->
-							<td><a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExportFile.do?eid=${map.eid}">删除</a></td>
+							
+							
+							
+							<td>
+							<c:if test="${map.export_state == 3}">
+							<a onclick="return confirm('继续启动下载任务前,请确认光盘处于空闲状态？');" href="<%=basePath %>/burn/reRunExportFile.do?eid=${map.eid}">重启</a>
+							</c:if>
+							<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExportFile.do?eid=${map.eid}">删除</a></td>
 						</tr>
 					</c:forEach>
 				</tbody>

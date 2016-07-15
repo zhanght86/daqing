@@ -349,17 +349,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
 			if (!exportFile.isDirectory()) {
 				throw new ServiceException(ErrorConstant.CODE3000, "合并文件失败， 请输入一个可以访问的目录！");
 			}
-			//TODO  online
-			//保存导出任务执行的服务器信息
-			List<Map<String, Object>> list=  burnService.listPosition(volLabel);
-			String serverInfo="";
-			for (Map<String, Object> map : list) {
-				serverInfo=map.get("server")+",";
-			}
-			if (serverInfo.lastIndexOf(",") > 1)
-				serverInfo = serverInfo.substring(0, serverInfo.lastIndexOf(","));
-			exportMap.put("server", serverInfo);
-			/////////////////////
+			burnService.checkMerge(volLabel);
             exportMap.put("volume_label", volLabel);
             exportMap.put("number_success", 0);
             exportMap.put("export_state", "0");

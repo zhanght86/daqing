@@ -6,8 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;  
 import java.io.IOException;  
 import java.io.InputStream;  
-import java.io.OutputStream;  
-  
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.Random;
+
 import org.apache.commons.net.ftp.FTP;  
 import org.apache.commons.net.ftp.FTPClient;  
 import org.apache.commons.net.ftp.FTPClientConfig;  
@@ -171,13 +173,16 @@ public class FtpUtil {
     public boolean downFileV2(FTPClient ftp, String path, String fileName, String localPath)throws Exception {  
         boolean success = false;  
         int downNUM=0;
-      
+             
         	  System.out.println(" path : " + path+" fileName:"+fileName+"  localPath:"+ localPath);  
+        	
             ftp.changeWorkingDirectory(new String(path.getBytes("UTF-8"),"iso8859-1"));//转移到FTP服务器目录  
             ftp.setFileType(FTP.BINARY_FILE_TYPE);  
+//            ftp.enterLocalPassiveMode();
+            int reply = ftp.getReplyCode();         
+            System.out.println("FTP服务器响应返回码：" + reply);         
             FTPFile[] fs = ftp.listFiles(); //得到目录的相应文件列表  
             for (FTPFile ff : fs) { 
-            	
                 if (ff.getName().equals(fileName)) {  
                     File localFile = new File(localPath + "/" + ff.getName());  
                     if(!localFile.exists()) {
@@ -191,11 +196,17 @@ public class FtpUtil {
                     outputStream.flush();  
                     outputStream.close();  
                     downNUM++;
-                    System.out.println("下载成功 : " + downBool);  
+                    success = downBool;
+                    ftp.changeWorkingDirectory(new String("/tmp".getBytes("UTF-8"),"iso8859-1"));//转移到FTP服务器目录  
+//                    FTPFile[] fs1 = ftp.listFiles();
+//                    for (FTPFile ffa: fs1) { 
+//                      System.out.println("更改目录后的文件:"+ffa.getName());
+//                    }
+                    System.out.println(path+"/"+fileName+"       下载结果 : " + downBool);  
                 }  
             }  
-           ftp.logout();  
-            success = downNUM==0?false:true;  
+          // ftp.logout();  
+          
        
         return success;  
     }  

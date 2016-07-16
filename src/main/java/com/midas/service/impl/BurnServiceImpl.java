@@ -723,7 +723,8 @@ public class BurnServiceImpl implements BurnService {
 	}
 	
 
-	
+
+
 	public boolean RunTask( Map<String, Object> paramMap)
 	{
 		boolean isReadyMerg=false;
@@ -740,7 +741,7 @@ public class BurnServiceImpl implements BurnService {
 		String targetPath = paramMap.get("export_path") + "";
 		String tmpServer=paramMap.get("server")+"";
 		String volumeLabel=paramMap.get("volume_label")+"";
-		BigDecimal sumDumpSize=null;
+		BigDecimal sumDumpSize=new BigDecimal(0);
 		int failNum=0;
 		List<Map<String, Object>> downServerList=new ArrayList<>();
 		if (tmpServer.indexOf(",") < 0)// 单服务器任务判断准确ftp服务器,
@@ -784,8 +785,8 @@ public class BurnServiceImpl implements BurnService {
 					  try {
 						  runDownfile rs=(runDownfile)f.get();
 			              String copysize=rs.copySize;
-			            
-			              if ("0".equals(copysize)||"".equals(copysize)) {
+			              boolean isNum=StringTools.isNumericDigit(copysize);
+			              if ("0".equals(copysize)||!isNum||"".equals(copysize)) {
 			            	  logger.error(rs.path+" 文件下载失败:");
 			            	  failNum++;
 						}
@@ -796,6 +797,7 @@ public class BurnServiceImpl implements BurnService {
 			            } catch (Exception e) {
 			                logger.error("下载数据失败ExecutionException", e);			                
 			                isReadyMerg = false;
+			                executorService.shutdownNow();
 			                throw new Exception(e);
 			            }
 				}
@@ -813,41 +815,40 @@ public class BurnServiceImpl implements BurnService {
 				burnDao.updateExportFile(paramMap);
 				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
 			} 
+			finally {
+					executorService.shutdown();
+		
+			}
 			
 		}
 		
-		
-
-		//合并split文件
-	
-		if(isReadyMerg)
-		{
-		//int rsInt = RunCommand.execute(cmd, username, servers,"'"+ soucePath+"'", targetPath.trim(), passwd);
+		// 合并split文件
+		if (isReadyMerg) {
+			// int rsInt = RunCommand.execute(cmd, username, servers,"'"+
+			// soucePath+"'", targetPath.trim(), passwd);
 			int rsInt = RunCommand.execute(cmd, targetPath.trim());
 			if (-1 != rsInt) {
-			paramMap.put("export_state", ExportState.MEGE_SUCCESS.toString());
+				paramMap.put("export_state", ExportState.MEGE_SUCCESS.toString());
 
-		} else {
-			paramMap.put("export_state", ExportState.MEGE_FAILD.toString());
-		}
-			burnDao.updateExportFile(paramMap);
-			
-			
-			//更新台帐数据
-			if(!StringUtils.isEmpty(volumeLabel))
-			{
-		     Map<String, Object> standingMap = new HashMap<String, Object>();
-	         standingMap.put("eid", paramMap.get("eid")+"");
-	         standingMap.put("volume_label", volumeLabel);
-	         standingMap.put("states", "1");
-	         // 修改为最后一个刻录完成的时间
-	         standingMap.put("update_time", new Date());
-	         standingMap.put("type", 2);
-	         standingbookService.update(standingMap);
+			} else {
+				paramMap.put("export_state", ExportState.MEGE_FAILD.toString());
 			}
-		
+			burnDao.updateExportFile(paramMap);
+
+			// 更新台帐数据
+			if (!StringUtils.isEmpty(volumeLabel)) {
+				Map<String, Object> standingMap = new HashMap<String, Object>();
+				standingMap.put("eid", paramMap.get("eid") + "");
+				standingMap.put("volume_label", volumeLabel);
+				standingMap.put("states", "1");
+				// 修改为最后一个刻录完成的时间
+				standingMap.put("update_time", new Date());
+				standingMap.put("type", 2);
+				standingbookService.update(standingMap);
+			}
+
 		}
-	
+
 		return true;
 
 	}

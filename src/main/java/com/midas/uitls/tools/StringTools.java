@@ -34,6 +34,15 @@ public class StringTools {
 		return true;
 
 	}
+	
+	public static boolean isNumericDigit(String str){
+		   for (int i = str.length() ; --i>=0 ; ){   
+		    if (!Character.isDigit(str.charAt ( i ) ) ){
+		     return false;
+		    }
+		   }
+		   return true;
+		}
 
 	// 对于Collection、Dictionary、Map，不深入迭代，判断有没有子元素。
 	public static boolean isEmpty(Object obj) {

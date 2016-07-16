@@ -322,6 +322,9 @@
 		<if test="number_success != null and number_success != ''">
 			, number_success = #{number_success}
 		</if>
+		<if test="number_sum != null and number_sum != ''">
+			, number_sum = #{number_sum}
+		</if>
 		<if test="export_state!= null and export_state != ''">
 			, export_state = #{export_state}
 		</if>

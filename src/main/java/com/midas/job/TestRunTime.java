@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.midas.uitls.tools.StringTools;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
 
@@ -82,26 +83,10 @@ public class TestRunTime {
         
        // tt.testThread();
         
-        String bb="11111111111111111111";
-        String sourceFile="/groups/0253_W20160512000001(84-29)/芳38/W116332.001.SGY_midas_6_003.split";
-        
-        System.out.println(sourceFile.substring(sourceFile.indexOf("_")-4,sourceFile.indexOf("_")));
+        BigDecimal sumDumpSize=new BigDecimal(1);
+        System.out.println(sumDumpSize.add(new BigDecimal(20)));
         
         
-        
-        try {
-			
-		
-       for (int i = 0; i <20; i++) {
-    	   System.out.println(i);
-		if (i==4) {
-			throw new Exception();
-		}
-	}
-        } catch (Exception e) {
-			// TODO: handle exception
-		}
-
 
      
     }

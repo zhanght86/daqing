@@ -51,11 +51,11 @@ $(document).ready(function() {
 		
 		var checkFiles=getallcheckedvalue('box');
 		var ischeck=splitCheck(checkFiles);	
-		if(!ischeck)
+	     if(!ischeck)
 			{
 			alert('您选择的带有split结尾文件,可能不属于同一个源文件,请重新选择同一个编号文件进行导出合并,谢谢!')
 			return false;
-			}
+			} 
 		$(".tip").fadeIn(200);
 				
 		var sourcePath = document.getElementById('sourcePath');

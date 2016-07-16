@@ -686,6 +686,7 @@ public class BurnServiceImpl implements BurnService {
 	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
 	            }
 	        }
+			
 			 Map<String, Object> paramMap =rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
 			paramMap.put("update_time", new Date());
@@ -732,6 +733,7 @@ public class BurnServiceImpl implements BurnService {
 		String rootPath=exportInfo.get("sp_value4") ==null?"/groups/":exportInfo.get("sp_value4")+"";
 		int  successDownNum=0;
 		String cmd = exportInfo.get("sp_value3") + "";
+		String dcmd = exportInfo.get("sp_value5") + "";
 		String username = exportInfo.get("sp_value1") + "";
 		String passwd = exportInfo.get("sp_value2") + "";
 		String soucePath = paramMap.get("fileList") + "";
@@ -773,7 +775,7 @@ public class BurnServiceImpl implements BurnService {
 					logger.info("下载的文件路径为v3 {}", filePath);								
 					System.out.println("最新版本V1");
 					Thread.sleep(10*1000L);
-					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd));             
+					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd,dcmd));             
 					listFutures.add(downRs);
 					successDownNum++;
 
@@ -861,7 +863,8 @@ public class BurnServiceImpl implements BurnService {
 		 String userName=null;
 		 String passwd=null;
 		 String copySize=null;
-		 public runDownfile( String path, String fileName, String localPath,String server,String userName,String passwd)
+		 String cmd=null;
+		 public runDownfile( String path, String fileName, String localPath,String server,String userName,String passwd,String cmd)
 		 {
 			
 			 this.path=path;
@@ -870,6 +873,7 @@ public class BurnServiceImpl implements BurnService {
 			 this.server=server;
 			 this.userName=userName;
 			 this.passwd=passwd;
+			 this.cmd=cmd;
 		 }
 		 
 		 
@@ -880,8 +884,6 @@ public class BurnServiceImpl implements BurnService {
 			FtpUtil ftpUtil = new FtpUtil();
 			FTPClient client = null;
 			try {
-				   // 文件操作
-			    FileOper   fileOper = new LocalFileOper();
 				long st = System.currentTimeMillis();
 				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
 				//String loclDir=fileNameToCreateDir(fileName);
@@ -889,11 +891,11 @@ public class BurnServiceImpl implements BurnService {
 				String sourceFile=path+File.separator+fileName;
 			//	String cmd="mkdir -p "+localPath+"; cp  -f "+sourceFile+" "+localPath+ ";ls -lk "+targetFile+" | awk '{print $5}'";
 				String slot=sourceFile.substring(sourceFile.indexOf("_")-4,sourceFile.indexOf("_"));
-				String cmd="/jukebox/dumpFile.sh "+sourceFile+" " +localPath +" "+fileName +" "+slot ;				
-				cmd=cmd.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
-				System.out.println("执行下载命令:"+cmd);
-				copySize=SSHHelper.exec(server, userName, passwd, 22, cmd);
-				System.out.println("执行下载命令:"+cmd+" \n 下载大小:"+copySize);
+				String execCmd=cmd+" "+sourceFile+" " +localPath +" "+fileName +" "+slot ;				
+				execCmd=execCmd.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
+				System.out.println("执行下载命令:"+execCmd);
+				copySize=SSHHelper.exec(server, userName, passwd, 22, execCmd);
+				System.out.println("执行下载命令:"+execCmd+" \n 下载大小:"+copySize);
 	         //BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
 	    
 	         
@@ -1030,6 +1032,9 @@ public class BurnServiceImpl implements BurnService {
 
 		int beginNum = saveFilePath.indexOf("_");
 		int endNum = saveFilePath.indexOf("(");
+		if (endNum<0||endNum-beginNum>20) {
+			endNum= saveFilePath.indexOf("/",beginNum);
+		}
 		String volumeLabel = "";
 		if (beginNum > 0 && endNum > 0) {
 			volumeLabel = saveFilePath.substring(beginNum + 1, endNum);

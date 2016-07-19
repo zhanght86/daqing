@@ -10,6 +10,7 @@
 			response.setHeader("Pragma", "No-cache");
 			response.setHeader("Cache-Control", "no-cache");
 			response.setDateHeader("Expires", 0);
+			 response.setHeader("refresh","30");  
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -134,7 +135,7 @@ $(document).ready(function() {
 							<td >
 							<c:choose>
 							<c:when test="${map.number_success > 0&& map.number_sum > 0}">
-							${(map.number_success/map.number_sum)*100}%
+							<fmt:formatNumber type="number" value="${(map.number_success/map.number_sum)*100}" maxFractionDigits="0" pattern="#" />%
 							</c:when>
 							<c:otherwise>
 							0
@@ -154,15 +155,17 @@ $(document).ready(function() {
 								<c:if test="${map.export_state == 6}">关闭</c:if>
 							</td> 
 							
-							
-							
-							
 							<td>
 							<c:if test="${map.export_state == 3}">
-							<a onclick="return confirm('继续启动下载任务前,请确认光盘处于空闲状态？');" href="<%=basePath %>/burn/reRunExportFile.do?eid=${map.eid}">重启</a>
+							<a onclick="return confirm('继续启动下载任务前,请确认光盘处于空闲状态？');" href="<%=basePath %>/burn/reRunExportFile.do?eid=${map.eid}">重试</a>
 							</c:if>
-							<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExportFile.do?eid=${map.eid}">删除</a></td>
-						</tr>
+							<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExportFile.do?eid=${map.eid}">删除</a>
+							<c:if test="${map.export_state == 1}">
+							<a onclick="return confirm('确定要终止么？');" href="<%=basePath %>/burn/stopExportFile.do?taskId=${map.task_id}&eid=${map.eid}">终止</a>
+							</c:if>
+							</td>
+					 	
+					 </tr>
 					</c:forEach>
 				</tbody>
 

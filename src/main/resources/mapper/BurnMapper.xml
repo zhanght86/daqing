@@ -65,7 +65,7 @@
 	<select id="list" parameterType="Map" resultType="Map">
 		SELECT b.*, s.sp_name FROM m_burn b left join systemparameters s on b.burning_machine = s.sp_code 
 		<where>
-			1 = 1
+			b.status = 0
 			<if test="burning_state != null and burning_state != ''">
 				and b.burning_state in (${burning_state})
 			</if>
@@ -220,16 +220,20 @@
 		update m_burn set burn_size = burn_size + #{size} where volume_label = #{volLabel}
 	</update>
 	
-	<delete id="delete">
+	<!-- <delete id="delete">
 		delete from m_burn where volume_label = #{volLabel}
-	</delete>
+	</delete> -->
+	
+	<update id="delete">
+		update  m_burn set status='1' where volume_label = #{volLabel}
+	</update>
 	
 	<delete id="deleteDetail">
 		delete from m_burn_detail where volume_label = #{volLabel}
 	</delete>
 	
 	
-		<delete id="deleteExport">
+	<delete id="deleteExport">
 		delete from export_data_record where eid = #{eid}
 	</delete>
 	
@@ -247,9 +251,9 @@
 		insert 
 			into 
 		export_file_record
-			(server,fileList,volume_label, number_success, export_state, export_path, export_desc, create_time, update_time, c_user) 
+			(server,fileList,volume_label, number_success,number_sum, export_state, export_path, export_desc, create_time, update_time, c_user) 
 		values 
-			(#{server},#{fileList},#{volume_label}, #{number_success}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
+			(#{server},#{fileList},#{volume_label}, #{number_success},#{number_sum}, #{export_state}, #{export_path}, #{export_desc}, #{create_time}, #{update_time}, #{c_user})
 	</insert>
 	
 		<insert id="insertExportFileDetail" parameterType="Map" useGeneratedKeys="true" keyProperty="fid">
@@ -338,7 +342,7 @@
 	
 	
 	<select id="listExportFileRecord" parameterType="String" resultType="Map">
-	select eid,filelist,volume_label,`server`,number_success,number_sum,export_path,export_state,export_desc,create_time,update_time from export_file_record
+	select eid,filelist,volume_label,`server`,number_success,number_sum,export_path,export_state,export_desc,create_time,update_time,task_id from export_file_record
 		
 			order by eid desc
 		

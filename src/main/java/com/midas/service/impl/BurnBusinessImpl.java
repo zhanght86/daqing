@@ -102,7 +102,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             throw new ServiceException(ErrorConstant.CODE3000,
                     "盘库: {" + burnMapParam.get("sp_name") + "}中盘的数量不足, 需要继续执行请先增加盘");
         }
-        //
+        
         String burnMachine="";
         if (!StringTools.isEmpty(server)) {
             burnMachine = server;

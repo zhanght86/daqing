@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -44,9 +46,11 @@ import com.midas.uitls.file.FileOper;
 import com.midas.uitls.file.LocalFileOper;
 import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.socket.SSHHelper;
+import com.midas.uitls.threadpool.ThreadPoolContainer;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 @Service
 public class BurnServiceImpl implements BurnService {
@@ -418,7 +422,7 @@ public class BurnServiceImpl implements BurnService {
     public void updateSize(String volLabel, BigDecimal size) {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("volLabel", volLabel);
-        map.put("size", size.toBigInteger());
+        map.put("size", size);
         burnDao.updateSize(map);
     }
 
@@ -436,11 +440,11 @@ public class BurnServiceImpl implements BurnService {
     @Override
     public void delete(String volLabel, String dataType) {
         burnDao.delete(volLabel);
-        burnDao.deleteDetail(volLabel);
-        if(StringTools.isNotEmpty(dataType)) {
-            setDataService(dataType);
-            dataService.deleteByVolLabel(volLabel);
-        }
+//        burnDao.deleteDetail(volLabel);
+//        if(StringTools.isNotEmpty(dataType)) {
+//            setDataService(dataType);
+//            dataService.deleteByVolLabel(volLabel);
+//        }
     }
     
     
@@ -536,8 +540,11 @@ public class BurnServiceImpl implements BurnService {
  			// macheInfo=commonService.getSystemParameters(row.get("sp_value1")+"");
  			String ip = macheInfo.get("sp_value1") + "";
  			String server = macheInfo.get("sp_code") + "";
- 			searchResult = commonService.executeFindFile(server, keyWord);
- 		
+ 			try {
+ 				searchResult = commonService.executeFindFile(server, keyWord);
+			} catch (Exception e) {
+			   logger.error(e.getMessage());
+			} 		
  			if (StringUtils.isNotEmpty(searchResult)) {
  				String[] matchInfo = searchResult.split("\n");
  				for (int i = 0; i < matchInfo.length; i++) {
@@ -732,7 +739,7 @@ public class BurnServiceImpl implements BurnService {
 		List<Map<String, Object>> serverList = commonService.getAllMachine();
 		String servers = "";
 		String rootPath=exportInfo.get("sp_value4") ==null?"/groups/":exportInfo.get("sp_value4")+"";
-		int  successDownNum=0;
+		int  successDownNum=0;    //下载成功数
 		String cmd = exportInfo.get("sp_value3") + "";
 		String dcmd = exportInfo.get("sp_value5") + "";
 		String username = exportInfo.get("sp_value1") + "";
@@ -742,6 +749,8 @@ public class BurnServiceImpl implements BurnService {
 		String tmpServer=paramMap.get("server")+"";
 		String volumeLabel=paramMap.get("volume_label")+"";
 		BigDecimal sumDumpSize=new BigDecimal(0);
+		ExecutorService executorService = Executors.newFixedThreadPool(4);
+		CompletionService<Object> completionService=new ExecutorCompletionService(executorService);
 		int failNum=0;
 		List<Map<String, Object>> downServerList=new ArrayList<>();
 		if (tmpServer.indexOf(",") < 0)// 单服务器任务判断准确ftp服务器,
@@ -752,76 +761,83 @@ public class BurnServiceImpl implements BurnService {
 				}
 			}
 		}
-		
-		if(downServerList.size()==0)
+		System.out.println("最新版本v2"+downServerList.toString());
+		//保存任务内存
+		ThreadPoolContainer.add(executorService);
+		paramMap.put("task_id", executorService.hashCode());
+		burnDao.updateExportFile(paramMap);
+		if (downServerList.size() == 0)
 			downServerList = commonService.getAllMachine();
-		
-		for (Map<String, Object> machine : downServerList) {
-			servers = machine.get("sp_value1") + "";
-			String serverPath=machine.get("sp_code") + "";
-			String[] fileList = soucePath.split(",");
-			ExecutorService executorService = Executors.newFixedThreadPool(4);
-			try {
-
+		try {
+			for (Map<String, Object> machine : downServerList) {
+				servers = machine.get("sp_value1") + "";
+				String serverPath = machine.get("sp_code") + "";
+				String[] fileList = soucePath.split(",");
 				boolean isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
 				if (isbusy) {
-					logger.debug("服务器{}, 正在被使用， 不能进行合并",paramMap.get("eid"));
+					logger.debug("服务器{}, 正在被使用， 不能进行合并", paramMap.get("eid"));
 					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
 				}
 				List<Future<?>> listFutures = new ArrayList<Future<?>>();
+				int count=0;
 				for (String file : fileList) {
 					String ftpPath = file.substring(0, file.lastIndexOf("/")); // 截取路径名称
 					String filename = file.substring(file.lastIndexOf("/") + 1);// 获取文件名
-					String filePath =rootPath + ftpPath;
-					logger.info("下载的文件路径为v3 {}", filePath);								
-					System.out.println("最新版本V1");
-					Thread.sleep(10*1000L);
-					Future<?> downRs = executorService.submit(new runDownfile( filePath.replaceAll("//", "/"), filename, targetPath,servers,  username, passwd,dcmd));             
+					String filePath = rootPath + ftpPath;
+					logger.info("下载的文件路径为v3 {}", filePath);
+					Thread.sleep(10 * 1000L);
+					//Future<?> downRs = executorService.submit(new runDownfile(filePath.replaceAll("//", "/"), filename,targetPath, servers, username, passwd, dcmd));
+					Future<?> downRs = completionService.submit(new runDownfile(filePath.replaceAll("//", "/"), filename,targetPath, servers, username, passwd, dcmd));
 					listFutures.add(downRs);
-					successDownNum++;
-
-				}
-				for (Future<?> f : listFutures) {
-					  try {
-						  runDownfile rs=(runDownfile)f.get();
-			              String copysize=rs.copySize;
-			              boolean isNum=StringTools.isNumericDigit(copysize);
-			              if ("0".equals(copysize)||!isNum||"".equals(copysize)) {
-			            	  logger.error(rs.path+" 文件下载失败:");
-			            	  failNum++;
-						}
-			              else
-			              {
-			            	  sumDumpSize=sumDumpSize.add(new BigDecimal(copysize));
-			              }
-			            } catch (Exception e) {
-			                logger.error("下载数据失败ExecutionException", e);			                
-			                isReadyMerg = false;
-			                executorService.shutdownNow();
-			                throw new Exception(e);
-			            }
-				}
-				isReadyMerg=failNum==0?true:false;
-				paramMap.put("number_sum", successDownNum+"");
-				paramMap.put("number_success", (successDownNum-failNum)+"");
-				paramMap.put("export_state",isReadyMerg? ExportState.EXPORT_SUCCESS.toString():ExportState.EXPORT_FAILD.toString());
-				burnDao.updateExportFile(paramMap);
 				
 
-			} catch (Exception e) {
-				paramMap.put("number_success", (successDownNum-failNum)+"");
-				paramMap.put("number_sum", successDownNum+"");
-				paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
-				burnDao.updateExportFile(paramMap);
-				logger.error("任务export_file_record eid ["+paramMap.get("eid")+"]下载失败:"+e.getMessage());
-			} 
-			finally {
-					executorService.shutdown();
-		
+				}
+
+				for (Future<?> f : listFutures) {
+					try {
+						count++;
+						System.out.println("completionService获取下载任务结果"+f.hashCode());
+						logger.info("下载完成队列遍历.take() start"+count);
+						Future<?> finFuture=completionService.take(); //获取完成任务
+						 logger.info("下载完成队列遍历.take() finish"+count);
+						runDownfile rs = (runDownfile) finFuture.get();
+						//runDownfile rs = (runDownfile) f.get();
+						String copysize = rs.copySize;
+						boolean isNum = StringTools.isNumericDigit(copysize);
+						if ("0".equals(copysize) || !isNum || "".equals(copysize)) {
+							logger.error(rs.path + " 文件下载失败:");
+							failNum++;
+							//throw new ServiceException("文件下载失败,终止后续任务");//下载文件失败后终止后续,,注释代表继续下载其它文件,
+						} else {
+							logger.info("更新下载任务进度"+successDownNum);
+							successDownNum++;
+							sumDumpSize = sumDumpSize.add(new BigDecimal(copysize));
+							paramMap.put("number_success", successDownNum);
+							burnDao.updateExportFile(paramMap);
+							
+						}
+					} catch (Exception e) {
+						logger.error("下载数据失败ExecutionException", e);
+						isReadyMerg = false;
+						executorService.shutdownNow();
+						throw new Exception(e);
+					}
+				}
+				 logger.info("下载完成队列遍历完毕结果"+isReadyMerg);
 			}
-			
+			isReadyMerg = failNum == 0 ? true : false;
+			paramMap.put("export_state",isReadyMerg ? ExportState.EXPORT_SUCCESS.toString() : ExportState.EXPORT_FAILD.toString());
+			burnDao.updateExportFile(paramMap);
+		} catch (Exception e) {
+			paramMap.put("number_success", (successDownNum - failNum) + "");
+			paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
+			burnDao.updateExportFile(paramMap);
+			logger.error("任务export_file_record eid [" + paramMap.get("eid") + "]下载失败:" + e.getMessage());
+		} finally {
+			executorService.shutdown();
+
 		}
-		
+		 logger.info("文件合并标识:"+isReadyMerg);
 		// 合并split文件
 		if (isReadyMerg) {
 			// int rsInt = RunCommand.execute(cmd, username, servers,"'"+
@@ -834,7 +850,7 @@ public class BurnServiceImpl implements BurnService {
 				paramMap.put("export_state", ExportState.MEGE_FAILD.toString());
 			}
 			burnDao.updateExportFile(paramMap);
-
+           logger.info("导出任务台帐更新卷标"+volumeLabel);
 			// 更新台帐数据
 			if (!StringUtils.isEmpty(volumeLabel)) {
 				Map<String, Object> standingMap = new HashMap<String, Object>();
@@ -843,6 +859,7 @@ public class BurnServiceImpl implements BurnService {
 				standingMap.put("states", "1");
 				// 修改为最后一个刻录完成的时间
 				standingMap.put("update_time", new Date());
+				standingMap.put("data_quantity", sumDumpSize);
 				standingMap.put("type", 2);
 				standingbookService.update(standingMap);
 			}
@@ -854,7 +871,7 @@ public class BurnServiceImpl implements BurnService {
 	}
 	
 	
-	 class runDownfile implements Callable<runDownfile> 
+	 class runDownfile implements Callable<Object> 
 	 {
 	
 		 String path=null;
@@ -894,13 +911,13 @@ public class BurnServiceImpl implements BurnService {
 				String slot=sourceFile.substring(sourceFile.indexOf("_")-4,sourceFile.indexOf("_"));
 				String execCmd=cmd+" "+sourceFile+" " +localPath +" "+fileName +" "+slot ;				
 				execCmd=execCmd.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
-				System.out.println("执行下载命令:"+execCmd);
+				System.out.println("执行下载命令:server:"+server+"  user:"+userName+"   "+execCmd);
 				copySize=SSHHelper.exec(server, userName, passwd, 22, execCmd);
-				System.out.println("执行下载命令:"+execCmd+" \n 下载大小:"+copySize);
+				System.out.println("执行下载命令:server:"+server+"  user:"+userName+"   "+execCmd+" \n 下载大小:"+copySize);
 	         //BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
 	    
 	         
-				logger.error("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
+				logger.info("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
 			
 				return this;
 			} catch (Exception e) {
@@ -1006,6 +1023,7 @@ public class BurnServiceImpl implements BurnService {
 		String[] sourcePathList = soucePath.split(",");
 		String serverInfo = "";
 		StringBuffer saveFilePathBuff = new StringBuffer();
+		int downSum=sourcePathList.length;
 		for (String tmpPath : sourcePathList) {
 			if (tmpPath.indexOf(":") > 0) {
 				String tmpServerInfo = tmpPath.substring(0, tmpPath.indexOf(":"));
@@ -1049,6 +1067,7 @@ public class BurnServiceImpl implements BurnService {
 		// 导出任务保存
 		exportMap.put("fileList", saveFilePath);
 		exportMap.put("number_success", 0);
+		exportMap.put("number_sum", downSum);
 		exportMap.put("export_state", "0");
 		exportMap.put("export_desc", "准备下载");
 		exportMap.put("export_path", exportpath);

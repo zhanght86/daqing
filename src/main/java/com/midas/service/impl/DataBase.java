@@ -33,9 +33,9 @@ public class DataBase {
                 int end = StringTools.paserInt(s[s.length - 1]);
 
                 int numberLen = s[s.length - 2].length();
-                if (end - start > number) {
-                    throw new ServiceException(ErrorConstant.CODE4000, "区间数据文件： 输入有错误： 【" + file + "】 请检查数据内容");
-                }
+//                if (end - start > number) {
+//                    throw new ServiceException(ErrorConstant.CODE4000, "区间数据文件： 输入有错误： 【" + file + "】 请检查数据内容");
+//                }
                 while (start <= end) {
                     files.add(folder + "/" + type + (String.format("%0" + numberLen + "d", start)));
                     start++;

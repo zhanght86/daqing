@@ -1,22 +1,16 @@
 package com.midas.job;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import com.midas.uitls.tools.StringTools;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 
 public class TestRunTime {
@@ -81,32 +75,45 @@ public class TestRunTime {
 //	
 
         
-       // tt.testThread();
+      //  tt.testThread();
         
-        BigDecimal sumDumpSize=new BigDecimal(1);
-        System.out.println(sumDumpSize.add(new BigDecimal(20)));
+        BigDecimal sumDumpSize=new BigDecimal("9234567890123456789");
+        
+        System.out.println(sumDumpSize.toBigInteger());
+        System.out.println(sumDumpSize.longValue());
         
         
 
      
     }
-    public void testThread()
-    {
-    	   ExecutorService executorService=Executors.newFixedThreadPool(2);
-    	   ArrayList<Future> futures=new ArrayList<>();
-    	   for (int i = 0; i < 10; i++) {
-    		Future<Object> future=executorService.submit(new runCallalbe(i+"","2","3")); 
-    		futures.add(future);
 
-    	}
-    	   System.out.println("11111111111");
-    	   for (Future f : futures) {
+	public void testThread() {
+		ExecutorService executorService = Executors.newFixedThreadPool(3);
+		CompletionService<Object> completionService=new ExecutorCompletionService(executorService);
+		List<Future<?>> futures = new ArrayList<>();
+		String[] fileList = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20".split(",");
+		for (String file : fileList) {
 			try {
-				runCallalbe rs=(runCallalbe)f.get();
-				if (rs.param1.equals("5")) {
-					executorService.submit	(rs);
-				}
-				System.out.println(rs.param1);
+				
+				Future<Object> future = completionService.submit(new runCallalbe(file.replaceAll("//", "/"), "2", "3"));
+				futures.add(future);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		System.out.println("11111111111");
+
+		int size = futures.size();
+	for (Future<?> fa : futures) {
+					try {
+				Future<?> f = completionService.take();
+				runCallalbe rs;
+
+				rs = (runCallalbe) f.get();
+
+				System.out.println("完成线程编号" + rs.param1);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -114,10 +121,38 @@ public class TestRunTime {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			finally {
+				
+				
+				executorService.shutdown();
+			}
 		}
-    		executorService.shutdown();
-    }
-    
+	}
+	
+	
+//			try {
+//
+//				Thread.sleep(5 * 1000L);
+//				for (Future<?> f : futures) {
+//
+//					if (f.isDone()) {
+//
+//						runCallalbe rs = (runCallalbe) f.get();
+//						if (rs.param1.equals("5")) {
+//							executorService.submit(rs);
+//						}
+//						System.out.println("完成线程编号"+rs.param1);
+//						size--;
+//
+//					}
+//
+//				}
+//			} catch (Exception e) {
+//				// TODO: handle exception
+//			}
+
+		
+
     class runCallalbe implements Callable<Object>{
 		String param1="";
 		String param2="";
@@ -131,11 +166,11 @@ public class TestRunTime {
     	@Override
     	public Object call() throws Exception {
     		
-    		Thread.sleep(10000);
+    		//Thread.sleep((int)(Math.random()*10)*1000L);
+    		Thread.sleep(1*1000L);
 			System.out.println("TestThread"+ Thread.currentThread().getId() +" no :" +param1);
 		//	System.out.println(Thread.currentThread().getName()+" id "+ Thread.currentThread().getId());
 			return this;
     	}
     }
-    
-}
+    }

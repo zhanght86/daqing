@@ -41,6 +41,7 @@ import com.midas.uitls.FtpUtil;
 import com.midas.uitls.date.DateUtil;
 import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.socket.TelnetOperator;
+import com.midas.uitls.threadpool.ThreadPoolContainer;
 import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.ServletUtils;
 import com.midas.uitls.tools.StringTools;
@@ -372,6 +373,16 @@ public class BurnController extends BaseDataController {
  
         logger.info("删除导出文件数据:{}", eid);
         burnService.deleteExportFile(eid);
+        return "redirect:/burn/exportFileTask.do";
+    }
+    
+    @RequestMapping(value="/burn/stopExportFile")
+    public String stopExportFile(HttpServletRequest request) {
+        String taskId = request.getParameter("taskId");
+        String eid = request.getParameter("eid");
+        int n=ThreadPoolContainer.destrory(eid);
+        logger.info("终止导出文件数据:{},关闭方式{}", eid,n);
+        
         return "redirect:/burn/exportFileTask.do";
     }
     

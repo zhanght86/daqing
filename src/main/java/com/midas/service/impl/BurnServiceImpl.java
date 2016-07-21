@@ -358,6 +358,11 @@ public class BurnServiceImpl implements BurnService {
     public synchronized int updateExportRecord(Map<String, Object> map) {
         return burnDao.updateExportRecord(map);
     }
+    
+    @Override
+    public synchronized int updateFileRecord(Map<String, Object> map) {
+        return burnDao.updateExportFile(map);
+    }
 
     @Override
     public List<Map<String, Object>> listExportRecord(String volLabel, String state,String task_name) {
@@ -368,7 +373,8 @@ public class BurnServiceImpl implements BurnService {
     public Map<String, Object> listExportRecordCheck(String volLabel, String state,String task_name) {
 		List<Map<String, Object>> checklist = burnDao.listExportRecordCheck(volLabel, state, task_name);
 		List<Map<String, Object>> serverList = commonService.getAllMachine();// 可用的下载服务器列表
-		if (null != checklist && checklist.size() > 0) {
+		List<Map<String, Object>> rmList = new ArrayList<>();// 可用的下载服务器列表
+		if (null != checklist && checklist.size() > 0) {  
 			for (Map<String, Object> map : checklist) {
 				String export_state = map.get("export_state") + "";
 				if (ExportState.EXPORTTING.getKey().equals(export_state))// 发现有状态为1的正在导出任务的服务器排除则不执行导出
@@ -378,14 +384,15 @@ public class BurnServiceImpl implements BurnService {
 						String tempServer = tag.get("server") + "";
 						for (Map<String, Object> server : serverList) {
 							if (tempServer.equals(server.get("sp_code"))) {
-								serverList.remove(server);
+								rmList.add(server);
 							}
 						}
 
 					}
 				}
+				serverList.removeAll(rmList);
 			}
-			if (serverList.size() == 0)
+			if (serverList.size() == 0)  //当1状态可用服务器没有的情况下,则不导出
 				return null;
 			else {
 

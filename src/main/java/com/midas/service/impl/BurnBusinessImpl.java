@@ -42,6 +42,7 @@ import com.midas.uitls.date.DateUtil;
 import com.midas.uitls.file.FileOper;
 import com.midas.uitls.file.LocalFileOper;
 import com.midas.uitls.runtime.RunCommand;
+import com.midas.uitls.threadpool.ThreadPoolS;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
 import com.midas.vo.BurnProgress;
@@ -403,6 +404,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     int magNo = Integer.parseInt(ObjectUtils.toString(map.get("position")));
                     int disc_position = Integer.parseInt(ObjectUtils.toString(map.get("disc_position")));
                     pos = (magNo - 1) * 50 + ((disc_position - 1) % 50 + 1);
+                    Thread.sleep(1*1000L);
                 } catch (Exception e) {
                     throw new ServiceException(ErrorConstant.CODE3000, "位置计算失败, 或者未获取位置信息", e);
                 }
@@ -410,6 +412,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 FutureTask<Boolean> future = new FutureTask<Boolean>(call);
                 new Thread(future).start();
                 futureTaskList.add(future);
+              
             }
             for (FutureTask<Boolean> futureTask : futureTaskList) {
                 boolean bool = false;
@@ -516,8 +519,8 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             map.put("export_desc", "下载成功");
             map.put("number_success", fileList.size());
             burnService.updateExportRecord(map);
-            Thread tr = new Thread(new MegerCommand(eid, volLabel, export_path, fileList));
-            tr.start();
+            ThreadPoolS.execute(new MegerCommand(eid, volLabel, export_path, fileList));
+
         }
     }
 
@@ -532,6 +535,8 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         }
         return null;
     }
+    
+   
 
     /**
      * 运行合并指令
@@ -557,25 +562,32 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         public void run() {
             logger.info("开始运行合并指令， 卷标号： {}, 输出路径： {}, 文件数量： {}", volLabel, exportpath, filelist.size());
             boolean isMegerOk = RunCommand.merge(volLabel, exportpath, filelist.size());
+            try {
+				Thread.sleep(5*1000L);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             Map<String, Object> map = new HashMap<String, Object>();
             if (isMegerOk) {
                 map.put("export_state", ExportState.MEGE_SUCCESS.getKey());
                 map.put("export_desc", "导出成功");
                 map.put("eid", eid);
                 burnService.updateExportRecord(map);               
+                Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
                 Map<String, Object> standingMap = new HashMap<String, Object>();
                 standingMap.put("eid", eid);
                 standingMap.put("volume_label", volLabel);
                 standingMap.put("states", "1");
                 // 修改为最后一个刻录完成的时间
+                standingMap.put("data_quantity", burnMap==null?"":burnMap.get("burn_size"));
                 standingMap.put("update_time", new Date());
                 standingMap.put("type", 2);
                 standingbookService.update(standingMap);
-                
-                for (File f : filelist) {
-                    logger.info("删除文件： {}", f.getAbsolutePath());
-                    f.delete();
-                }
+//                for (File f : filelist) {
+//                    logger.info("删除文件： {}", f.getAbsolutePath());
+//                    f.delete();
+//                }
             } else {
                 map.put("export_state", ExportState.MEGE_FAILD.getKey());
                 map.put("export_desc", "导出失败");
@@ -660,10 +672,13 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     // 成功全部刻录成功，更新记录为刻录成功
                     burnService.updateState(volLabel, BurnState.BURN_SUCCESS.getKey(), "成功", number);
                     
+                    Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
+                    
                     Map<String, Object> standingMap = new HashMap<String, Object>();
                     standingMap.put("volume_label", volLabel);
                     standingMap.put("burn_count", number);
                     standingMap.put("states", "1");
+                    standingMap.put("data_quantity", burnMap==null?"":burnMap.get("burn_size"));
                     // 修改为最后一个刻录完成的时间
                     standingMap.put("update_time", ends.get(number-1).get("time"));
                     standingMap.put("type", 1);

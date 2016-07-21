@@ -77,10 +77,15 @@ public class TestRunTime {
         
       //  tt.testThread();
         
-        BigDecimal sumDumpSize=new BigDecimal("9234567890123456789");
+//        BigDecimal sumDumpSize=new BigDecimal("9234567890123456789");
+//        
+//        System.out.println(sumDumpSize.toBigInteger());
+//        System.out.println(sumDumpSize.longValue());
         
-        System.out.println(sumDumpSize.toBigInteger());
-        System.out.println(sumDumpSize.longValue());
+        ArrayList<String> bb=null;//new ArrayList<>();
+        for (String string : bb) {
+			System.out.println(string);
+		}
         
         
 

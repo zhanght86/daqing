@@ -271,6 +271,13 @@ public interface BurnService {
 	 */
 	void reRunExportFile(String eid);
 
+	/**
+	 * 修改导出任务
+	 * @param map
+	 * @return
+	 */
+	int updateFileRecord(Map<String, Object> map);
+
 	
 
 	

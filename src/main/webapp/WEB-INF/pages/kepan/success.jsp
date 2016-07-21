@@ -42,7 +42,7 @@
 
 	<div class="inforesult">
 
-		<h2>操作成功</h2>
+		<h2>操作信息</h2>
 		<p>信息如下：<br />
 			${desc }
 		</p>

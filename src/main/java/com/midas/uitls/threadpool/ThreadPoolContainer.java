@@ -35,13 +35,14 @@ public class ThreadPoolContainer {
 				executorsVect.remove(exec);
 				return 0;
 			} else {
-//				Iterator iter = executorsVect.entrySet().iterator();
-//				while (iter.hasNext()) {
-//					Map.Entry entry = (Map.Entry) iter.next();
-//					ExecutorService pool = (ExecutorService) entry.getValue();
-//					pool.shutdownNow();
-//				}
-				return 1;
+				Iterator iter = executorsVect.entrySet().iterator();
+				while (iter.hasNext()) {
+					Map.Entry entry = (Map.Entry) iter.next();
+					ExecutorService pool = (ExecutorService) entry.getValue();
+					System.out.println("关闭任务："+instanceId);
+					pool.shutdownNow();
+				}
+				return 0;
 			}
 
 		} catch (Exception e) {

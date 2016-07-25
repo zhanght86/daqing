@@ -381,21 +381,26 @@ public class BurnController extends BaseDataController {
     	Map<String ,Object> paramMap=new HashMap<>();
         String taskId = request.getParameter("taskId");
         String eid = request.getParameter("eid");
-        int n=ThreadPoolContainer.destrory(eid);
+       logger.info("关闭任务："+eid);
+        int n=ThreadPoolContainer.destrory(taskId);
         if (!StringUtils.isEmpty(eid)&&0==n) {
      	    paramMap.put("eid", eid);
             paramMap.put("task_id", taskId);
             paramMap.put("export_state", ExportState.EXPORT_FAILD.toString());
             burnService.updateFileRecord(paramMap);
+            
+            request.setAttribute("desc","终止任务成功");
+        	request.setAttribute("backUrl", "/burn/exportFileTask.do");
+        	  logger.info("终止导出文件数据:{},关闭方式{}", eid,n);
+			return "kepan/success";
 		}
         else {
         	request.setAttribute("desc","终止任务失败,请重新启动服务器来停止下载任务");
         	request.setAttribute("backUrl", "/burn/exportFileTask.do");
 			return "kepan/success";
-		}
-        logger.info("终止导出文件数据:{},关闭方式{}", eid,n);
+		}      
       
-        return "redirect:/burn/exportFileTask.do";
+//        return "redirect:/burn/exportFileTask.do";
     }
     
     @RequestMapping(value="/burn/reRunExportFile")

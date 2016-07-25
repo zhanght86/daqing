@@ -161,7 +161,7 @@ $(document).ready(function() {
 							</c:if>
 							<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExportFile.do?eid=${map.eid}">删除</a>
 							<c:if test="${map.export_state == 1}">
-							<a onclick="return confirm('确定要终止么？');" href="<%=basePath %>/burn/stopExportFile.do?taskId=${map.task_id}&eid=${map.eid}">终止</a>
+							<a onclick="return confirm('终止有可能终止到正在运行的下载任务，确定要终止么？');" href="<%=basePath %>/burn/stopExportFile.do?taskId=${map.task_id}&eid=${map.eid}">终止</a>
 							</c:if>
 							</td>
 					 	

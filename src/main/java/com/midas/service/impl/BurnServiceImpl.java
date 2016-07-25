@@ -692,14 +692,14 @@ public class BurnServiceImpl implements BurnService {
 		List<Map<String, Object>> rslist = listExportTask("");
 		if (null != rslist && rslist.size() > 0) {
 			//开门状态不进行导出
-			List<Map<String, Object>> serverList = commonService.getAllMachine();
-		    for (Map<String, Object> server : serverList) {
-	            boolean isbusy = commonService.isBusyV2(server.get("sp_code")+"");
-	            if (isbusy) {
-	                logger.debug("服务器{}维护中或正在被使用， 不能进行导出");
-	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
-	            }
-	        }
+//			List<Map<String, Object>> serverList = commonService.getAllMachine();
+//		    for (Map<String, Object> server : serverList) {
+//	            boolean isbusy = commonService.isBusy(server.get("sp_code")+"");
+//	            if (isbusy) {
+//	                logger.debug("服务器{}维护中或正在被使用， 不能进行导出");
+//	                throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + server + " 正在运行， 请空闲的时候在进行合并");
+//	            }
+//	        }
 			
 			 Map<String, Object> paramMap =rslist.get(0);
 			paramMap.put("export_state", ExportState.EXPORTTING.getKey());
@@ -768,7 +768,7 @@ public class BurnServiceImpl implements BurnService {
 				}
 			}
 		}
-		System.out.println("最新版本v2"+downServerList.toString());
+		logger.info("下载服务器列表:"+downServerList.toString());
 		//保存任务内存
 		ThreadPoolContainer.add(executorService);
 		paramMap.put("task_id", executorService.hashCode());
@@ -780,7 +780,7 @@ public class BurnServiceImpl implements BurnService {
 				servers = machine.get("sp_value1") + "";
 				String serverPath = machine.get("sp_code") + "";
 				String[] fileList = soucePath.split(",");
-				boolean isbusy = commonService.isBusyV2(machine.get("sp_code") + "");
+				boolean isbusy = commonService.isBusy(machine.get("sp_code") + "");
 				if (isbusy) {
 					logger.debug("服务器{}, 正在被使用， 不能进行合并", paramMap.get("eid"));
 					throw new ServiceException(ErrorConstant.CODE2000, "盘库设备:" + servers + " 正在运行， 请空闲的时候在进行合并");
@@ -802,12 +802,11 @@ public class BurnServiceImpl implements BurnService {
 
 				for (Future<?> f : listFutures) {
 					try {
-						count++;
+						long st = System.currentTimeMillis();
 						System.out.println("completionService获取下载任务结果"+f.hashCode());
-						logger.info("下载完成队列遍历.take() start"+count);
-						Future<?> finFuture=completionService.take(); //获取完成任务
-						 logger.info("下载完成队列遍历.take() finish"+count);
+						Future<?> finFuture=completionService.take(); //获取完成任务						
 						runDownfile rs = (runDownfile) finFuture.get();
+						logger.info("文件下载耗时"+rs.fileName+" ： {} 毫秒", System.currentTimeMillis() - st);
 						//runDownfile rs = (runDownfile) f.get();
 						String copysize = rs.copySize;
 						boolean isNum = StringTools.isNumericDigit(copysize);
@@ -910,7 +909,7 @@ public class BurnServiceImpl implements BurnService {
 			FTPClient client = null;
 			try {
 				long st = System.currentTimeMillis();
-				System.out.println("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
+				logger.info("path:"+path+"   localPath:"+localPath+"   fileName:"+fileName);
 				//String loclDir=fileNameToCreateDir(fileName);
 				String targetFile=localPath+File.separator+fileName;
 				String sourceFile=path+File.separator+fileName;
@@ -918,10 +917,10 @@ public class BurnServiceImpl implements BurnService {
 				String slot=sourceFile.substring(sourceFile.indexOf("_")-4,sourceFile.indexOf("_"));
 				String execCmd=cmd+" "+sourceFile+" " +localPath +" "+fileName +" "+slot ;				
 				execCmd=execCmd.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
-				System.out.println("执行下载命令:server:"+server+"  user:"+userName+"   "+execCmd);
+				logger.info("执行下载命令:server:"+server+"  user:"+userName+"   "+execCmd);
 				copySize=SSHHelper.exec(server, userName, passwd, 22, execCmd);
-				System.out.println("执行下载命令:server:"+server+"  user:"+userName+"   "+execCmd+" \n 下载大小:"+copySize);
-	         //BigDecimal size = fileOper.copyV2(path, localPath, fileName, fileName);
+				logger.info("执行下载命令:server:"+server+"  user:"+userName+"   "+execCmd+" \n 下载大小:"+copySize);
+	        
 	    
 	         
 				logger.info("文件{}下载耗时,{} 毫秒", path + fileName, System.currentTimeMillis() - st);
@@ -1030,7 +1029,7 @@ public class BurnServiceImpl implements BurnService {
 		String[] sourcePathList = soucePath.split(",");
 		String serverInfo = "";
 		StringBuffer saveFilePathBuff = new StringBuffer();
-		int downSum=sourcePathList.length;
+		int downSum = sourcePathList.length;
 		for (String tmpPath : sourcePathList) {
 			if (tmpPath.indexOf(":") > 0) {
 				String tmpServerInfo = tmpPath.substring(0, tmpPath.indexOf(":"));
@@ -1049,17 +1048,13 @@ public class BurnServiceImpl implements BurnService {
 		String saveFilePath = saveFilePathBuff + "";
 		if (saveFilePath.lastIndexOf(",") > 1)
 			saveFilePath = saveFilePath.substring(0, saveFilePath.lastIndexOf(","));
-		
-		saveFilePath=saveFilePath.replaceAll(" ", "");
-		exportpath=exportpath.replaceAll(" ", "");
-	
-		// ------------------------------------------------------------------------------
-		// online
+		saveFilePath = saveFilePath.replaceAll(" ", "");
+		exportpath = exportpath.replaceAll(" ", "");
 
 		int beginNum = saveFilePath.indexOf("_");
 		int endNum = saveFilePath.indexOf("(");
-		if (endNum<0||endNum-beginNum>20) {
-			endNum= saveFilePath.indexOf("/",beginNum);
+		if (endNum < 0 || endNum - beginNum > 20) {
+			endNum = saveFilePath.indexOf("/", beginNum);
 		}
 		String volumeLabel = "";
 		if (beginNum > 0 && endNum > 0) {
@@ -1070,7 +1065,6 @@ public class BurnServiceImpl implements BurnService {
 			}
 
 		}
-
 		// 导出任务保存
 		exportMap.put("fileList", saveFilePath);
 		exportMap.put("number_success", 0);
@@ -1080,22 +1074,8 @@ public class BurnServiceImpl implements BurnService {
 		exportMap.put("export_path", exportpath);
 		exportMap.put("server", serverInfo);
 		exportMap.put("volume_label", volumeLabel);
-		// exportMap.put("c_user", null);
 		insertExportFileRecord(exportMap);
-		// List<Map<String, Object>> fileInfo=listExportFileInfo(exportMap);
-		// String eid=null;
-		// if (null!=fileInfo&&fileInfo.size()>0) {
-		// Map map=fileInfo.get(0);
-		// eid=map.get("eid")+"";
-		// }
-		// Map<String, Object> fileDetailMap = new HashMap<String, Object>();
-		// for (String tmpPath : sourcePathList) {
-		// fileDetailMap.put("eid", eid);
-		// insertExportFileDetail(fileDetailMap);
-		// }
-
 		Map<String, Object> paraMap = new HashMap<String, Object>();
-
 		// 更新台帐
 		if (!StringUtils.isEmpty(volumeLabel)) {
 			paraMap.put("volume_label", volumeLabel);

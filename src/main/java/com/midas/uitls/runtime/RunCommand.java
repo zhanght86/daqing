@@ -100,7 +100,6 @@ public class RunCommand {
             String readpath = CommonsUtils.getPropertiesValue(SysConstant.READ_PATH);
             if (null == exportPath || "".equals(exportPath)) {
                 exportPath = CommonsUtils.getPropertiesValue(SysConstant.EXPORT_PATH);
-                ;
             }
             int result = execute(cm, "-i", readpath, "-d", exportPath, "-n", volLabel, "-a", "" + number);
             logger.info("执行合并指令， 输出目录为：{}, 卷标号为: {}, 盘的数量: {}, 执行的结果： 【{}】", exportPath, volLabel, number, result);

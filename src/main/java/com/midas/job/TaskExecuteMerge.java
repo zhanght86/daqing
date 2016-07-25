@@ -41,7 +41,7 @@ public class TaskExecuteMerge {
 
         long st = System.currentTimeMillis();
         try {
-            System.out.println("TaskExecuteMerge任务执行中");
+           logger.info("TaskExecuteMerge任务执行中");
             Map<String, Object> paramMap = new HashMap<String, Object>();
             paramMap.put("burning_state", BurnState.BURNNING.getKey() + ", " + BurnState.BURN_WAIT.getKey());
             List<Map<String, Object>> list = burnService.list(paramMap);

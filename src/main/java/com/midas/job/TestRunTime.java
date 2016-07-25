@@ -44,10 +44,12 @@ public class TestRunTime {
 //        } catch (java.io.IOException e) {
 //            System.err.println("IOException " + e.getMessage());
 //        }
-        String testNum="W116287-W116323|W116287-W116322";
-        String testdum="W114567.001.SGY_midas_3_002.split";
-        String aa=testNum.substring(1);
-        System.out.println(aa);
+//        String testNum="W116287-W116323|W116287-W116322";
+//        String testdum="W114567.001.SGY_midas_3_002.split";
+//        String aa=testNum.substring(1);
+        int pos=689;
+        
+        System.out.println(String.format("%04d", pos) + ".iso");
 //        
 //        String testNuma="287-323";
 //        String splitAry[]=testNuma.split(",");
@@ -82,10 +84,7 @@ public class TestRunTime {
 //        System.out.println(sumDumpSize.toBigInteger());
 //        System.out.println(sumDumpSize.longValue());
         
-        ArrayList<String> bb=null;//new ArrayList<>();
-        for (String string : bb) {
-			System.out.println(string);
-		}
+
         
         
 

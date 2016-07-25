@@ -112,8 +112,9 @@ public class TelnetOperator {
      */
     public String readUntil() {
         StringBuffer sb = new StringBuffer();
+        BufferedReader br=null;
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+            br= new BufferedReader(new InputStreamReader(in, "utf-8"));
             String line = null;
             int readCount=0;
             while ((line = br.readLine()) != null) {
@@ -127,14 +128,23 @@ public class TelnetOperator {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        finally {
+        	try {
+				br.close();
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
         return sb.toString();
     }
     
     //TODO sullivan
     public String readUntilLimit(int limtNum) {
         StringBuffer sb = new StringBuffer();
+        BufferedReader br=null;
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+        	br  = new BufferedReader(new InputStreamReader(in, "utf-8"));
             String line = null;
             int readCount=0;
             while ((line = br.readLine()) != null) {
@@ -150,16 +160,35 @@ public class TelnetOperator {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        finally {
+        	try {
+				br.close();
+				in.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
         return sb.toString();
     }
 
     private String readLine() {
+    	  BufferedReader br=null; 
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+        	br = new BufferedReader(new InputStreamReader(in, "utf-8"));
             return br.readLine();
         } catch (Exception e) {
             throw new ServiceException(ErrorConstant.CODE3000, "离线柜登录失败");
         }
+        finally {
+        	try {
+				br.close();
+				in.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
     }
 
     /**

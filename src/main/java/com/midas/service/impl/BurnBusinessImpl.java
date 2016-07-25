@@ -43,6 +43,7 @@ import com.midas.uitls.file.FileOper;
 import com.midas.uitls.file.LocalFileOper;
 import com.midas.uitls.runtime.RunCommand;
 import com.midas.uitls.threadpool.ThreadPoolS;
+import com.midas.uitls.tools.CommonsUtils;
 import com.midas.uitls.tools.EnumUtils;
 import com.midas.uitls.tools.StringTools;
 import com.midas.vo.BurnProgress;
@@ -261,7 +262,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             logger.info("上传文件失败, 检查上传的文件内容, 删除设备{}, 上的卷标内容: {}, 删除结果为： {}", burnMachine, volLabel, isDel);
             burnService.updateState(volLabel, BurnState.UPLOAD_FAILD.getKey(), errInfo, 0);
         }
-        System.out.println("运行时长为: " + (System.currentTimeMillis() - st));
+       logger.info("运行时长为: " + (System.currentTimeMillis() - st));
     }
 
     /**
@@ -395,7 +396,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         boolean isSucc = true;
         Map<String, Object> exportMap = new HashMap<String, Object>();
         try {
-
+        	String dumpFile=null;
             List<Map<String, Object>> list = burnService.listPosition(volLabel);
             List<FutureTask<Boolean>> futureTaskList = new ArrayList<FutureTask<Boolean>>();
             for (Map<String, Object> map : list) {
@@ -404,11 +405,16 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     int magNo = Integer.parseInt(ObjectUtils.toString(map.get("position")));
                     int disc_position = Integer.parseInt(ObjectUtils.toString(map.get("disc_position")));
                     pos = (magNo - 1) * 50 + ((disc_position - 1) % 50 + 1);
+                    //String server=map.get("server")+"";
+                   // Map<String, Object> machineInfo = commonService.getSystemParameters(server);                  
+                   // String filename = String.format("%04d", pos) + ".iso";                   
+                   // String workdir=machineInfo.get("sp_value3")+"";
+                  //  dumpFile=workdir+File.separator+filename;
                     Thread.sleep(1*1000L);
                 } catch (Exception e) {
                     throw new ServiceException(ErrorConstant.CODE3000, "位置计算失败, 或者未获取位置信息", e);
                 }
-                Callable<Boolean> call = new MergeDump(ObjectUtils.toString(map.get("server")), pos);
+                Callable<Boolean> call = new MergeDump(ObjectUtils.toString(map.get("server")), pos,dumpFile);
                 FutureTask<Boolean> future = new FutureTask<Boolean>(call);
                 new Thread(future).start();
                 futureTaskList.add(future);
@@ -584,10 +590,10 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 standingMap.put("update_time", new Date());
                 standingMap.put("type", 2);
                 standingbookService.update(standingMap);
-//                for (File f : filelist) {
-//                    logger.info("删除文件： {}", f.getAbsolutePath());
-//                    f.delete();
-//                }
+                for (File f : filelist) {
+                    logger.info("删除文件： {}", f.getAbsolutePath());
+                    f.delete();
+                }
             } else {
                 map.put("export_state", ExportState.MEGE_FAILD.getKey());
                 map.put("export_desc", "导出失败");
@@ -783,17 +789,43 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
     class MergeDump implements Callable<Boolean> {
         private String server;
         private int    position;
+        private String dumpFile;
 
-        public MergeDump(String server, int position) {
+        public MergeDump(String server, int position,String dumpFile) {
             this.server = server;
             this.position = position;
+            this.dumpFile=dumpFile;
         }
 
         @Override
         public Boolean call() throws ServiceException {
             logger.info("调用机器{} 导出数据， 发送导出位置为： {}", server, position);
+           int num=4;
             return commonService.executeDUMPMEDIA(server, String.valueOf(position));
         }
+        
+//        public boolean sendDumpCmd(int num)
+//        {
+//        	 boolean n=commonService.executeDUMPMEDIA(server, String.valueOf(position));
+//        	 if (num >3) {
+//				return false;
+//			}
+//        	 try {
+// 			if (!StringUtils.isEmpty(dumpFile)) {
+// 				File file = new File(dumpFile);
+// 				if (!file.exists()) {
+// 					num++;
+// 					sendDumpCmd(num);
+// 				}
+// 			} 			
+//				Thread.sleep(5*1000L);
+//			} catch (Exception e) {
+//				logger.info("dumpMedia 线程下载重试失败"+e);
+//				e.printStackTrace();
+//			}
+// 			return n;
+//        }
+        
     }
 
     class Downfile implements Callable<Boolean> {

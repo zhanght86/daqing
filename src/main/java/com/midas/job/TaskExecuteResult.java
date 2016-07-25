@@ -44,6 +44,7 @@ public class TaskExecuteResult {
         
    
 		try {
+			logger.info("TaskExecuteResult任务执行中");
 			boolean isRunDump = true;
 			Map<String, Object> taskMap = burnService.listExportRecordCheck(null, "0,1", null);// 查询状态为0,1的任务
 			String runVoLabel = "";

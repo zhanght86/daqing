@@ -34,6 +34,7 @@ public class TaskExecuteJob {
        // long st = System.currentTimeMillis();
        
         try {
+        	logger.info("CheckTaskAndRun任务执行中");
            boolean rtnVal=burnService.CheckTaskAndRun("");
             
         } catch (Exception e) {

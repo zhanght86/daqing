@@ -128,14 +128,7 @@ public class TelnetOperator {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        finally {
-        	try {
-				br.close();
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+    
         return sb.toString();
     }
     
@@ -180,15 +173,7 @@ public class TelnetOperator {
         } catch (Exception e) {
             throw new ServiceException(ErrorConstant.CODE3000, "离线柜登录失败");
         }
-        finally {
-        	try {
-				br.close();
-				in.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+      
     }
 
     /**

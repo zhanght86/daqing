@@ -49,6 +49,8 @@ public class TestRunTime {
 //        String aa=testNum.substring(1);
         int pos=689;
         
+        pos = (1 - 1) * 50 + ((34- 1) % 50 + 1);
+        System.out.println((171) % 50);
         System.out.println(String.format("%04d", pos) + ".iso");
 //        
 //        String testNuma="287-323";

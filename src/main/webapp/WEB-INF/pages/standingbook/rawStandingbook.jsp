@@ -132,7 +132,7 @@
 							<td><fmt:formatDate value="${page.update_time}" pattern="yyyy-MM-dd HH:mm:ss" /></td>
 							<td><fmt:formatNumber pattern="##.###" >${(page.update_time.time - page.create_time.time)/1000/60/60}</fmt:formatNumber></td>
 							<td>${page.type=='1'?'刻录':'导出'}</td>
-								<td><a href="<%=basePath%>/standingbook/delete.do?sid=${page.sid}&dataType=R&url=standingbook/rawData.do">删除</a>
+								<td><a  onclick="return confirm('确定要删除么？');" href="<%=basePath%>/standingbook/delete.do?sid=${page.sid}&dataType=R&url=standingbook/rawData.do">删除</a>
 						</tr>
 					</c:forEach>
 				</tbody>

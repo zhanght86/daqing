@@ -405,11 +405,17 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     int magNo = Integer.parseInt(ObjectUtils.toString(map.get("position")));
                     int disc_position = Integer.parseInt(ObjectUtils.toString(map.get("disc_position")));
                     pos = (magNo - 1) * 50 + ((disc_position - 1) % 50 + 1);
-                    //String server=map.get("server")+"";
-                   // Map<String, Object> machineInfo = commonService.getSystemParameters(server);                  
-                   // String filename = String.format("%04d", pos) + ".iso";                   
-                   // String workdir=machineInfo.get("sp_value3")+"";
-                  //  dumpFile=workdir+File.separator+filename;
+                    //TODO 导出重试功能，修改导出状态为0，扫描进入此方法重新下载，发现已经下载的文件就跳过
+//                    String server=map.get("server")+"";
+//                    Map<String, Object> machineInfo = commonService.getSystemParameters(server);                  
+//                    String filename = String.format("%04d", pos) + ".iso";                   
+//                    String workdir=machineInfo.get("sp_value3")+"";
+//                    dumpFile=workdir+File.separator+filename;
+//                	File file = new File(dumpFile);
+//        			if (file.exists()) {
+//        				logger.info("跳过下载文件，已存在："+dumpFile);
+//        				continue;
+//        			}
                     Thread.sleep(1*1000L);
                 } catch (Exception e) {
                     throw new ServiceException(ErrorConstant.CODE3000, "位置计算失败, 或者未获取位置信息", e);
@@ -444,9 +450,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
 
     }
    
-    
-    
-    
+   
 
     @Override
     public void masterMergeNotify(String volLabel) {

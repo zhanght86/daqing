@@ -88,12 +88,11 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             throws ServiceException {
     	
         // 获取可以使用的盘库数据为系统参数表外加系统可用盘的数量
+    	 //  Map<String, Object> burnMapParam =null;
         Map<String, Object> burnMapParam = burnService.getFreeBurn();
         if (burnMapParam == null || burnMapParam.isEmpty()) {
             throw new ServiceException(ErrorConstant.CODE4000, "没有盘库可以使用!");
         }
-     
-
         // 读取Excel索引文件
         List<Map<String, Object>> list = FileToList(indexFile, dataType);
         // 获取上传数据估计总大小
@@ -185,8 +184,8 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             map.put("volume_label", volLabel);
             map.put("data_quantity", filesize);
             map.put("type", 1);
-            standingbookService.update(map);
-            
+            //standingbookService.update(map);
+            logger.info("刻录任务文件总大小{}",filesize);
             logger.info("检查文件是否存在：{}, 结果： {}", f.getAbsolutePath(), f.exists());
             if (!isOk) {
                 throw new ServiceException(ErrorConstant.CODE4000, "文件： [" + s + "], 未找到， 请提供验证数据后在操作");
@@ -584,13 +583,13 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 map.put("export_desc", "导出成功");
                 map.put("eid", eid);
                 burnService.updateExportRecord(map);               
-                Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
+                //Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
                 Map<String, Object> standingMap = new HashMap<String, Object>();
                 standingMap.put("eid", eid);
                 standingMap.put("volume_label", volLabel);
                 standingMap.put("states", "1");
                 // 修改为最后一个刻录完成的时间
-                standingMap.put("data_quantity", burnMap==null?"":burnMap.get("burn_size"));
+                //standingMap.put("data_quantity", burnMap==null?"":burnMap.get("burn_size"));
                 standingMap.put("update_time", new Date());
                 standingMap.put("type", 2);
                 standingbookService.update(standingMap);
@@ -682,13 +681,15 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     // 成功全部刻录成功，更新记录为刻录成功
                     burnService.updateState(volLabel, BurnState.BURN_SUCCESS.getKey(), "成功", number);
                     
-                    Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
+                   Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
                     
                     Map<String, Object> standingMap = new HashMap<String, Object>();
                     standingMap.put("volume_label", volLabel);
                     standingMap.put("burn_count", number);
                     standingMap.put("states", "1");
-                    standingMap.put("data_quantity", burnMap==null?"":burnMap.get("burn_size"));
+                    if (burnMap!=null&&!"".equals(burnMap.get("burn_size"))) {			
+                    standingMap.put("data_quantity", burnMap.get("burn_size"));
+                	}
                     // 修改为最后一个刻录完成的时间
                     standingMap.put("update_time", ends.get(number-1).get("time"));
                     standingMap.put("type", 1);

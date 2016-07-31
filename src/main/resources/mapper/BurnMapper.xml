@@ -220,13 +220,10 @@
 		update m_burn set burn_size = burn_size + #{size} where volume_label = #{volLabel}
 	</update>
 	
-	<!-- <delete id="delete">
+	 <delete id="delete">
 		delete from m_burn where volume_label = #{volLabel}
-	</delete> -->
+	</delete> 
 	
-	<update id="delete">
-		update  m_burn set status='1' where volume_label = #{volLabel}
-	</update>
 	
 	<delete id="deleteDetail">
 		delete from m_burn_detail where volume_label = #{volLabel}

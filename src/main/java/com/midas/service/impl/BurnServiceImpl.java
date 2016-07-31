@@ -447,11 +447,11 @@ public class BurnServiceImpl implements BurnService {
     @Override
     public void delete(String volLabel, String dataType) {
         burnDao.delete(volLabel);
-//        burnDao.deleteDetail(volLabel);
-//        if(StringTools.isNotEmpty(dataType)) {
-//            setDataService(dataType);
-//            dataService.deleteByVolLabel(volLabel);
-//        }
+        burnDao.deleteDetail(volLabel);
+        if(StringTools.isNotEmpty(dataType)) {
+            setDataService(dataType);
+            dataService.deleteByVolLabel(volLabel);
+        }
     }
     
     
@@ -865,7 +865,7 @@ public class BurnServiceImpl implements BurnService {
 				standingMap.put("states", "1");
 				// 修改为最后一个刻录完成的时间
 				standingMap.put("update_time", new Date());
-				standingMap.put("data_quantity", sumDumpSize);
+				//standingMap.put("data_quantity", sumDumpSize);
 				standingMap.put("type", 2);
 				standingbookService.update(standingMap);
 			}

@@ -16,10 +16,14 @@ import org.springframework.stereotype.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.midas.constant.ErrorConstant;
+import com.midas.constant.SysConstant;
 import com.midas.dao.DataDao;
 import com.midas.enums.BurnState;
+import com.midas.enums.DataSource;
 import com.midas.enums.DataType;
 import com.midas.exception.ServiceException;
+import com.midas.service.BurnBusiness;
+import com.midas.service.CommonService;
 import com.midas.service.DataService;
 import com.midas.service.StandingbookService;
 import com.midas.uitls.date.DateStyle;
@@ -41,6 +45,10 @@ public class TDataServiceImpl extends DataBase implements DataService {
     private DataDao dataDao;
     @Autowired
     private StandingbookService standingbookService;
+	@Autowired
+	private BurnBusiness burnBusiness;
+	@Autowired
+	private CommonService commonService;
 
     @Override
     public PageInfo<Map<String, Object>> list(Map<String, Object> map, Page<?> page) {
@@ -106,14 +114,23 @@ public class TDataServiceImpl extends DataBase implements DataService {
     @Override
     public List<String> getFilepath(String volLabel,String dataSource) {
         List<Map<String, Object>> list = dataDao.findByVolLabel(volLabel);
+        String sourceWorkdir = null;
+        if (DataSource.HARD_DISK.getKey().equals(dataSource)) {
+            // 移动硬盘
+            sourceWorkdir = burnBusiness.getLocalPath(volLabel);
+        } else if (DataSource.NETWORK_SHARING.getKey().equals(dataSource)) {
+            // 网络共享
+            Map<String, Object> map = commonService.getSystemParameters(SysConstant.SHARED_NETWORK_ADDRESS);
+            sourceWorkdir = ObjectUtils.toString(map.get("sp_value4"));
+        }
         if (null == list || list.isEmpty()) {
             throw new ServiceException(ErrorConstant.CODE2000, "没有需要刻录的数据内容");
         }
         List<String> resultList = new ArrayList<String>();
         for (Map<String, Object> map : list) {
             // resultList.add(ObjectUtils.toString(map.get("project_name"))+"/"+ObjectUtils.toString(map.get("tape_number")));
-            List<String> fileAll = getAllFiles(ObjectUtils.toString(map.get("project_name")),
-                    ObjectUtils.toString(map.get("record_content")), 1);
+        	List<String> fileAll = getAllFilesByFolder(sourceWorkdir, ObjectUtils.toString(map.get("project_name")), 1);
+        	//List<String> fileAll = getAllFiles(ObjectUtils.toString(map.get("project_name")),ObjectUtils.toString(map.get("record_content")), 1);
             resultList.addAll(fileAll);
         }
         logger.info("文件列表未： {}", resultList);

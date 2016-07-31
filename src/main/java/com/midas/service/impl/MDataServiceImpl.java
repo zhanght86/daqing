@@ -69,7 +69,7 @@ public class MDataServiceImpl extends DataBase implements DataService {
         
         Map<String, Object> standingMap = new HashMap<String, Object>();
         standingMap.put("volume_label", valLabel);
-        standingMap.put("data_type", DataType.MIDDLE_DATA);
+        standingMap.put("data_type", DataType.MIDDLE_DATA.getType());
         standingMap.put("work_area", map.get("project_name"));
         standingMap.put("construction_unit", map.get("department_name"));
         standingMap.put("construction_year", map.get("back_date"));

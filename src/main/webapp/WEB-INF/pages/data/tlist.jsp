@@ -209,7 +209,7 @@
 							<td>
 							<a href="<%=basePath%>/data/tInsertInit.do?sid=${page.sid}&volume_label=${page.volume_label}">补录</a>
 							<a href="<%=basePath%>/data/tUpdateInit.do?sid=${page.sid}">修改</a>
-							<a href="<%=basePath%>/data/delete.do?sid=${page.sid}&dataType=T&url=tData/list.do">删除</a>
+							<a onclick="return confirm('确定要删除么？');" href="<%=basePath%>/data/delete.do?sid=${page.sid}&dataType=T&url=tData/list.do">删除</a>
 							 &nbsp;<a href="<%=basePath%>/burn/list.do?volume_label=${page.volume_label}">刻录详细</a></td>
 						</tr>
 					</c:forEach>

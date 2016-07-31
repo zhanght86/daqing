@@ -52,7 +52,7 @@
 		});
 		
 		$(".table").click(function(){
-			window.location.href = '<%=basePath%>/doc/二维成果资料清单.xls';
+			window.location.href = '<%=basePath%>/doc/三维成果资料清单.xls';
 		});
 		
 		$(document).on('click','.button',function(){ 
@@ -234,7 +234,7 @@
 							<td>
 							<a href="<%=basePath%>/data/dInsertInit.do?sid=${page.sid}&volume_label=${page.volume_label}">补录</a>
 							<a href="<%=basePath%>/data/dUpdateInit.do?sid=${page.sid}">修改</a>
-							<a href="<%=basePath%>/data/delete.do?sid=${page.sid}&dataType=D&url=dData/list.do">删除</a>
+							<a onclick="return confirm('确定要删除么？');" href="<%=basePath%>/data/delete.do?sid=${page.sid}&dataType=D&url=dData/list.do">删除</a>
 							<a href="<%=basePath%>/burn/list.do?volume_label=${page.volume_label}">详细</a></td>
 						</tr>
 					</c:forEach>

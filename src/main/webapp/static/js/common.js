@@ -103,3 +103,28 @@ function getIds() {
         }  
         return ids;  
 }  
+
+
+//打开标签页
+function openTab(tabId,title,url,iconClass){
+	var e =$('#centerTab').tabs('exists', title);
+	if(e) {
+		// 已存在则被选中
+		$("#centerTab").tabs("select", title);
+	}
+	if($("#"+tabId).html()==null){
+		var name = 'iframe_'+tabId; 
+		$('#centerTab').tabs('add',{
+			title:title,
+			closable:true,
+			cache:false,
+			iconCls:iconClass,
+			id:tabId,
+			style:{padding:"2px"},
+			content:  '<iframe name="'+name+'"id="'+tabId+'"src="'+url+'" width="100%" height="100%" frameborder="0" scrolling="auto" ></iframe>' 
+		});
+	}	
+}
+function refreshTab(){
+	window.location.reload();
+}

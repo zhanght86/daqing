@@ -154,7 +154,7 @@ $(document).ready(function() {
 								<c:if test="${map.export_state == 5}">导出失败</c:if>
 								<c:if test="${map.export_state == 6}">关闭</c:if>
 							</td> 
-							
+							<shiro:hasPermission name="exp:fileTask">
 							<td>
 							<c:if test="${map.export_state == 3}">
 							<a onclick="return confirm('继续启动下载任务前,请确认光盘处于空闲状态？');" href="<%=basePath %>/burn/reRunExportFile.do?eid=${map.eid}">重试</a>
@@ -164,6 +164,7 @@ $(document).ready(function() {
 							<a onclick="return confirm('终止有可能终止到正在运行的下载任务，确定要终止么？');" href="<%=basePath %>/burn/stopExportFile.do?taskId=${map.task_id}&eid=${map.eid}">终止</a>
 							</c:if>
 							</td>
+							</shiro:hasPermission>
 					 	
 					 </tr>
 					</c:forEach>

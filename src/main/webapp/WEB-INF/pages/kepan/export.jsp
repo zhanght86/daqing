@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
+
 <%
     String path = request.getContextPath();
 			String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
@@ -36,8 +38,9 @@
 	<div class="place">
 		<span>位置：</span>
 		<ul class="placeul">
-			<li><a href="<%=basePath%>/to.do?file=index">首页</a></li>
+			<li><a href="<%=basePath%>/to.do?file=index">首页</a></li>			
 			<li><a href="<%=basePath%>/burn/mergeList.do?volLabel=${volLabel}">导出管理</a></li>
+			
 		</ul>
 	</div>
 
@@ -108,7 +111,8 @@
 							<td><fmt:formatDate value="${map.update_time }" pattern="yyyy-MM-dd HH:mm:ss" /></td>
 							<!-- <td>${map.c_user}</td>  -->
 							<td>
-							<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExport.do?eid=${map.eid}">删除</a>
+							<shiro:hasPermission name="exp:taskExpOper">
+							<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/deleteExport.do?eid=${map.eid}">删除</a>							
 							<c:if test="${map.export_state == 1}">
 								<c:if test="${volLabel == null or volLabel == ''}">
 									<a href="<%=basePath%>/burn/exportCancel.do?eid=${map.eid}" onclick="return confirm('确定要取消么？');">关闭</a>
@@ -117,6 +121,7 @@
 									<a href="<%=basePath%>/burn/exportCancel.do?eid=${map.eid}&volume_label=${volLabel}" onclick="return confirm('确定要取消么？');">关闭</a>
 								</c:if>
 							</c:if>
+							</shiro:hasPermission>
 							</td>
 						</tr>
 					</c:forEach>

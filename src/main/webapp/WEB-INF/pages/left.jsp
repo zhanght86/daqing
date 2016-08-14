@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -29,6 +33,15 @@ $(function(){
 
 </head>
 
+<%
+	String path = request.getContextPath();
+	String basePath = request.getScheme() + "://"
+			+ request.getServerName() + ":" + request.getServerPort()
+			+ path;
+	response.setHeader("Pragma", "No-cache");
+	response.setHeader("Cache-Control", "no-cache");
+	response.setDateHeader("Expires", 0);	
+%>
 <body style="background:#f0f9fd;">
 	<div class="lefttop"><span></span>数据</div>
     
@@ -68,6 +81,37 @@ $(function(){
         </ul>
     </dd>
     
+     <dd>
+    <div class="title">
+    <span><img src="static/images/leftico01.png" /></span>系统管理
+    </div>
+    	<ul class="menuson">
+        	<li><cite></cite><a href="user/query.do" target="rightFrame">用户列表</a><i></i></li>
+        	<li><cite></cite><a href="role/query.do" target="rightFrame">角色列表</a><i></i></li>
+        	<li><cite></cite><a href="permission/query.do" target="rightFrame">功能列表</a><i></i></li>
+        	<li><cite></cite><a href="organization/into.do" target="rightFrame">机构列表</a><i></i></li>
+        </ul>
+    </dd>
+    
+    
+	<div id="westDiv" class="easyui-accordion" data-options="multiple:true,animate:false,border:false" >
+	<c:forEach items="${storageSysMenus}" var="modelItems">
+		<shiro:hasPermission name="${modelItems.permission}">
+			<div title="${modelItems.permissionName}" data-options="selected:true,iconCls:'icon-permission'" class="menu_type">
+		       	<c:forEach items="${modelItems.menuItems}" var="menuItem">
+		       		<shiro:hasPermission name="${menuItem.permission}">
+		       			<span calss="menu_item">
+		       			<a href="javascript:openTab('t_${menuItem.permissionCode}',
+		       			 '${menuItem.permissionName}','<%=basePath%>${menuItem.permissionUrl}',
+		       			 'icon-tabs')" class="easyui-linkbutton menu-btn" data-options="plain:true,iconCls:'icon-open'" >
+		       			 ${menuItem.permissionName }</a></span>
+		       		</shiro:hasPermission>
+		       	</c:forEach>
+			</div>
+		</shiro:hasPermission>
+	</c:forEach>
+</div>
+
     <!-- 
     <dd>
     <div class="title">

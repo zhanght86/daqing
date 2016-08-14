@@ -68,6 +68,13 @@ public class CommonsUtils {
 		return (props.get(keystr)!= null && !"".equals(props.get(keystr).toString()))?props.get(keystr).toString():"";
 	}
 	
+	public static String getPropertiesValue(String path,String keystr) throws IOException{
+		Resource resource = new ClassPathResource(path);
+		Properties props = PropertiesLoaderUtils.loadProperties(resource);
+		return (props.get(keystr)!= null && !"".equals(props.get(keystr).toString()))?props.get(keystr).toString():"";
+	}
+	
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Map<String,String> getPropertiesMap(String path) throws IOException{
 		Resource resource = new ClassPathResource(path);

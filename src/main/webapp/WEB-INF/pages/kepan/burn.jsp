@@ -3,6 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%
     String path = request.getContextPath();
     String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
@@ -154,6 +155,7 @@
 						
 								</div>
 						 </td> --%>
+						 <shiro:hasPermission name="exp:burnOper">
 							<td>
 								<a onclick="return confirm('确定要删除么？');" href="<%=basePath %>/burn/delete.do?volLabel=${page.volume_label}&dataType=${page.data_type }">删除</a>
 								<c:if test="${page.burning_state != 8 and page.burning_state != 11}">
@@ -167,6 +169,7 @@
 
 							
 							</td>
+							</shiro:hasPermission>
 						</tr>
 					</c:forEach>
 				</tbody>

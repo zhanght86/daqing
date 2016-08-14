@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.PermissionMapper">
+	
+	<select id="selectPermission" resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission t1 
+		where t1.deleted=0
+		<if test="permissionId!=null and permissionId!=''" >
+		and  permissionid=#{permissionId}
+		</if>
+	</select>
+	
+	<select id="selectPermissionCount" resultType="java.lang.Integer">
+		select count(*) from t_permission t
+		where t.deleted=0
+		<if test="permissionId!=null and permissionId!=''" >
+		and  permissionid=#{permissionId}
+		</if>
+	</select>
+	
+	<select id="getPermissionById" resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission t where t.permissionid=#{permissionId}
+	</select> 
+	 
+	<select id="findByPermissionId" resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission permission
+		where permission.permissionid = #{permissionId}
+		and permission.deleted = 0
+    </select>
+    
+    <select id="findByPermissionName"  resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission permission
+		where permission.permissionname = #{permissionName}
+    </select>
+    
+    <select id="selectAllPermissions"  resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission t1
+		where t1.deleted=0
+    </select>
+    
+   <select id="selectAvailablePermissionsForRole"  resultType="com.midas.vo.user.PermissionDto">
+        select * from t_permission permission
+        where
+        	and permission.permissionid not in (select permissionid from t_permissionrole where roleid = #{roleid})
+        	and permission.deleted = 0
+        order by permission.permissioncode, permission.permissiontype
+    </select>
+    
+	<select id="getRolePermissions" resultType="com.midas.vo.user.PermissionDto" >
+		select * from 
+		    t_permissionrole a,
+		    t_permission permission
+		where
+			a.roleid = #{roleId} 
+		    and a.permissionid = permission.permissionid
+		    and permission.deleted = 0
+		    order by permission.permissioncode, permission.permissiontype
+	</select>
+	
+	<select id="loadAllMenu" resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission
+		where deleted = 0
+		and permissiontype = '1'
+		order by permissioncode
+	</select>
+	
+	<select id="loadAllModule" resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission
+		where deleted = 0
+		and parentid = 0
+		order by permissioncode
+	</select>
+	
+	<select id="loadAllFunction" resultType="com.midas.vo.user.PermissionDto">
+		select * from t_permission
+		where deleted = 0
+		and permissiontype = '1'
+		order by permissioncode
+	</select>
+	
+	<delete id="deleteRolePermissions" >
+	    delete from t_permissionrole where roleid = #{roleId}
+	</delete>
+	<!-- 删除 -->
+	<delete id="delete" parameterType="com.midas.model.user.Permission">
+	delete t_permission t where t.permissionid=#{permissionId}
+	</delete>
+	
+	<insert id="insertRolePermission" parameterType="com.midas.model.user.RolePermission">
+	    insert into t_permissionrole (permissionId, roleId)
+	    values (#{permissionId}, #{roleId})
+	</insert>
+	
+	<insert id="save" parameterType="com.midas.model.user.Permission">
+	insert into t_permission(permissioncode,permissionname,permissiontype,permissionurl,permission,parentid,deleted)
+	    VALUES(#{permissionCode},#{permissionName},#{permissionType},#{permissionUrl},#{permission},#{parentId},0)
+	</insert>
+	
+	<update id="update" parameterType="com.midas.model.user.Permission">
+		UPDATE t_permission
+		      <set>
+		      		<if test="permissionName!=null and permissionName!=''">
+		      			permissionname = #{permissionName},
+		      		</if>
+		      		<if test="permissionUrl !=null and permissionUrl !=''">
+		      			permissionurl=#{permissionUrl},
+		      		</if>
+		      		<if test="permission!=null and permission!=''">
+		      			permission=#{permission},
+		      		</if>
+		      		<if test="permissionCode!=null and permissionCode!=''">
+		      			permissioncode=#{permissionCode},
+		      		</if>
+		      		<if test="permissionType!=null and permissionType!=''">
+		      			permissiontype=#{permissionType},
+		      		</if>
+		      		<if test="parentId!=null and parentId!=''">
+		      			parentid=#{parentId}
+		      		</if>
+		      </set>
+		 WHERE permissionid = #{permissionId}
+	</update>
+</mapper>

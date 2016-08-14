@@ -1,17 +1,50 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>信息管理系统界面</title>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %> 
+<%
+	String path = request.getContextPath();
+	String basePath = request.getScheme() + "://"
+			+ request.getServerName() + ":" + request.getServerPort()
+			+ path;
+	response.setHeader("Pragma", "No-cache");
+	response.setHeader("Cache-Control", "no-cache");
+	response.setDateHeader("Expires", 0);
+%>
+<html>
+<head> 
+<c:import url="include/headers.jsp"></c:import>
+<script type="text/javascript">
+$(function(){
+	eLoading();
+});
+
+function reportDownload(){
+	sLoading();
+	window.location.href =  '<%=basePath%>/report/reportDownload.do';
+}
+
+function showReportType(){
+	window.location.href =  '<%=basePath%>/report/querytype.do';
+}
+</script>
 </head>
-<frameset rows="99,*,30" cols="*" frameborder="no" border="0" framespacing="0">
-  <frame src="to.do?file=top" name="topFrame" scrolling="no" noresize="noresize" id="topFrame" title="topFrame" />
-  <frameset cols="187,*" frameborder="no" border="0" framespacing="0">
-    <frame src="to.do?file=left" name="leftFrame" scrolling="no" noresize="noresize" id="leftFrame" title="leftFrame" />
-    <frame src="burn/list.do" name="rightFrame" id="rightFrame" title="rightFrame" />
-  </frameset>
-   <frame src="to.do?file=foot" name="footFrame" scrolling="no" noresize="noresize" id="footFrame" title="footFrame" />
-</frameset> 
-<noframes><body> 
-</body></noframes>
+<body class="easyui-layout">
+    <div region="north" style="height:130px; "><c:import url="include/north_include.jsp"></c:import></div>  
+    <div region="south" style="height:40px;padding-top: 5px;"><c:import url="include/south_include.jsp"></c:import></div>    
+    <div region="west" split="true" title="&nbsp;导航菜单"  style="width:220px;padding: 3px;"><c:import url="include/west_include.jsp"></c:import></div>  
+    <div region="center" >
+    	<div class="easyui-tabs" id="centerTab" data-options="fit:true,border:false">
+    		<div title="主页" data-options="iconCls:'icon-home'" style="padding: 2px;overflow: hidden;">
+    			<div style="margin: 20px;">
+    				<h2>欢迎来到存储平台管理系统</h2>
+    			</div>   			
+    			
+    			<div class="easyui-panel" title="快捷操作" data-options="iconCls:'icon-large-clipart',fit:true" style="padding: 2px;">
+				</div>
+    		</div>
+    	</div>
+    </div> 
+</body>
 </html>

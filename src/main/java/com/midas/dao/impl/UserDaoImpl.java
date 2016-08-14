@@ -16,46 +16,88 @@ import com.midas.mapper.UserMapper;
 @Repository
 public class UserDaoImpl implements UserDao {
 
-    @Autowired
-    private UserMapper userMapper;
+	@Override
+	public PageInfo<Map<String, Object>> list(Map<String, Object> map, Page<?> page) {
+		
+		return null;
+	}
 
-    @Override
-    public PageInfo<Map<String, Object>> list(Map<String, Object> map, Page<?> page) {
-        PageHelper.startPage(page.getPageNum(), page.getPageSize());
-        List<Map<String, Object>> list = userMapper.list(map);
-        PageInfo<Map<String, Object>> pageInfo = new PageInfo<Map<String, Object>>(list);
-        return pageInfo;
-    }
+	@Override
+	public List<Map<String, Object>> list(Map<String, Object> map) {
+		
+		return null;
+	}
 
-    @Override
-    public List<Map<String, Object>> list(Map<String, Object> map) {
-        return userMapper.list(map);
-    }
+	@Override
+	public int getCountByCondition(Map<String, Object> map) {
+		
+		return 0;
+	}
 
-    @Override
-    public int getCountByCondition(Map<String, Object> map) {
-        return userMapper.getCountByCondition(map);
-    }
+	@Override
+	public int add(Map<String, Object> map) {
+		
+		return 0;
+	}
 
-    @Override
-    public int add(Map<String, Object> map) {
-        return userMapper.add(map);
-    }
+	@Override
+	public int update(Map<String, Object> map) {
+		
+		return 0;
+	}
 
-    @Override
-    public int update(Map<String, Object> map) {
-        map.put("updated_time", new Date());
-        return userMapper.update(map);
-    }
-    
-    @Override
-    public int delete(String id) {
-        return userMapper.delete(id);
-    }
-    
-    @Override
-    public Map<String, Object> getUserById(int id) {
-        return userMapper.getUserById(id);
-    }
+	@Override
+	public int delete(String id) {
+		
+		return 0;
+	}
+
+	@Override
+	public Map<String, Object> getUserById(int id) {
+		
+		return null;
+	}
+
+//    @Autowired
+//    private UserMapper userMapper;
+//
+//    @Override
+//    public PageInfo<Map<String, Object>> list(Map<String, Object> map, Page<?> page) {
+//        PageHelper.startPage(page.getPageNum(), page.getPageSize());
+//        List<Map<String, Object>> list = userMapper.list(map);
+//        PageInfo<Map<String, Object>> pageInfo = new PageInfo<Map<String, Object>>(list);
+//        return pageInfo;
+//    }
+//
+//    @Override
+//    public List<Map<String, Object>> list(Map<String, Object> map) {
+//        return userMapper.list(map);
+//    }
+//
+//    @Override
+//    public int getCountByCondition(Map<String, Object> map) {
+//        return userMapper.getCountByCondition(map);
+//    }
+//
+//    @Override
+//    public int add(Map<String, Object> map) {
+//        return userMapper.add(map);
+//    }
+//
+//    @Override
+//    public int update(Map<String, Object> map) {
+//        map.put("updated_time", new Date());
+//        return userMapper.update(map);
+//    }
+//    
+//    @Override
+//    public int delete(String id) {
+//        return userMapper.delete(id);
+//    }
+//    
+//    @Override
+//    public Map<String, Object> getUserById(int id) {
+//        return userMapper.getUserById(id);
+//    }
     
 }

@@ -1,67 +1,41 @@
 package com.midas.mapper;
 
+
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.RowBounds;
 
-/**
- * 数据库操作
- * 
- * @author arron
- *
- */
+import com.midas.model.user.User;
+import com.midas.vo.user.RoleDto;
+import com.midas.vo.user.UserDto;
+import com.midas.vo.user.UserForm;
+
+
+
 public interface UserMapper {
 
-    /**
-     * 查询用户列表
-     * 
-     * @param map
-     *            请求参数
-     * @return List<Map<String, Object>> 想要内容
-     */
-    public List<Map<String, Object>> list(Map<String, Object> map);
+	List<UserDto> selectUsers(UserForm form,RowBounds rowBounds);
+	
+	Integer selectUsersCount(UserForm form);
+	
+	List<UserDto> selectUsers(Map<String,Object> param);
+	
+	String getPasswordForUser(Map<String,Object> param);
+	
+	UserDto findByName(Map<String,Object> param);
+	
+	UserDto findById(Map<String,Object> param);
+	
+	User getUserByUuid(Map<String,Object> param);
+	
+	List<RoleDto> getUserRoles(Map<String,Object> param);
+	
+	int saveUser(User user);
+	
+	void updatePassword(User user);
 
-    /**
-     * 根据条件查询记录条数
-     * 
-     * @param map
-     *            查询条件
-     * @return
-     */
-    public int getCountByCondition(Map<String, Object> map);
+	int updateUser(User updateUser);
 
-    /**
-     * 条件用户
-     * 
-     * @param map
-     * @return
-     */
-    public int add(Map<String, Object> map);
-
-    /**
-     * 更新用户信息
-     * 
-     * @param map
-     * @return
-     */
-    public int update(Map<String, Object> map);
-
-    /**
-     * 删除记录
-     * 
-     * @param id
-     * @return
-     */
-    public int delete(String id);
-
-    /**
-     * 根据编号查找用户信息
-     * 
-     * @param id
-     *            用户编号
-     * @return Map
-     */
-    public Map<String, Object> getUserById(@Param("id")int id);
-
+	List<UserDto> selectUsersByUserForm(UserForm form);
 }

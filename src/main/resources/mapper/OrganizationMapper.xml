@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.OrganizationMapper">
+
+	<resultMap id="BaseResultMap" type="com.midas.vo.user.OrganizationDto">
+		<id column="dpt_code" property="dptCode" jdbcType="CHAR" />
+		<result column="dpt_name" property="dptName" jdbcType="VARCHAR" />
+		<result column="dpt_address" property="dptAddress" jdbcType="VARCHAR" />
+		<result column="status" property="status" jdbcType="CHAR" />
+		<result column="parent_id" property="parentId" jdbcType="CHAR" />
+		<result column="path" property="path" jdbcType="VARCHAR" />
+		<result column="is_virtual" property="isVirtual" jdbcType="CHAR" />
+	</resultMap>
+
+	<select id="selectOrganization" resultMap="BaseResultMap">
+		select o1.*,o2.dpt_name as parentName from t_mgt_organization o1
+		left join t_mgt_organization o2 on o1.parent_id = o2.dpt_code
+		where o1.`status` = 1
+		<if test="dptCode != null and dptCode != ''">
+			and o1.dpt_code like CONCAT(#{dptCode},'%')
+		</if>
+		<if test="dptName != null and dptName != ''">
+			and o1.dpt_name like CONCAT('%',#{dptName},'%')
+		</if>
+		order by o1.dpt_code
+	</select>
+
+	<select id="selectOrganizationCount" resultType="java.lang.Integer">
+		select count(*) from t_mgt_organization o1
+		left join t_mgt_organization o2 on o1.parent_id = o2.dpt_code
+		where o1.`status` = 1
+		<if test="dptCode != null and dptCode != ''">
+			and o1.dpt_code like CONCAT(#{dptCode},'%')
+		</if>
+		<if test="dptName != null and dptName != ''">
+			and o1.dpt_name like CONCAT('%',#{dptName},'%')
+		</if>
+	</select>
+	
+	<select id="getOrganizationById" resultMap="BaseResultMap">
+		select * from t_mgt_organization where dpt_code = #{dptCode}
+	</select>
+	
+	<select id="getOrganizationByParentId" resultMap="BaseResultMap">
+		select * from t_mgt_organization where parent_id = #{parentId}
+	</select>
+	
+	<select id="getOrganization" resultType="com.midas.model.user.Organization">
+		select * from t_mgt_organization
+	</select>
+</mapper>

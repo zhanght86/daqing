@@ -2,6 +2,7 @@
 	pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%
     String path = request.getContextPath();
 			String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
@@ -202,8 +203,10 @@ $(document).on('click','.button',function(){
 
 				<li class="history"><span><img
 						src="<%=basePath%>/static/images/left.png" /></span>返回</li>
+						<shiro:hasPermission name="exp:fileExpOper">
 				<li class="exportClick"><span><img
 						src="<%=basePath%>/static/images/left.png" /></span>导出</li>
+						</shiro:hasPermission>
 						
 			</ul>
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.RoleMapper">
+    
+    <!-- <select id="selectRoles" resultType="com.midas.vo.user.RoleDto">
+	    select * from t_role role 
+	    where role.deleted = 0
+        order by role.rolecode, role.rolename
+    </select>
+     -->
+<select id="selectRole" resultType="com.midas.vo.user.RoleDto">
+	    select * from t_role where 1=1
+    </select>
+    
+    <select id="selectRoleCount" resultType="java.lang.Integer">
+	    select count(*) from t_role
+	     where 1=1
+    </select>    
+    
+    <select id="selectUserRoles" resultType="com.midas.vo.user.RoleDto">
+	    select role.* from t_userrole userrole,t_role role
+        where userrole.roleid = role.roleid
+        and	userrole.userid = #{userId}
+        order by role.rolecode, role.rolename
+    </select>
+    
+    <select id="selectAvailableRolesForUser" resultType="com.midas.vo.user.RoleDto">
+        select * from t_role role
+        where role.deleted = 0
+        and	role.roleid not in (select roleid from t_userrole where userid = #{userId})
+        order by role.rolecode, role.rolename
+    </select>
+    
+    <select id="findByRoleCode" resultType="com.midas.vo.user.RoleDto">
+	    select * from t_role role
+	    where 
+	    	role.rolecode = #{roleCode}
+	</select>
+	
+    <select id="findByRoleName" resultType="com.midas.vo.user.RoleDto">
+	    select * from 
+	    	t_role role
+	    where 
+	    	role.rolename = #{roleName}
+	</select>
+	
+    <select id="findByRoleId" resultType="com.midas.vo.user.RoleDto">
+	    select * from 
+	    	t_role role
+	    where 
+	    	role.roleid = #{roleId}
+	</select>
+	
+	<insert id="saveRole" parameterType="com.midas.model.user.Role">
+		insert into t_role (rolecode,rolename,remark,deleted)
+     	VALUES(#{roleCode},#{roleName}, #{remark},0)
+	</insert>
+	
+	<update id="updateRole" parameterType="com.midas.model.user.Role">
+		UPDATE t_role
+			SET rolename = #{roleName}
+				,remark = #{remark}
+				,deleted = #{deleted}
+		WHERE roleid = #{roleId}
+	</update>
+	
+	<delete id="deleteUserRoles">
+	    delete from t_userrole where userid = #{userId}
+	</delete>
+	<select id="getRoleById" resultType="com.midas.model.user.Role">
+	    select * from t_role where roleid = #{roleId}
+    </select>
+	<insert id="saveUserRole" parameterType="com.midas.model.user.Role">
+	    insert into t_userrole (userid, roleid)
+	    values (#{userId}, #{roleId})
+	</insert>
+</mapper>

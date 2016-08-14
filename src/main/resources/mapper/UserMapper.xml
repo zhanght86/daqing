@@ -1,78 +1,118 @@
 <?xml version="1.0" encoding="UTF-8" ?>  
-<!DOCTYPE mapper PUBLIC   
-    "-//mybatis.org//DTD Mapper 3.0//EN"  
-    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.midas.mapper.UserMapper">
-	<select id="list" parameterType="Map" resultType="Map">
-		SELECT * FROM t_mgt_user 
-		<where>
-			1 = 1
-			<if test="user_name != null and user_name != ''">
-				and user_name = #{user_name}
-			</if>
-			<if test="password != null and password != ''">
-				and password = #{password}
-			</if>
-			and status = 1
-		</where>
-		 order by id
-	</select>
+    
+    <select id="selectUsers" resultType="com.midas.vo.user.UserDto">
+	    select u.*,o.dpt_name as orgName
+	    from t_user u
+       	left join t_mgt_organization o on o.dpt_code = u.dptCode
+       	where u.deleted = 0
+       	<if test="dptCode !=null and dptCode != ''">
+			and u.dptCode = #{dptCode}
+		</if>
+        order by u.loginname
+    </select>
+    
+    <select id="selectUsersCount" resultType="java.lang.Integer">
+	    select count(*)
+	    from t_user u
+       	left join t_mgt_organization o on o.dpt_code = u.dptCode
+       	where u.deleted = 0
+       	<if test="dptCode !=null and dptCode != ''">
+			and u.dptCode = #{dptCode}
+		</if>
+        order by u.loginname
+    </select>
 
-	<select id="getCountByCondition" parameterType="Map" resultType="Integer">
-		SELECT count(id) from t_mgt_user where user_name = #{user_name}
+    <select id="selectUsersByUserDto" resultType="com.midas.vo.user.UserDto">
+	    select u.* from t_user u
+       	where u.deleted = 0
+       	<if test="loginName !=null and loginName != ''">
+		and u.loginname = #{loginName}
+		</if>
+    </select>
+
+	<select id="getPasswordForUser" resultType="java.lang.String">
+	    select loginpassword from t_user 
+	    where loginname = #{loginName}
 	</select>
 	
-	<insert id="add" parameterType="Map" >
-		insert into t_mgt_user(user_name, password, nick_name, status, department_id, created_user, created_time, updated_user, updatePassword_time, updated_time, remark) 
-		values (#{user_name},#{password},#{nick_name},#{status},#{department_id},#{created_user},#{created_time},#{updated_user},#{updatePassword_time},#{updated_time},#{remark})
+	<select id="findByName" resultType="com.midas.vo.user.UserDto">
+		select u.*,o.dpt_name as orgName
+	    from t_user u
+       	left join t_mgt_organization o on o.dpt_code = u.dptCode
+       	where u.loginname = #{loginName}
+	</select>
+	
+	<select id="findById" resultType="com.midas.vo.user.UserDto">
+	    select u.*,o.dpt_name as orgName
+	    from t_user u
+       	left join t_mgt_organization o on o.dpt_code = u.dptCode
+	    where u.userid = #{userId}
+	</select>
+	
+	<select id="getUserByUuid" resultType="com.midas.model.user.User">
+		select * from t_user where useruuid = #{userUuid}
+	</select>
+	
+	<select id="selectUsersByUserForm" resultType="com.midas.vo.user.UserDto">
+	    select u.*
+	    from t_user u
+       	where u.deleted = 0
+       	<if test="loginName !=null and loginName != ''">
+		and u.loginName = #{loginName}
+		</if>
+    </select>
+    
+	<select id="getUserRoles" resultType="com.midas.vo.user.RoleDto">
+		select r.* from t_user u
+       	left join t_userrole ur on ur.userid = u.userid
+       	left join t_role r on ur.roleid = r.roleid
+        where r.deleted = 0
+	    and u.userid = #{userId}
+	</select>
+	
+	<insert id="saveUser" parameterType="com.midas.model.user.User">
+		insert into t_user (useruuid,loginname,loginpassword,username,phone,email,status,dptCode,deleted)
+	    VALUES (#{userUuid},#{loginName},#{loginPassword},#{userName},#{phone},#{email},#{status},#{dptCode},0)
 	</insert>
 	
-	<update id="update" parameterType="Map">
-		UPDATE
-		    t_mgt_user
-		SET
-			updated_time = #{updated_time}
-			<if test="password!=null and password!=''">
-		    	, password = #{password}
-		    </if>
-		    <if test="nick_name!=null and nick_name != ''">
-		    	, nick_name = #{nick_name}
-		    </if>
-		    <if test="status != null and status != ''">
-		    	, status = #{status}
-		    </if>
-		    <if test="department_id != null and department_id != ''">
-		    	, department_id = #{department_id}
-		    </if>
-		    <if test="created_user != null and created_user != ''">
-		    	, created_user = #{created_user}
-		    </if>
-		    <if test="created_time != null and created_time != ''">
-		    	, created_time = #{created_time}
-		    </if>
-		    <if test="updated_user != null and updated_user != ''">
-		    	, updated_user = #{updated_user}
-		    </if>
-		    <if test="updatePassword_time != null and updatePassword_time != ''">
-		    	, updatePassword_time = #{updatePassword_time}
-		    </if>
-		    <if test="remark != null and remark != ''">
-		    	, remark = #{remark}
-		    </if>
-		WHERE
-		    user_name = #{username}
+	<update id="updatePassword" parameterType="com.midas.model.user.User">
+	    update t_user set loginpassword = #{loginPassword}
+	    where userid = #{userId}
 	</update>
 	
-	
-	<delete id="delete" parameterType="Map">
-		DELETE
-		FROM
-		    t_mgt_user
-		WHERE
-		    id = #{id}
-	</delete>
-	
-	<select id="getUserById" parameterType="Integer">
-		select * from t_mgt_user where id = #{id}
-	</select>
+	<update id="updateUser" parameterType="com.midas.model.user.User">
+		UPDATE t_user
+			<set>
+				<if test="loginName !=null and loginName != ''">
+				loginname = #{loginName},
+				</if>
+				<if test="loginPassword !=null and loginPassword != ''">
+				loginpassword = #{loginPassword},
+				</if>
+				<if test="userName !=null and userName != ''">
+				username = #{userName},
+				</if>
+	           	<if test="dptCode !=null and dptCode != ''">
+				dptCode = #{dptCode},
+				</if>
+	           	<if test="phone !=null and phone != ''">
+				phone = #{phone},
+				</if>
+	           	<if test="email !=null and email != ''">
+				email = #{email},
+				</if>
+				<if test="deleted !=null and deleted != ''">
+				deleted = #{deleted},
+				</if>
+			</set>
+		 WHERE 1=1
+		 <if test="userId !=null and userId != ''">
+		 and userid = #{userId}
+		 </if>
+		 <if test="userUuid !=null and userUuid != ''">
+		 and useruuid = #{userUuid}
+		 </if>
+	</update>
 </mapper>

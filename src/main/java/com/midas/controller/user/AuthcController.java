@@ -68,7 +68,7 @@ public class AuthcController {
 		} catch (AuthenticationException e) {
 			redirectAttributes.addFlashAttribute("errorCode", "001");
 			logger.error("Can not login!", e);
-			return "main";
+			return "login";
 		}
 	}
 	

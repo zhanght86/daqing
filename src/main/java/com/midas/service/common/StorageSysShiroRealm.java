@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -77,8 +78,10 @@ public class StorageSysShiroRealm extends AuthorizingRealm {
 		UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
 		// 查出是否有此用户
 		String userName = token.getUsername();
-		//String password = userService.getPasswordForUser(userName);
-		User user = userService.findByName(userName, false);
+        //		String password = userService.getPasswordForUser(userName);
+		//String tmpapsswod=StringUtils.join(token.getPassword());
+		//String dbpasswd=CommonsUtils.encryptPassword(userName, token.getPassword());
+		User user = userService.findByName(userName, false); 
 		if (user != null) {
 			// 若存在，将此用户存放到登录认证info中
 			SimpleAuthenticationInfo authcInfo = new SimpleAuthenticationInfo(userName,user.getLoginPassword(), getName());

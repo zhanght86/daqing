@@ -26,7 +26,7 @@ import com.midas.service.user.UserService;
 import com.midas.vo.user.PermissionDto;
 import com.midas.vo.user.UserDto;
 
-@Controller
+@Controller 
 public class AuthcController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AuthcController.class);

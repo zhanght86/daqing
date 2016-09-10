@@ -116,6 +116,58 @@ public class DataController extends BaseDataController {
         
         return "data/rawlist";
     }
+    
+    
+    @RequestMapping(value = "/rawData/applicationlist")
+    public String applicationlist(HttpServletRequest request, HttpServletResponse response)
+            throws UnsupportedEncodingException {
+        Map<String, Object> map = ServletUtils.getParameters(request);
+        logger.info("原始数据清单， 请求参数内容为： {}", map);
+
+        Page<?> page = new Page<Object>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("work_area", map.get("work_area"));
+        paramMap.put("construction_year", formatDate(ObjectUtils.toString(map.get("construction_year"))));
+        paramMap.put("volume_label", map.get("volume_label"));
+        logger.info("查询条件为： {}", paramMap);
+        PageInfo<Map<String, Object>> pageInfo = rawDataService.list(paramMap, page);
+        List<Map<String, Object>> discTypes = commonService.listSystemParameters(SysConstant.DISC_TYPE);
+        request.setAttribute("discType", discTypes);
+        request.setAttribute("work_area", map.get("work_area"));
+        request.setAttribute("construction_year", map.get("construction_year"));
+        request.setAttribute("pageInfo", pageInfo);
+        List<String> dirLists= getDir(null);
+        request.setAttribute("dirLists", dirLists);
+        
+        Enumeration paramNames = request.getParameterNames();
+        while (paramNames != null && paramNames.hasMoreElements()) {
+            String paramName = (String) paramNames.nextElement();
+            Object [] values = request.getParameterValues(paramName);
+            if (values == null || values.length == 0) {
+                // Do nothing, no values found at all.
+            } else {
+                request.setAttribute(paramName, values[0]);
+            }
+        }
+        
+        
+        return "data/rawlistApplication";
+    }
+    
+    
+    @RequestMapping(value = "/data/ApplicationData")
+    public String applicationDataList(HttpServletRequest request, String volLabel,HttpServletResponse response)
+            throws UnsupportedEncodingException {
+        Map<String, Object> map = ServletUtils.getParameters(request);
+        logger.info("原始数据清单， 请求参数内容为： {}", map);
+        
+        System.out.println(volLabel);
+
+        
+        
+        return "data/rawlistApplication";
+    }
+    
 
     @RequestMapping(value = "/rawData/excel")
     public void rawDataExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {

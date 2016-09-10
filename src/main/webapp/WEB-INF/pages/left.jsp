@@ -64,7 +64,7 @@ $(function(){
         <li><cite></cite><a href="mData/list.do" target="rightFrame">中间成果数据</a><i></i></li>
         <!-- -->
         <!-- <li><cite></cite><a href="download/list.do" target="rightFrame">数据下载查询</a><i></i></li>  -->
-        
+        <li><cite></cite><a href="rawData/applicationlist.do" target="rightFrame">数据申请</a><i></i></li>
         </ul>
     </dd>
     

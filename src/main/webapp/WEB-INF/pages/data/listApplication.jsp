@@ -58,10 +58,11 @@
 		
 		$(".applicationSubmit").click(function() {
 				
-			
+			    $(".tipnew").fadeIn(200);
 				var checkFiles=getallcheckedvalue('box');
-				alert(checkFiles);
-				window.location.href = '<%=basePath%>/data/ApplicationData.do?volLabel=' +checkFiles;			
+				document.getElementById('volLabel').value=checkFiles;
+				alert(document.getElementById('volLabel').value);
+				//window.location.href = '<%=basePath%>/data/ApplicationData.do?volLabel=' +checkFiles;			
 			
 			});
 		
@@ -158,7 +159,7 @@
 		<span>位置：</span>
 		<ul class="placeul">
 			<li><a href="<%=basePath%>/to.do?file=index">首页</a></li>
-			<li><a href="<%=basePath%>/rawData/list.do">原始数据列表</a></li>
+
 		</ul>
 	</div>
 
@@ -169,21 +170,24 @@
 			
 			<ul class="toolbar">
 				<li class="refresh"><span><img src="<%=basePath%>/static/images/Refresh.gif" /></span>刷新</li>				
-				<li class="excel"><span><img src="<%=basePath%>/static/images/Load.gif" /></span>导出Excel</li>
-				<li class="applicationSubmit"><span><img
-						src="<%=basePath%>/static/images/left.png" /></span>申请</li>
+				
 				
 			</ul>
-			<form action="<%=basePath%>/rawData/list.do" method="post">
+			<form action="<%=basePath%>/data/applicationQuery.do" method="post">
 				<input name="volume_label" value="${volume_label }" type="hidden" />
 			<ul class="seachform">
 				<li>
 					<label>&nbsp;&nbsp;&nbsp;&nbsp;工区</label>
-					<input name="work_area" id="work_area" type="text"class="scinput" value="${work_area }" />
+					<input name="project_name" id="project_name" type="text"class="scinput" value="${project_name }" />
 				</li>
 				<li>
-					<label>施工年度</label>
-					<input name="construction_year" id="construction_year" type="text" class="scinput" value="${construction_year }" /><!-- onclick="WdatePicker({dateFmt:'yyyy-MM', errDealMode:'0'})" -->
+					<label>卷标号</label>
+					<input name="vol_label" id="vol_label" type="text" class="scinput" value="${vol_label }" /><!-- onclick="WdatePicker({dateFmt:'yyyy-MM', errDealMode:'0'})" -->
+				</li>
+				
+				<li>
+					<label>申请人</label>
+					<input name="application_user" id="application_user" type="text" class="scinput" value="${application_user }" /><!-- onclick="WdatePicker({dateFmt:'yyyy-MM', errDealMode:'0'})" -->
 				</li>
 
 				<li>
@@ -196,19 +200,17 @@
 			<table class="tablelist">
 				<thead>
 					<tr>
-						<th>序号</th>
-						<th>卷标号</th>
-						<th width="150">工区</th>
-						<th>测线（束）号</th>
-						<th>起止序号</th>
-						<th>记录长度(s)</th>
-						<th>采样间隔(ms)</th>
-						<th>磁带编号</th>
-						<th>磁带盘数</th>
-						<th>施工年度</th>
-						<th>施工单位</th>
-						<th>数据量量（GB）</th>
-						<th width="150">备注</th>
+						<th width="50px">序号</th>
+						<th width="120px">卷标号</th>
+						<th width="300px">工区</th>
+						<th width="100px">用户</th>
+						<th width="100px"> 申请人</th>
+						<th width="100px">联系电话(s)</th>
+						<th width="100px">邮件</th>
+						<th width="200px">备注说明</th>
+						<th width="150px">申请时间</th>
+						<th width="100px">状态</th>
+						
 						<th>操作</th>
 					</tr>
 				</thead>
@@ -216,23 +218,33 @@
 				<c:forEach items="${pageInfo.list }" var="page" varStatus="status">
 					<tr class="${status.count % 2 == 0 ? '' : 'brown'}">
 							<td>${status.count }</td>
-							<td>&nbsp;${page.volume_label }</td>
-							<td>&nbsp;${page.work_area }</td>
-							<td>&nbsp;${page.test_line_number }</td>
-							<td>&nbsp;${page.se_number }</td>
-							<td>&nbsp;${page.record_length }</td>
-							<td>&nbsp;${page.use_interval }</td>
+							<td>&nbsp;${page.vol_label }</td>
+							<td>&nbsp;${page.project_name }</td>
+							<td>&nbsp;${page.user }</td>
+							<td>&nbsp;${page.application_user }</td>
+							<td>&nbsp;${page.phone }</td>
+							<td>&nbsp;${page.email }</td>
 							
-							<td>&nbsp;${page.tape_number }</td>
-							<td>&nbsp;${page.tape_size }</td>
-							<td>&nbsp;${page.construction_year }</td>
-							<td>&nbsp;${page.construction_unit }</td>
-							<td>&nbsp;${page.data_quantity }</td>
-							<td>&nbsp;${page.remarks }</td>
-								
-								<td><input id="box" name="box" type="checkbox"
-								value="${page.volume_label}" onclick="checkonebox('checkall','box');" />
+							
+							<td title="${page.remark}">
+							<c:if test="${fn:length( page.remark)>20 }">
+							${ fn:substring( page.remark ,0,20)}. . . . . . </c:if> 
+							<c:if test="${fn:length( page.remark)<=20 }">
+							${page.remark}</c:if> 
 							</td>
+							<td>&nbsp;${page.create_date }</td>
+								
+							
+							<td>
+								<c:if test="${page.application_status == 0}">未处理</c:if>
+								<c:if test="${page.application_status == 1}">审核通过</c:if>
+								
+							</td>				
+							
+							<td><c:if test="${page.application_status == 0}">
+								<a onclick="return confirm('确定要通过吗？');"  href="<%=basePath %>/data/ApplicationUpdate.do?id=${page.id}&application_status=1">审核</a>&nbsp;
+								</c:if>
+								</td>
 						</tr>
 				</c:forEach>
 				</tbody>
@@ -245,18 +257,18 @@
 			        	<li class="paginItem"><a href="javascript:alert('没有上一页');"><span class="pagepre"></span></a></li>
 			        </c:if>
 			        <c:if test="${pageInfo.pageNum != 1 }">
-			        	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum - 1}&work_area=${work_area}&construction_year=${construction_year}"><span class="pagepre"></span></a></li>
+			        	<li class="paginItem"><a href="<%=basePath%>/data/applicationQuery.do?pageNum=${pageInfo.pageNum - 1}&work_area=${work_area}&construction_year=${construction_year}"><span class="pagepre"></span></a></li>
 			        </c:if>
 			        <c:forEach items="${pageInfo.navigatepageNums }" var="num" varStatus="status">
 			        	<c:if test="${status.count < 5 }">
-			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/rawData/list.do?pageNum=${num}&work_area=${work_area}&construction_year=${construction_year}">${num }</a></li>
+			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/data/applicationQuery.do?pageNum=${num}&work_area=${work_area}&construction_year=${construction_year}">${num }</a></li>
 			        	</c:if>
 			        </c:forEach>
 			        <c:if test="${pageInfo.pages == pageInfo.pageNum}">
 			       	 	<li class="paginItem"><a href="javascript:alert('没有下一页');"><span class="pagenxt"></span></a></li>
 			        </c:if>
 			        <c:if test="${pageInfo.pages > pageInfo.pageNum}">
-			       	 	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum + 1}&work_area=${work_area}&construction_year=${construction_year}"><span class="pagenxt"></span></a></li>
+			       	 	<li class="paginItem"><a href="<%=basePath%>/data/applicationQuery.do?pageNum=${pageInfo.pageNum + 1}&work_area=${work_area}&construction_year=${construction_year}"><span class="pagenxt"></span></a></li>
 			        </c:if>
 		        </ul>
 		    </div>
@@ -267,61 +279,31 @@
 		<div class="tiptop">
 			<span>上传数据</span><a></a>
 		</div>
-		<form action="<%=basePath%>/data/upload.do" method="post" enctype="multipart/form-data">
-			<input name="dataType" value="R" type="hidden" />
+		<form action="<%=basePath%>/data/ApplicationData.do" method="post" enctype="multipart/form-data">
+			<input name="volLabel"  type="hidden" />
 			<div class="tipinfo">
 				<span><img src="<%=basePath%>/static/images/ticon.png" /></span>
 				<table> <tr><td width="50%">
 				
 				<div class="tipleft">
-					<p>选择上传的数据结构和数据体的位置 :</p>
-					<cite><input name="dataSource" type="radio" value="1"
-						 /> <input type="text" id="exportPath" name="exportPath" class="scinput" value="/jukebox/harddisk">
-						<input
-						name="dataSource" type="radio" value="2" checked="checked" />&nbsp;龙存目录</cite>
+					<p>数据申请备注说明:<p>
+					<cite> 
+					<textarea id="reMark"  name="reMark" rows="" cols="" style="width: 400px;height: 160px"></textarea>
+					<p>联系电话<p>
+					 <input type="text" id="phone" name="phone" class="scinput" value="请在此输入的的备注信息"> 
+					 
+					 <p>数据使用时间<p>
+					 <input type="text" id="date" name="date" class="scinput" value="请在此输入的的备注信息"> 
+						
 				
 						
-					<p>结构文档:</p>
-					<cite>
-						<li><input name="file" type="file" class="fileinput" /></li>
-					</cite>
-					<p>刻盘光盘类型 :</p>
-					<cite>
-						<li>
-						    <select class="select1" name="discType">
-								<c:forEach items="${discType }" var="disc">
-									<option value="${disc.sp_value3 }" <c:if test="${disc.sp_value2 == 1 }" >selected='selected'</c:if> >${disc.sp_name }</option>
-								</c:forEach>
-							</select>
-						</li>
-					</cite>
-					<p>请选择刻录机器 :</p>
-					<cite>
-							<select class="select1" name="server">
-									<option value=""></option>
-									<option value="SERVER1">XSERVER-1(106)</option>
-									<option value="SERVER2">XSERVER-2(107)</option>
-							</select>
-					 </cite>
+					
+				
+					
 				</div>
 				</td>
 				<td> </td>
-				<td width="50%" >
-				<div class="tipright" style="height:150px; overflow:auto">
-				<input type="hidden" name="currentPath" id="currentPath"   value="">
-				<input type="button"  name="goback" value="返回根目录" class="button"> 
-				<table class="info" id="info">
 				
-							<c:forEach var="dirList" items="${dirLists}">
-								<tr  >
-									<td><input type="radio" name="dir" value="${dirList}" onchange="getDataPath1(this)"></input></td>
-										 
-									<td><a href="#" class="aaa" name="button" value="${dirList}"  onclick="setCurrent('${dirList}')">${dirList}</a></td>
-								</tr>
-							</c:forEach>
-						</table>
-				</div>
-				</td>
 				
 				</tr>
 				

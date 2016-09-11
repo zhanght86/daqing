@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.midas.mapper.AppDataMapper">
+
+
+
+	<insert id="insertApplicationData" parameterType="Map">
+		  INSERT INTO application_data 
+		  ( vol_label, project_name, user, application_user, phone, email, type, application_status, until_date,remark, update_date, create_date, status) 
+		  values
+		  (#{volLabel}, (select task_name from m_burn where volume_label=#{volLabel} limit 1), #{user}, #{application_user}, #{phone}, #{email}, #{type}, '0', #{until_date},#{reMark}, SYSDATE(), SYSDATE(), '0') 
+			
+			
+	</insert>
+
+	<insert id="updateApplicationData" parameterType="Map">
+		update application_data set application_status =
+		#{application_status}, update_date = sysdate()
+		<if test="remark != null and remark != ''">
+			, remark = #{remark}
+		</if>
+		<where>
+
+			id = #{id}
+			<if test="vol_label != null and vol_label != ''">
+				and vol_label = #{vol_label}
+			</if>
+
+
+
+		</where>
+	</insert>
+	
+	
+
+	<!-- 申请记录查询 -->
+	
+	<select id="list" parameterType="Map" resultType="Map">
+		SELECT
+		*
+		FROM
+		application_data
+		<where>
+		  1=1
+		  
+			<if test="application_status != null and application_status != ''">
+				AND application_status = #{application_status}
+			</if>
+			<if test="vol_label != null and vol_label != ''">
+				
+				AND vol_label like CONCAT('%',trim('${vol_label}'),'%')
+			</if>
+			<if test="user != null and user != ''">
+				AND user = #{user}
+			</if>
+			
+			
+			<if test="project_name != null and project_name != ''">
+				AND project_name like CONCAT('%',trim('${project_name}'),'%')
+			</if>
+			
+			<if test="user != null and user != ''">
+			
+				AND application_user like CONCAT('%',trim('${application_user}'),'%')
+			</if>
+			
+				<if test="id != null and id != ''">
+				AND id = #{id}
+			</if>
+		</where>
+		order by create_date desc
+	</select>
+	
+	<!-- 申请列表查询 -->
+		<select id="queryApplication" parameterType="Map" resultType="Map">
+		SELECT b.*, s.sp_name FROM m_burn b left join systemparameters s on b.burning_machine = s.sp_code 
+		<where>
+			b.status = 0
+			<if test="burning_state != null and burning_state != ''">
+				and b.burning_state in (${burning_state})
+			</if>
+			<if test="burning_machine != null and burning_machine != ''">
+				and b.burning_machine = #{burning_machine}
+			</if>
+			<if test="volume_label != null and volume_label != ''">
+				and b.volume_label = #{volume_label}
+			</if>
+				<if test="task_name != null and task_name != ''">
+				and b.task_name like CONCAT('%','${task_name}','%' )
+			</if>
+		</where>
+		order by b.mid desc
+	</select>
+	
+	
+</mapper>

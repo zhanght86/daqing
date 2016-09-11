@@ -44,7 +44,7 @@
 
 		<h2>操作信息</h2>
 		<p>信息如下：<br />
-			${desc }
+			<h2>${desc }</h2>
 		</p>
 		<div class="reindex">
 			<a href="<%=basePath %>${backUrl }">返回上一页</a>

@@ -69,6 +69,9 @@
 		p:mapperLocations="classpath:mapper/*.xml" /><!-- configLocation为mybatis属性 
 		mapperLocations为所有mapper -->
 
+ <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
 	<!-- spring与mybatis整合配置，扫描所有mapper -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"
 		p:basePackage="com.midas.mapper" p:sqlSessionFactoryBeanName="sqlSessionFactory" />

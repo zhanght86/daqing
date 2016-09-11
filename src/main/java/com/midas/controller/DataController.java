@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+import org.codehaus.janino.util.StringPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +31,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import com.jcraft.jsch.Session;
 import com.midas.constant.SysConstant;
 import com.midas.context.SpringContextHelper;
+import com.midas.enums.BurnState;
 import com.midas.enums.DataType;
 import com.midas.exception.ServiceException;
+import com.midas.service.ApplicationDataService;
 import com.midas.service.BurnBusiness;
+import com.midas.service.BurnService;
 import com.midas.service.CommonService;
 import com.midas.service.DataService;
 import com.midas.uitls.tools.CommonsUtils;
@@ -72,8 +79,13 @@ public class DataController extends BaseDataController {
     private CommonService commonService;
     @Autowired
     private BurnBusiness  burnBusiness;
+    @Autowired
+    private ApplicationDataService applicationDataService;
 
     private DataService dataService;
+    
+    @Autowired
+    private BurnService  burnService;
 
     /**
      * 原始数据列表
@@ -118,54 +130,87 @@ public class DataController extends BaseDataController {
     }
     
     
-    @RequestMapping(value = "/rawData/applicationlist")
+    @RequestMapping(value = "/data/applicationlist")
     public String applicationlist(HttpServletRequest request, HttpServletResponse response)
+            throws UnsupportedEncodingException {
+        Map<String, Object> map = ServletUtils.getParameters(request);
+        Page<Map<String, Object>> page = new Page<Map<String, Object>>(getCurPage(map.get("pageNum")),
+                SysConstant.PAGE_SIZE);
+        map.put("burning_state", BurnState.BURN_SUCCESS);
+        PageInfo<Map<String, Object>> pageInfo = burnService.list(map, page);
+        List<String> dirLists= getDir(null);
+        request.setAttribute("dirLists", dirLists);
+        request.setAttribute("pageInfo", pageInfo);
+        request.setAttribute("burning_state", map.get("burning_state"));
+        
+        
+        return "data/listToApplication";
+    }
+    
+    
+    @RequestMapping(value = "/data/applicationQuery")
+    public String applicationQuery(HttpServletRequest request, HttpServletResponse response)
             throws UnsupportedEncodingException {
         Map<String, Object> map = ServletUtils.getParameters(request);
         logger.info("原始数据清单， 请求参数内容为： {}", map);
 
         Page<?> page = new Page<Object>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
-        Map<String, Object> paramMap = new HashMap<String, Object>();
-        paramMap.put("work_area", map.get("work_area"));
-        paramMap.put("construction_year", formatDate(ObjectUtils.toString(map.get("construction_year"))));
-        paramMap.put("volume_label", map.get("volume_label"));
-        logger.info("查询条件为： {}", paramMap);
-        PageInfo<Map<String, Object>> pageInfo = rawDataService.list(paramMap, page);
+       
+      
+        PageInfo<Map<String, Object>> pageInfo = applicationDataService.list(map, page);
         List<Map<String, Object>> discTypes = commonService.listSystemParameters(SysConstant.DISC_TYPE);
-        request.setAttribute("discType", discTypes);
-        request.setAttribute("work_area", map.get("work_area"));
-        request.setAttribute("construction_year", map.get("construction_year"));
+
         request.setAttribute("pageInfo", pageInfo);
-        List<String> dirLists= getDir(null);
-        request.setAttribute("dirLists", dirLists);
-        
-        Enumeration paramNames = request.getParameterNames();
-        while (paramNames != null && paramNames.hasMoreElements()) {
-            String paramName = (String) paramNames.nextElement();
-            Object [] values = request.getParameterValues(paramName);
-            if (values == null || values.length == 0) {
-                // Do nothing, no values found at all.
-            } else {
-                request.setAttribute(paramName, values[0]);
-            }
-        }
-        
-        
-        return "data/rawlistApplication";
+    //    List<String> dirLists= getDir(null);
+      //  request.setAttribute("dirLists", dirLists);
+            return "data/listApplication";
     }
     
     
     @RequestMapping(value = "/data/ApplicationData")
-    public String applicationDataList(HttpServletRequest request, String volLabel,HttpServletResponse response)
+    public String ApplicationData(HttpServletRequest request, String volLabel,String reMark,String phone,String date ,HttpServletResponse response)
             throws UnsupportedEncodingException {
         Map<String, Object> map = ServletUtils.getParameters(request);
         logger.info("原始数据清单， 请求参数内容为： {}", map);
-        
-        System.out.println(volLabel);
+        try {
+        	Subject currentUser = SecurityUtils.getSubject();
+        	String[] volary=volLabel.split(",");
+        	for (String vol : volary) {
+        		map.put("volLabel",vol);
+        		map.put("type", "0");
+            	map.put("user",currentUser.getPrincipal());
+        		applicationDataService.insertApplication(map);
+			}
+      
+		} catch (Exception e) {
+			logger.error("申请数据保存失败",e.getMessage());
+		
+			
+		}
 
+	  request.setAttribute("desc", "获取数据申请已经提交成功，请等待管理员审核！");
+	  request.setAttribute("backUrl", "/data/applicationlist.do");
+		return "kepan/success";
+        //return "data/rawlistApplication";
+    }
+    
+    
+    @RequestMapping(value = "/data/ApplicationUpdate")
+    public String ApplicationUpdate(HttpServletRequest request, String volLabel,String reMark,String phone,String date ,HttpServletResponse response)
+            throws UnsupportedEncodingException {
+        Map<String, Object> map = ServletUtils.getParameters(request);
+       
         
-        
-        return "data/rawlistApplication";
+        		try {
+					applicationDataService.updateApplication(map);
+				} catch (Exception e) {
+					logger.error("同意数据申请失败"+e);
+					 request.setAttribute("desc", "同意数据申请失败"+e);
+					
+				}
+	 
+		return "redirect:/data/applicationQuery.do";
+        //return "data/rawlistApplication";
     }
     
 

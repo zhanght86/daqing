@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%
     String path = request.getContextPath();
     String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
@@ -239,11 +240,14 @@
 								<c:if test="${page.application_status == 0}">未处理</c:if>
 								<c:if test="${page.application_status == 1}">审核通过</c:if>
 								
-							</td>				
-							
-							<td><c:if test="${page.application_status == 0}">
+							</td>		
+							<td>		
+							 <shiro:hasPermission name="appdata:all">
+							<c:if test="${page.application_status == 0}">
 								<a onclick="return confirm('确定要通过吗？');"  href="<%=basePath %>/data/ApplicationUpdate.do?id=${page.id}&application_status=1">审核</a>&nbsp;
 								</c:if>
+								
+								</shiro:hasPermission>
 								</td>
 						</tr>
 				</c:forEach>

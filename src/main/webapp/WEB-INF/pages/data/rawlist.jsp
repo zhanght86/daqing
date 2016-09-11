@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%
     String path = request.getContextPath();
     String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
@@ -212,10 +213,14 @@
 							<td>&nbsp;${page.data_quantity }</td>
 							<td>&nbsp;${page.remarks }</td>
 							<td>
+							
+							 <shiro:hasPermission name="burn:raw">
 							<a href="<%=basePath%>/data/rawInsertInit.do?sid=${page.sid}&volume_label=${page.volume_label}">补录</a>
 							<a href="<%=basePath%>/data/rawUpdateInit.do?sid=${page.sid}">修改</a>
 							<a onclick="return confirm('确定要删除么？');" href="<%=basePath%>/data/delete.do?sid=${page.sid}&dataType=R&url=rawData/list.do">删除</a>
-							<a href="<%=basePath%>/burn/list.do?volume_label=${page.volume_label}">刻录详细</a></td>
+							<a href="<%=basePath%>/burn/list.do?volume_label=${page.volume_label}">刻录详细</a>
+								</shiro:hasPermission>
+								</td>
 						</tr>
 				</c:forEach>
 				</tbody>

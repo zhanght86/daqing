@@ -17,7 +17,7 @@
 <c:import url="include/headers.jsp"></c:import>
 <script type="text/javascript">
 $(function(){
-	eLoading();
+	//eLoading();
 });
 
 function reportDownload(){
@@ -31,7 +31,7 @@ function showReportType(){
 </script>
 </head>
 <body class="easyui-layout">
-    <div region="north" style="height:130px; "><c:import url="include/north_include.jsp"></c:import></div>  
+    <div region="north" style="height:110px;width: 100% "><c:import url="include/north_include.jsp"></c:import></div>  
     <div region="south" style="height:40px;padding-top: 5px;"><c:import url="include/south_include.jsp"></c:import></div>    
     <div region="west" split="true" title="&nbsp;导航菜单"  style="width:220px;padding: 3px;"><c:import url="include/west_include.jsp"></c:import></div>  
     <div region="center" >

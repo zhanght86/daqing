@@ -128,3 +128,39 @@ function openTab(tabId,title,url,iconClass){
 function refreshTab(){
 	window.location.reload();
 }
+
+
+function showHintMessage(message, hideSpeed, callback) {
+	if (!arguments.length) return;
+	
+	var defaultHideSpeed = 3000;
+	if (arguments.length >= 2 && !isNaN(hideSpeed)) {
+		defaultHideSpeed = hideSpeed;
+	}
+	var hideCallbackFnc = null;
+	if (arguments.length >= 3 && typeof callback === 'function') {
+		hideCallbackFnc = callback;
+	}
+	
+	if ($('#top_body').length) {
+		if (!$('#top_body #hintMessage').length) {
+			$('#top_body').prepend('<div id="hintMessage"></div>');
+		}
+		
+		$('#hintMessage').empty();
+		$('#hintMessage').html(message);
+		$('#hintMessage').show();
+		setTimeout(function() {
+			$("#hintMessage").hide();
+			if (hideCallbackFnc) {
+				hideCallbackFnc();
+			}
+		}, defaultHideSpeed);
+	} else {
+		alert(message);
+		
+		if (hideCallbackFnc) {
+			hideCallbackFnc();
+		}
+	}
+}

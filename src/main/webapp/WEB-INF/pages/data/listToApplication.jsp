@@ -231,7 +231,7 @@
 	
 	<div class="tipnew">
 		<div class="tiptop">
-			<span>上传数据</span><a></a>
+			<span>数据申请</span><a></a>
 		</div>
 		<form action="<%=basePath%>/data/ApplicationData.do" method="post" enctype="multipart/form-data">
 			<input id="volLabel" name="volLabel"  type="hidden" />

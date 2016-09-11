@@ -12,16 +12,19 @@
 	response.setHeader("Cache-Control", "no-cache");
 	response.setDateHeader("Expires", 0);	
 %>
-<div id="northDiv">
-	<a href="javascript:void(0);"><img alt="logo" src="<%=basePath%>/static/images/logo.png"></a>
-	<div class="r person_info">
-		<img alt="role" src="<%=basePath%>/static/images/role.png">&nbsp;<span>你好, <shiro:principal /></span>&nbsp;<span>|</span>&nbsp;<span>${LoginUser.userName}</span>
-		&nbsp;<a href="javascript:void(0);" id="change_password_link">修改密码</a>
+
+<div id="northDiv" >
+	
+	<div  >
+	<img style="position:absolute;z-Index=3" alt="logo" src="<%=basePath%>/static/images/logo.png">
+	   <a style="position:absolute;z-Index=3;color: white" href="javascript:void(0);" id="change_password_link">修改密码</a>
+	<shiro:principal /></span>&nbsp;<span>|</span>&nbsp;<span>${LoginUser.userName}</span>
+		
 		<shiro:authenticated>
-		&nbsp;<a href="<%=basePath%>/logout.do" id="logout_link"><img alt="loginout" src="<%=basePath%>/static/images/loginout.png" style="">&nbsp;退出</a>
+		&nbsp;<a style="position:absolute;z-Index=3;color: white;margin-right: 10" href="<%=basePath%>/logout.do" id="logout_link">退出</a>
 		</shiro:authenticated>
 	</div>
-	<div id="changePassword-dialog-form"  title="&nbsp;修改密码" class="form_1">
+	<div id="changePassword-dialog-form" title="&nbsp;修改密码" class="form_1">
 		<p class="validateTips">
 			<span class="red_star">*</span>为必添项
 		</p>
@@ -83,9 +86,9 @@
 							url: $('#changePasswordForm').attr('action'),
 							type: 'post',
 							data: $('#changePasswordForm').serialize(),
-							beforeSend: ajaxLoading,
+							//beforeSend: ajaxLoading,
 							success: function (data) {
-								ajaxLoadEnd();
+								//ajaxLoadEnd();
 								if ("true" == data) {
 									showHintMessage('修改密码成功，请重新登录！', 1000, function () {
 										window.location.href = $('#logout_link').attr('href');

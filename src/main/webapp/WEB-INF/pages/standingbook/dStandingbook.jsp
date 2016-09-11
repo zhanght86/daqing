@@ -3,6 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%
     String path = request.getContextPath();
     String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path;
@@ -92,10 +93,12 @@
 					<label>&nbsp;</label>
 					<input type="submit" class="scbtn" value="查询" />
 				</li>
+				<shiro:hasPermission name="burn:dData">
 						<li>
 					<label>&nbsp;</label>
 					<input type="button" class="scbtn"  value="补录数据"  />
 				</li>
+				</shiro:hasPermission>
 					
 			</ul>
 			</form>
@@ -131,7 +134,12 @@
 							<td><fmt:formatDate value="${page.update_time}" pattern="yyyy-MM-dd HH:mm:ss" /></td>
 							<td><fmt:formatNumber pattern="##.###" >${(page.update_time.time - page.create_time.time)/1000/60/60}</fmt:formatNumber></td>
 							<td>${page.type=='1'?'刻录':'导出'}</td>
-							<td><a href="<%=basePath%>/standingbook/delete.do?sid=${page.sid}&dataType=R&url=standingbook/dData.do">删除</a>
+							<td>
+							 <shiro:hasPermission name="burn:dData">
+							<a href="<%=basePath%>/standingbook/delete.do?sid=${page.sid}&dataType=R&url=standingbook/dData.do">删除</a>
+						
+						</shiro:hasPermission>
+						</td>
 						</tr>
 					</c:forEach>
 				</tbody>

@@ -56,7 +56,7 @@
 						onclick="JavaScript:this.value=''" /></li>
 					<li><input name="loginPassword" type="text" class="loginpwd" value="密码"
 						onclick="JavaScript:this.value=''" /></li>
-					<li><input name="" type="submit" class="loginbtn" value="登录" />
+					<li><input  name="" type="submit" class="loginbtn" value="登录" />
 						<!--<label><input name="" type="checkbox" value="" checked="checked" />记住密码</label><label><a href="#">忘记密码？</a></label></li>-->
 				</ul>
 			</form>

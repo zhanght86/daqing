@@ -21,7 +21,8 @@ import com.midas.service.BurnService;
 /**
  * 查找任务结果
  * 
- * @author arron
+ * @author sullivan
+ * 执行定时检查数据库任务进行dump导出到cache
  *
  */
 

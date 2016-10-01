@@ -35,7 +35,9 @@ public class TaskExecuteMerge {
     @Autowired
     private BurnService burnService;
 
-    
+    /**
+     * 定时检查刻录结果，并更新数据库状态
+     */
     @Scheduled(fixedDelay = 30*1000) 
     public void execute() {
 
@@ -46,12 +48,13 @@ public class TaskExecuteMerge {
             paramMap.put("burning_state", BurnState.BURNNING.getKey() + ", " + BurnState.BURN_WAIT.getKey());
             List<Map<String, Object>> list = burnService.list(paramMap);
             for (Map<String, Object> map : list) {
-                business.masterNotify(map);
+                business.masterNotify(map);  //定时检查刻录结果，并更新数据库状态
             }
         } catch (Exception e) {
             logger.error("执行定时任务失败--masterNotify", e);
         }
 
+        //定时检查导出结果，如果cache 卷标文件齐全，则进行merge合并操作如下
         try {
         	
             List<Map<String, Object>> list = burnService.listExportRecord(null, ExportState.EXPORTTING.getKey(),null);

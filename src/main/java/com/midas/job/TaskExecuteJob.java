@@ -12,7 +12,9 @@ import com.midas.service.BurnService;
 /**
  * 查找任务结果
  * 
- * @author arron
+ * @author sullivan
+ * 
+ * 搜索文件导出功能
  *
  */
 @Component

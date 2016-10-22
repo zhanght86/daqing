@@ -501,8 +501,9 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 int diskPos = Integer.parseInt(ObjectUtils.toString(map.get("disc_position")));
                 int cur = ((diskPos - 1) % 50 + 1) + (magNo - 1) * 50;
                 String filename = String.format("%04d", cur) + ".iso";
+                String tagServer=tagMap.get("server")+"";
 
-                File f = getFilePath(machine, filename);
+                File f = getFilePath(machine, filename,tagServer);
                 if (null == f) {
                     isSucc = false;
                     break;
@@ -533,8 +534,13 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         }
     }
 
-    private File getFilePath(List<Map<String, Object>> list, String filename) {
+    private File getFilePath(List<Map<String, Object>> list, String filename,String tagServer) {
         for (Map<String, Object> map : list) {
+        	String server=map.get("sp_code")+"";
+        	logger.info("文件电子标签所在服务器"+tagServer+" 文件比对服务器"+server);
+        	if (!server.equals(tagServer)) {
+				continue;
+			}
             String filepath = map.get("sp_value3") + "/" + filename;
             File f = new File(filepath);
             logger.info("验证文件{} 是否存在： {}", f.getAbsolutePath(), f.exists());

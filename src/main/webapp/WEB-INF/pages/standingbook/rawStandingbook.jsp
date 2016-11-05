@@ -152,18 +152,18 @@
 			        	<li class="paginItem"><a href="javascript:alert('没有上一页');"><span class="pagepre"></span></a></li>
 			        </c:if>
 			        <c:if test="${pageInfo.pageNum != 1 }">
-			        	<li class="paginItem"><a href="<%=basePath%>/dData/list.do?pageNum=${pageInfo.pageNum - 1}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }"><span class="pagepre"></span></a></li>
+			        	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum - 1}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }"><span class="pagepre"></span></a></li>
 			        </c:if>
 			        <c:forEach items="${pageInfo.navigatepageNums }" var="num" varStatus="status">
 			        	<c:if test="${status.count < 5 }">
-			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/dData/list.do?pageNum=${num}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }">${num }</a></li>
+			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/rawData/list.do?pageNum=${num}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }">${num }</a></li>
 			        	</c:if>
 			        </c:forEach>
 			        <c:if test="${pageInfo.pages == pageInfo.pageNum}">
 			       	 	<li class="paginItem"><a href="javascript:alert('没有下一页');"><span class="pagenxt"></span></a></li>
 			        </c:if>
 			        <c:if test="${pageInfo.pages > pageInfo.pageNum}">
-			       	 	<li class="paginItem"><a href="<%=basePath%>/dData/list.do?pageNum=${pageInfo.pageNum + 1}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }"><span class="pagenxt"></span></a></li>
+			       	 	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum + 1}&project_name=${project_name }&filing_unit=${filing_unit }&filing_date=${filing_date }"><span class="pagenxt"></span></a></li>
 			        </c:if>
 		        </ul>
 		    </div>

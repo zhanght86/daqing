@@ -60,7 +60,7 @@ public class StandingbookController {
         Map<String, Object> map = ServletUtils.getParameters(request);
         map.put("data_type", DataType.RAW_DATA.getType());
         map.put("states", "1");
-        Page<?> page = new Page<>(1, SysConstant.PAGE_SIZE);
+        Page<?> page = new Page<>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
         PageInfo<Map<String, Object>> pageInfo = service.queryStandingbookListByPage(map, page);
         logger.info("获取到数据量为： {}", pageInfo);
         request.setAttribute("pageInfo", pageInfo);
@@ -78,7 +78,7 @@ public class StandingbookController {
         Map<String, Object> map = ServletUtils.getParameters(request);
         map.put("data_type", DataType.TWO_DATA.getType());
         map.put("states", "1");
-        Page<?> page = new Page<>(1, SysConstant.PAGE_SIZE);
+        Page<?> page = new Page<>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
         PageInfo<Map<String, Object>> pageInfo = service.queryStandingbookListByPage(map, page);
         logger.info("获取到数据量为： {}", pageInfo);
         request.setAttribute("pageInfo", pageInfo);
@@ -95,7 +95,7 @@ public class StandingbookController {
         Map<String, Object> map = ServletUtils.getParameters(request);
         map.put("data_type", DataType.THREE_DATA.getType());
         map.put("states", "1");
-        Page<?> page = new Page<>(1, SysConstant.PAGE_SIZE);
+        Page<?> page = new Page<>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
         PageInfo<Map<String, Object>> pageInfo = service.queryStandingbookListByPage(map, page);
         logger.info("获取到数据量为： {}", pageInfo);
         request.setAttribute("pageInfo", pageInfo);
@@ -111,7 +111,7 @@ public class StandingbookController {
         Map<String, Object> map = ServletUtils.getParameters(request);
         map.put("data_type", DataType.MIDDLE_DATA.getType());
         map.put("states", "1");
-        Page<?> page = new Page<>(1, SysConstant.PAGE_SIZE);
+        Page<?> page = new Page<>(getCurPage(map.get("pageNum")), SysConstant.PAGE_SIZE);
         PageInfo<Map<String, Object>> pageInfo = service.queryStandingbookListByPage(map, page);
         logger.info("获取到数据量为： {}", pageInfo);
         request.setAttribute("pageInfo", pageInfo);
@@ -694,6 +694,24 @@ public class StandingbookController {
         service.save(vo);
         System.out.println(">>>" + url);
         return "standingbook/rawStandingbook";
+    }
+    
+    /**
+     * 获取当前页
+     * 
+     * @param curpage
+     * @return
+     */
+    protected static int getCurPage(Object curpage) {
+        int pageNum = 1;
+        if (null != curpage && !"".equals(curpage)) {
+            String pageNumStr = ObjectUtils.toString(curpage);
+            try {
+                pageNum = Integer.parseInt(pageNumStr);
+            } catch (Exception e) {
+            }
+        }
+        return pageNum;
     }
     
     @RequestMapping(value = "/standingbook/delete")

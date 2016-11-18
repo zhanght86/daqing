@@ -589,15 +589,18 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 map.put("export_desc", "导出成功");
                 map.put("eid", eid);
                 burnService.updateExportRecord(map);               
-                //Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
+                Map<String, Object> burnMap =burnService.getBurnByVolLabel(volLabel);
                 Map<String, Object> standingMap = new HashMap<String, Object>();
                 standingMap.put("eid", eid);
                 standingMap.put("volume_label", volLabel);
                 standingMap.put("states", "1");
                 // 修改为最后一个刻录完成的时间
-                //standingMap.put("data_quantity", burnMap==null?"":burnMap.get("burn_size"));
+                if (burnMap!=null&&!"".equals(burnMap.get("burn_size"))) {			
+                    standingMap.put("data_quantity", burnMap.get("burn_size"));
+                	}
                 standingMap.put("update_time", new Date());
                 standingMap.put("type", 2);
+                logger.info("更新台帐导出信息容量:"+standingMap.get("data_quantity")+"  卷标号:"+volLabel);
                 standingbookService.update(standingMap);
                 for (File f : filelist) {
                     logger.info("删除文件： {}", f.getAbsolutePath());
@@ -699,6 +702,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     // 修改为最后一个刻录完成的时间
                     standingMap.put("update_time", ends.get(number-1).get("time"));
                     standingMap.put("type", 1);
+                    logger.info("更新台帐刻录信息容量"+standingMap.get("data_quantity")+"  卷标号:"+volLabel);
                     standingbookService.update(standingMap);
                     return;
                 }

@@ -141,7 +141,7 @@
 				, states = #{states}
 			</if>
 			<if test="data_quantity != null and data_quantity != ''">
-				, data_quantity = data_quantity + #{data_quantity}
+				, data_quantity = #{data_quantity}
 			</if>
 			<if test="burn_count != null and burn_count != ''">
 				, burn_count = #{burn_count}

@@ -375,7 +375,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 standingMap.put("work_area",  o.get("work_area"));
                 standingMap.put("construction_unit", o.get("construction_unit"));
                 standingMap.put("construction_year", o.get("construction_year"));
-                standingMap.put("data_quantity", o.get("data_quantity"));
+                //standingMap.put("data_quantity", o.get("data_quantity"));
                 standingMap.put("burn_count", o.get("burn_count"));
                 standingMap.put("create_time", new Date());
                 standingMap.put("type", "2");

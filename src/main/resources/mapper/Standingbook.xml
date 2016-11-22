@@ -149,7 +149,7 @@
 		where
 			volume_label = #{volume_label}
 			<if test="work_area != null and work_area != ''">
-				and work_area = #{work_area}
+				and work_area = #{work_area} 
 			</if>
 			<if test="type != null and type != ''">
 				and type = #{type}

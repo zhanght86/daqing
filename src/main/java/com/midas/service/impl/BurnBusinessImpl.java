@@ -600,7 +600,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 	}
                 standingMap.put("update_time", new Date());
                 standingMap.put("type", 2);
-                logger.info("更新台帐导出信息容量:"+standingMap.get("data_quantity")+"  卷标号:"+volLabel);
+                logger.info("更新台帐导出信息容量:"+standingMap.get("data_quantity")+"  卷标号:"+volLabel+" eid"+standingMap.get("eid"));
                 standingbookService.update(standingMap);
                 for (File f : filelist) {
                     logger.info("删除文件： {}", f.getAbsolutePath());

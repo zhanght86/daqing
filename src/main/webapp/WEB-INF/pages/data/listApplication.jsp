@@ -49,7 +49,7 @@
 		});
 		
 		$(".excel").click(function(){
-			window.location.href = '<%=basePath%>/rawData/excel.do?work_area='+$("#work_area").val()+'&construction_year='+$("#construction_year").val();
+			window.location.href = '<%=basePath%>/rawData/excel.do?work_area='+$("#work_area").val()+'&construction_year='+$("#construction_year").val()+'&volume_label=${volume_label}';
 		});
 		
 		$(".table").click(function(){

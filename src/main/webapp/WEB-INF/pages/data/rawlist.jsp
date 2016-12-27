@@ -48,7 +48,7 @@
 		});
 		
 		$(".excel").click(function(){
-			window.location.href = '<%=basePath%>/rawData/excel.do?work_area='+$("#work_area").val()+'&construction_year='+$("#construction_year").val();
+			window.location.href = '<%=basePath%>/rawData/excel.do?work_area='+$("#work_area").val()+'&construction_year='+$("#construction_year").val()+'&volume_label=${volume_label}';
 		});
 		
 		$(".table").click(function(){
@@ -233,18 +233,18 @@
 			        	<li class="paginItem"><a href="javascript:alert('没有上一页');"><span class="pagepre"></span></a></li>
 			        </c:if>
 			        <c:if test="${pageInfo.pageNum != 1 }">
-			        	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum - 1}&work_area=${work_area}&construction_year=${construction_year}"><span class="pagepre"></span></a></li>
+			        	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum - 1}&work_area=${work_area}&construction_year=${construction_year}&volume_label=${volume_label }"><span class="pagepre"></span></a></li>
 			        </c:if>
 			        <c:forEach items="${pageInfo.navigatepageNums }" var="num" varStatus="status">
 			        	<c:if test="${status.count < 5 }">
-			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/rawData/list.do?pageNum=${num}&work_area=${work_area}&construction_year=${construction_year}">${num }</a></li>
+			        		<li class="paginItem"><a charset="utf-8" href="<%=basePath%>/rawData/list.do?pageNum=${num}&work_area=${work_area}&construction_year=${construction_year}&volume_label=${volume_label }">${num }</a></li>
 			        	</c:if>
 			        </c:forEach>
 			        <c:if test="${pageInfo.pages == pageInfo.pageNum}">
 			       	 	<li class="paginItem"><a href="javascript:alert('没有下一页');"><span class="pagenxt"></span></a></li>
 			        </c:if>
 			        <c:if test="${pageInfo.pages > pageInfo.pageNum}">
-			       	 	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum + 1}&work_area=${work_area}&construction_year=${construction_year}"><span class="pagenxt"></span></a></li>
+			       	 	<li class="paginItem"><a href="<%=basePath%>/rawData/list.do?pageNum=${pageInfo.pageNum + 1}&work_area=${work_area}&construction_year=${construction_year}&volume_label=${volume_label }"><span class="pagenxt"></span></a></li>
 			        </c:if>
 		        </ul>
 		    </div>

@@ -818,8 +818,8 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         public Boolean call() throws ServiceException {
             logger.info("调用机器{} 导出数据， 发送导出位置为： {}", server, position);
            int num=0;
-           return sendDumpCmd(num);
-           // return commonService.executeDUMPMEDIA(server, String.valueOf(position));
+          // return sendDumpCmd(num);
+           return commonService.executeDUMPMEDIA(server, String.valueOf(position));
         }
         
 //        public String getServer()

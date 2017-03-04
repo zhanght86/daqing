@@ -91,6 +91,9 @@
 				<li>
 					<label>&nbsp;</label>
 					<input type="submit" class="scbtn" value="查询" />
+					
+					<li><span><img src="<%=basePath%>/static/images/Refresh.gif" /><a onclick="return confirm('确定要清空缓存吗？');"  href="<%=basePath%>/burn/flushCache1.do">刷新缓存SERVER1</a></span></li>
+					<li><span><img src="<%=basePath%>/static/images/Refresh.gif" /><a onclick="return confirm('确定要清空缓存吗?');"   href="<%=basePath%>/burn/flushCache2.do">刷新缓存SERVER2</a></span></li>
 				</li>
 			</ul>
 			</form>

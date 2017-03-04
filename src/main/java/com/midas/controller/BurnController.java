@@ -40,6 +40,7 @@ import com.midas.service.StandingbookService;
 import com.midas.uitls.FtpUtil;
 import com.midas.uitls.date.DateUtil;
 import com.midas.uitls.runtime.RunCommand;
+import com.midas.uitls.socket.SSHHelper;
 import com.midas.uitls.socket.TelnetOperator;
 import com.midas.uitls.threadpool.ThreadPoolContainer;
 import com.midas.uitls.tools.CommonsUtils;
@@ -79,6 +80,22 @@ public class BurnController extends BaseDataController {
         request.setAttribute("pageInfo", pageInfo);
         request.setAttribute("burning_state", map.get("burning_state"));
         return "kepan/burn";
+    }
+    
+    @RequestMapping(value = "/burn/flushCache1")
+    public String flushCache1(HttpServletRequest request, HttpServletResponse response) {
+    	String result1=SSHHelper.exec("172.43.1.105", "root", "jvcnas", 22, "/jukebox/flush_Cache1.sh");
+    
+		request.setAttribute("desc", "已发出清理操作,请稍后10秒进行导出操作 结果:"+result1);
+		return "kepan/success";
+    }
+    
+    @RequestMapping(value = "/burn/flushCache2")
+    public String flushCache2(HttpServletRequest request, HttpServletResponse response) {
+    	String result1=SSHHelper.exec("172.43.1.105", "root", "jvcnas", 22, "/jukebox/flush_Cache2.sh");
+    
+		request.setAttribute("desc", "已发出清理操作,请稍后10秒进行导出操作  结果:"+result1);
+		return "kepan/success";
     }
 
     @RequestMapping(value = "/burn/cancel")

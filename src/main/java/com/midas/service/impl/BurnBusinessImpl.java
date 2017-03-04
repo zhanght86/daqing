@@ -405,16 +405,17 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                     int disc_position = Integer.parseInt(ObjectUtils.toString(map.get("disc_position")));
                     pos = (magNo - 1) * 50 + ((disc_position - 1) % 50 + 1);
                     //TODO 导出重试功能，修改导出状态为0，扫描进入此方法重新下载，发现已经下载的文件就跳过
-//                    String server=map.get("server")+"";
-//                    Map<String, Object> machineInfo = commonService.getSystemParameters(server);                  
-//                    String filename = String.format("%04d", pos) + ".iso";                   
-//                    String workdir=machineInfo.get("sp_value3")+"";
-//                    dumpFile=workdir+File.separator+filename;
-//                	File file = new File(dumpFile);
-//        			if (file.exists()) {
-//        				logger.info("跳过下载文件，已存在："+dumpFile);
-//        				continue;
-//        			}
+                    String server=map.get("server")+"";
+                    Map<String, Object> machineInfo = commonService.getSystemParameters(server);                  
+                    String filename = String.format("%04d", pos) + ".iso";                   
+                    String workdir=machineInfo.get("sp_value3")+"";
+                    dumpFile=workdir+File.separator+filename;
+                	File file = new File(dumpFile);
+                	logger.info("检查导出文件名:"+dumpFile);
+        			if (file.exists()) {
+        				logger.info("发现文件存在 跳过下载文件："+dumpFile);
+        				continue;
+        			}
                     Thread.sleep(1*1000L);
                 } catch (Exception e) {
                     throw new ServiceException(ErrorConstant.CODE3000, "位置计算失败, 或者未获取位置信息", e);
@@ -506,6 +507,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 File f = getFilePath(machine, filename,tagServer);
                 if (null == f) {
                     isSucc = false;
+                    logger.info("发现dump文件不存在{}-----{}-----{}", machine,tagServer,filename);
                     break;
                 } else {
                     fileList.add(f);
@@ -803,7 +805,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
 
     class MergeDump implements Callable<Boolean> {
         private String server;
-        private int    position;
+        private  int    position;
         private String dumpFile;
 
         public MergeDump(String server, int position,String dumpFile) {
@@ -815,17 +817,44 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         @Override
         public Boolean call() throws ServiceException {
             logger.info("调用机器{} 导出数据， 发送导出位置为： {}", server, position);
-           int num=4;
-            return commonService.executeDUMPMEDIA(server, String.valueOf(position));
+           int num=0;
+           return sendDumpCmd(num);
+           // return commonService.executeDUMPMEDIA(server, String.valueOf(position));
         }
         
-//        public boolean sendDumpCmd(int num)
+//        public String getServer()
 //        {
-//        	 boolean n=commonService.executeDUMPMEDIA(server, String.valueOf(position));
-//        	 if (num >3) {
-//				return false;
-//			}
-//        	 try {
+//        	return this.server;
+//        }
+//        
+//        public int getPosition()
+//        {
+//        	return this.position;
+//        }
+        
+        public boolean sendDumpCmd(int num)
+        {
+        	try {
+				Thread.sleep(5*1000L);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        	 if (num >3) {
+ 				return false;
+ 			}
+        	 boolean n=false;
+        	 try {
+        	  n=commonService.executeDUMPMEDIA(server, String.valueOf(position));       	
+        	  if (n) {
+				return n;
+			}
+        	  else
+        	  {        		  
+        		  num++;
+        		  logger.info("导出命令发出失败,进行重试"+num);
+        		  sendDumpCmd(num);
+        	  }
 // 			if (!StringUtils.isEmpty(dumpFile)) {
 // 				File file = new File(dumpFile);
 // 				if (!file.exists()) {
@@ -833,13 +862,15 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
 // 					sendDumpCmd(num);
 // 				}
 // 			} 			
-//				Thread.sleep(5*1000L);
-//			} catch (Exception e) {
-//				logger.info("dumpMedia 线程下载重试失败"+e);
-//				e.printStackTrace();
-//			}
-// 			return n;
-//        }
+				Thread.sleep(5*1000L);
+			} catch (Exception e) {
+			    	num++;
+					sendDumpCmd(num);
+				logger.info("dumpMedia 线程下载重试失败"+e);
+				e.printStackTrace();
+			}
+ 			return n;
+        }
         
     }
 

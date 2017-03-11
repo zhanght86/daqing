@@ -604,10 +604,10 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
                 standingMap.put("type", 2);
                 logger.info("更新台帐导出信息容量:"+standingMap.get("data_quantity")+"  卷标号:"+volLabel+" eid"+standingMap.get("eid"));
                 standingbookService.update(standingMap);
-                for (File f : filelist) {
-                    logger.info("删除文件： {}", f.getAbsolutePath());
-                    f.delete();
-                }
+//                for (File f : filelist) {
+//                    logger.info("删除文件： {}", f.getAbsolutePath());
+//                    f.delete();
+//                }
             } else {
                 map.put("export_state", ExportState.MEGE_FAILD.getKey());
                 map.put("export_desc", "导出失败");

@@ -84,7 +84,7 @@ public class BurnController extends BaseDataController {
     
     @RequestMapping(value = "/burn/flushCache1")
     public String flushCache1(HttpServletRequest request, HttpServletResponse response) {
-    	String result1=SSHHelper.exec("172.43.1.105", "root", "jvcnas", 22, "/jukebox/flush_Cache1.sh");
+    	String result1=SSHHelper.exec("172.43.1.106", "root", "jvcnas", 22, "/jukebox/flush_Cache1.sh");
     
 		request.setAttribute("desc", "已发出清理操作,请稍后10秒进行导出操作 结果:"+result1);
 		return "kepan/success";
@@ -92,7 +92,7 @@ public class BurnController extends BaseDataController {
     
     @RequestMapping(value = "/burn/flushCache2")
     public String flushCache2(HttpServletRequest request, HttpServletResponse response) {
-    	String result1=SSHHelper.exec("172.43.1.105", "root", "jvcnas", 22, "/jukebox/flush_Cache2.sh");
+    	String result1=SSHHelper.exec("172.43.1.107", "root", "jvcnas", 22, "/jukebox/flush_Cache2.sh");
     
 		request.setAttribute("desc", "已发出清理操作,请稍后10秒进行导出操作  结果:"+result1);
 		return "kepan/success";

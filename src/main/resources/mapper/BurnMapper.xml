@@ -344,5 +344,13 @@
 			order by eid desc
 		
 	</select>
+	
+	<update id="updateDiscPosition" parameterType="Map">
+	UPDATE m_burn_detail
+	SET electronic_tag = #{etag},
+	disc_position = #{pos}
+	WHERE
+	iso_file = #{volabel}
+</update>
 
 </mapper>

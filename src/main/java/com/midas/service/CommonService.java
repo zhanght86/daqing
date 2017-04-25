@@ -150,5 +150,11 @@ public interface CommonService {
 	 * @return
 	 */
 	boolean isBusyV2(String server);
+	
+	/**
+     * 更新光盘位置
+     * @return
+     */
+     String flushDiscPosition();
 
 }

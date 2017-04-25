@@ -1,6 +1,7 @@
 package com.midas.dao.impl;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -178,6 +179,17 @@ public class BurnDaoImpl implements BurnDao {
 	public void reRunExportFile(String eid) {
 		
 		 mapper.reRunExportFile(eid);
+	}
+
+	@Override
+	public void updateDiscPosition(String pos, String etag, String volabel) {
+		Map<String, Object> map=new HashMap<>();
+		
+		map.put("etag", etag);
+		map.put("pos", pos);
+		map.put("volabel", volabel);
+		 mapper.updateDiscPosition(map);
+		
 	}
 
 }

@@ -16,6 +16,7 @@ import java.util.Map;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.util.ObjectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +26,11 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.L
 import com.google.gson.Gson;
 import com.midas.constant.ErrorConstant;
 import com.midas.constant.SysConstant;
+import com.midas.dao.BurnDao;
 import com.midas.dao.CommonDao;
 import com.midas.enums.DataType;
 import com.midas.exception.ServiceException;
+import com.midas.service.BurnService;
 import com.midas.service.CommonService;
 import com.midas.uitls.socket.TelnetOperator;
 import com.midas.uitls.tools.CommonsUtils;
@@ -46,6 +49,9 @@ public class CommonServiceImpl implements CommonService {
 
     @Autowired
     private CommonDao commonDao;
+    
+    @Autowired
+     private BurnDao burnDao;
 
     @Override
     public String seqUniqueNextVal(String cdate, DataType dataType) {
@@ -686,6 +692,58 @@ public class CommonServiceImpl implements CommonService {
         }
         logger.info("对离线柜： {}, 执行指令： {}, 返回结果为： {}", map, command, result);
         return result;
+    }
+    
+    
+    /**
+     * 更新光盘位置
+     * @return
+     */
+    @Override
+    public String flushDiscPosition()
+    {
+		logger.info("refreshDiscPosInfo--------同步光盘位置信息>>>>>>>>>" + System.currentTimeMillis());
+		List<Map<String, Object>> servers=getAllMachine();
+	    for (Map<String, Object> server : servers) {
+			String ipdeviceIp=server.get("sp_value1")+"";
+			String serverName=server.get("sp_code")+"";
+			Integer port=server.get("sp_value5")==null?2021:Integer.parseInt(server.get("sp_value5")+"");
+		
+			try {
+				Gson gson = new Gson();
+				
+				//TODO TESTING DQ PROJECT
+				//String srcStr="{\"MachineType\":\"MDS-CHGMC-8100\",\"DoorStatus\":0,\"EventCnt\":0,\"Mag\":[{\"MagNo\":0,\"Rfid\":\"0001060004\",\"Slot\":[{\"id\":1,\"cdexist\":1,\"trayexist\":1,\"ischecked\":1,\"isblank\":0,\"mediatype\":\"BD-RSRM\",\"label\":\"W20160125000001(30-2)\",\"slot_status\":78},{\"id\":50,\"cdexist\":1,\"trayexist\":1,\"ischecked\":1,\"isblank\":0,\"mediatype\":\"BD-RSRM\",\"label\":\"W20160125000001(30-1)\",\"slot_status\":78}]},{\"MagNo\":1,\"Rfid\":\"000009000120\",\"Slot\":[{\"id\":51,\"cdexist\":1,\"trayexist\":1,\"ischecked\":1,\"isblank\":0,\"mediatype\":\"DVD-ROM\",\"label\":\"W001(2-1)\",\"slot_status\":78},{\"id\":52,\"cdexist\":2,\"trayexist\":2,\"ischecked\":0,\"isblank\":0,\"mediatype\":\"\",\"label\":\"\",\"slot_status\":78},{\"id\":53,\"cdexist\":2,\"trayexist\":2,\"ischecked\":0,\"isblank\":0,\"mediatype\":\"\",\"label\":\"\",\"slot_status\":78},{\"id\":82,\"cdexist\":2,\"trayexist\":2,\"ischecked\":0,\"isblank\":0,\"mediatype\":\"\",\"label\":\"\",\"slot_status\":78}]}]}";
+				//Machine machine =gson.fromJson(srcStr, Machine.class);
+				Machine machine = commandQUERYSTATION(serverName);
+			
+				List<Mag> mags = machine.getMag();
+				for (Mag mag : mags) {
+					String rfid = mag.getRfid();
+					if (StringUtils.isEmpty(rfid)) {
+						continue;
+					}
+					rfid=rfid.trim();
+					String magNo = (mag.getMagNo() +1)+ "";
+					List<Slot> slots = mag.getSlot();
+					for (Slot slotVo : slots) {
+						String volabel = slotVo.getLabel();
+						Integer soltId=slotVo.getId();
+						if (null==volabel||"".equals(volabel)) {
+							continue;
+						}
+                      burnDao.updateDiscPosition(soltId+"", rfid, volabel);
+					}
+				}
+
+				return "0";
+			} catch (Exception e) {
+				logger.error("光盘信息更新失败{}", e.getMessage());
+				return "-1";
+			}
+	    }
+			
+			return "";
     }
     
 

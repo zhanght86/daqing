@@ -90,6 +90,14 @@ public class BurnController extends BaseDataController {
 		return "kepan/success";
     }
     
+    @RequestMapping(value = "/burn/flushDiscPos")
+    public String flushDiscPos(HttpServletRequest request, HttpServletResponse response) {
+    	 commonService.flushDiscPosition();    
+		request.setAttribute("desc", "已发出更新操作,请稍后5分钟再进行导出操作,导出同一任务光盘需将光盘放在一个盘库上进行导出!:");
+		return "kepan/success";
+    }
+    
+    
     @RequestMapping(value = "/burn/flushCache2")
     public String flushCache2(HttpServletRequest request, HttpServletResponse response) {
     	String result1=SSHHelper.exec("172.43.1.107", "root", "jvcnas", 22, "/jukebox/flush_Cache2.sh");

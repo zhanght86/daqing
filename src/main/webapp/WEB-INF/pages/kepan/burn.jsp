@@ -39,6 +39,12 @@
 		
 	}
 	
+	function refreshDiscPos()
+	{
+		
+		
+	}
+	
 	
 </script>
 <style>
@@ -94,6 +100,7 @@
 					
 					<li><span><img src="<%=basePath%>/static/images/Refresh.gif" /><a onclick="return confirm('请注意!!! 清空缓存会导致正在执行的导出任务失败,你确定要清空吗?');"  href="<%=basePath%>/burn/flushCache1.do">刷新缓存SERVER1</a></span></li>
 					<li><span><img src="<%=basePath%>/static/images/Refresh.gif" /><a onclick="return confirm('请注意!!! 清空缓存会导致正在执行的导出任务失败,你确定要清空吗?');"   href="<%=basePath%>/burn/flushCache2.do">刷新缓存SERVER2</a></span></li>
+				<li><span><img src="<%=basePath%>/static/images/Refresh.gif" /><a onclick="return confirm('刷新操作会更新你光盘的最新位置,请确认是否继续!');"   href="<%=basePath%>/burn/flushDiscPos.do">刷新光盘位置</a></span></li>
 				</li>
 			</ul>
 			</form>

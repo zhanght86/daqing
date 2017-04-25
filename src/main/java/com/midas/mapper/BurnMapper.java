@@ -206,6 +206,14 @@ public interface BurnMapper {
       * @return
       */
 	public void reRunExportFile(String eid);
+	
+	
+	   /**
+     * 光盘位置更新
+     * @param eid
+     * @return
+     */
+	public void updateDiscPosition(Map<String, Object> map);
     
 	
 }

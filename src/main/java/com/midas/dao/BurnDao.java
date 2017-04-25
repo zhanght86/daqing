@@ -186,6 +186,12 @@ public interface BurnDao {
       * @param eid
       */
 	public void reRunExportFile(String eid);
+	
+	 /**
+     *  光盘位置更新
+     * @param eid
+     */
+	public void updateDiscPosition(String pos,String etag,String volabel);
     
 
 }

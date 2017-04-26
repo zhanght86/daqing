@@ -94,6 +94,7 @@ public class BurnController extends BaseDataController {
     public String flushDiscPos(HttpServletRequest request, HttpServletResponse response) {
     	 commonService.flushDiscPosition();    
 		request.setAttribute("desc", "已发出更新操作,请稍后5分钟再进行导出操作,导出同一任务光盘需将光盘放在一个盘库上进行导出!:");
+		request.setAttribute("backUrl", "/burn/list.do");
 		return "kepan/success";
     }
     

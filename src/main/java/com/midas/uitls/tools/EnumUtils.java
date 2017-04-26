@@ -33,8 +33,11 @@ public class EnumUtils {
     }
     
     public static void main(String[] args) {
-        DataType obj = (DataType) convertEnum(DataType.class, "R");
-        System.out.println(obj.getType());
+        //DataType obj = (DataType) convertEnum(DataType.class, "R");
+       // System.out.println(obj.getType());
+        
+        Integer pos = (3 - 1) * 50 + ((441 - 1) % 50 + 1);
+        System.out.println(String.format("%04d", pos));
     }
     
 

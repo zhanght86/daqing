@@ -710,13 +710,12 @@ public class CommonServiceImpl implements CommonService {
 			Integer port=server.get("sp_value5")==null?2021:Integer.parseInt(server.get("sp_value5")+"");
 		
 			try {
-				Gson gson = new Gson();
-				
+				Gson gson = new Gson();				
 				//TODO TESTING DQ PROJECT
 				//String srcStr="{\"MachineType\":\"MDS-CHGMC-8100\",\"DoorStatus\":0,\"EventCnt\":0,\"Mag\":[{\"MagNo\":0,\"Rfid\":\"0001060004\",\"Slot\":[{\"id\":1,\"cdexist\":1,\"trayexist\":1,\"ischecked\":1,\"isblank\":0,\"mediatype\":\"BD-RSRM\",\"label\":\"W20160125000001(30-2)\",\"slot_status\":78},{\"id\":50,\"cdexist\":1,\"trayexist\":1,\"ischecked\":1,\"isblank\":0,\"mediatype\":\"BD-RSRM\",\"label\":\"W20160125000001(30-1)\",\"slot_status\":78}]},{\"MagNo\":1,\"Rfid\":\"000009000120\",\"Slot\":[{\"id\":51,\"cdexist\":1,\"trayexist\":1,\"ischecked\":1,\"isblank\":0,\"mediatype\":\"DVD-ROM\",\"label\":\"W001(2-1)\",\"slot_status\":78},{\"id\":52,\"cdexist\":2,\"trayexist\":2,\"ischecked\":0,\"isblank\":0,\"mediatype\":\"\",\"label\":\"\",\"slot_status\":78},{\"id\":53,\"cdexist\":2,\"trayexist\":2,\"ischecked\":0,\"isblank\":0,\"mediatype\":\"\",\"label\":\"\",\"slot_status\":78},{\"id\":82,\"cdexist\":2,\"trayexist\":2,\"ischecked\":0,\"isblank\":0,\"mediatype\":\"\",\"label\":\"\",\"slot_status\":78}]}]}";
 				//Machine machine =gson.fromJson(srcStr, Machine.class);
 				Machine machine = commandQUERYSTATION(serverName);
-			
+				//logger.info("光盘位置刷新返回信息}",machine.toString());
 				List<Mag> mags = machine.getMag();
 				for (Mag mag : mags) {
 					String rfid = mag.getRfid();
@@ -729,17 +728,18 @@ public class CommonServiceImpl implements CommonService {
 					for (Slot slotVo : slots) {
 						String volabel = slotVo.getLabel();
 						Integer soltId=slotVo.getId();
-						if (null==volabel||"".equals(volabel)) {
+						if (null==volabel||"".equals(volabel.trim())) {
 							continue;
 						}
-                      burnDao.updateDiscPosition(soltId+"", rfid, volabel);
+						logger.info("{}光盘位置定位盘槽号{}, 盘仓号{} 电子标签{}",volabel,soltId,magNo,rfid);
+                      burnDao.updateDiscPosition(soltId+"", rfid, volabel.trim());
 					}
 				}
 
-				return "0";
+			
 			} catch (Exception e) {
 				logger.error("光盘信息更新失败{}", e.getMessage());
-				return "-1";
+			
 			}
 	    }
 			

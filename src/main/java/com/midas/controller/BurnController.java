@@ -283,7 +283,8 @@ public class BurnController extends BaseDataController {
         boolean bool = false;
         String desc = "OK";
         try {
-          bool = burnService.checkMerge(volLabel);
+        	//TODO TESTING DAQING
+        //  bool = burnService.checkMerge(volLabel);
         } catch (ServiceException e) {
             desc = e.getMsg();
         }

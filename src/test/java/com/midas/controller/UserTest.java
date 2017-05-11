@@ -1,7 +1,10 @@
 package com.midas.controller;
 
+import java.io.File;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+import org.aspectj.weaver.IClassFileProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -29,5 +32,25 @@ public class UserTest {
         pageInfo.getList();
         System.out.println(pageInfo);
     }
+    
+    
+    public static void main(String[] args) {
+		File file=new File("d:/W2016041900002");
+		try {
+			
+		
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				FileUtils.deleteDirectory(file);
+			}
+			else {
+				FileUtils.forceDelete(file);
+			}
+			
+		}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
     
 }

@@ -1,6 +1,7 @@
 package com.midas.service.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -531,6 +533,19 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
             map.put("export_desc", "下载成功");
             map.put("number_success", fileList.size());
             burnService.updateExportRecord(map);
+            File  targetFile=new File(export_path+"/"+volLabel);            
+            if (targetFile.exists()) {
+				try {
+					if (targetFile.isDirectory()) {
+	    				FileUtils.deleteDirectory(targetFile);
+	    			}
+	    			else {
+	    				FileUtils.forceDelete(targetFile);
+	    			}
+				} catch (IOException e) {
+					logger.error("导出目标文件清除失败{}",e.getMessage());
+				}
+			}
             ThreadPoolS.execute(new MegerCommand(eid, volLabel, export_path, fileList));
 
         }
@@ -578,6 +593,7 @@ public class BurnBusinessImpl extends BurnBase implements BurnBusiness {
         @Override
         public void run() {
             logger.info("开始运行合并指令， 卷标号： {}, 输出路径： {}, 文件数量： {}", volLabel, exportpath, filelist.size());
+
             boolean isMegerOk = RunCommand.merge(volLabel, exportpath, filelist.size());
             try {
 				Thread.sleep(5*1000L);
